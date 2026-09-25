@@ -24,15 +24,15 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Sign in — 2ndLife Revenue OS" },
+      { title: "Sign in — LeadCatch SA" },
       {
         name: "description",
-        content: "Sign in to your 2ndLife Revenue OS workspace to recover lapsed revenue.",
+        content: "Sign in to LeadCatch SA to see and answer your WhatsApp leads.",
       },
-      { property: "og:title", content: "Sign in — 2ndLife Revenue OS" },
+      { property: "og:title", content: "Sign in — LeadCatch SA" },
       {
         property: "og:description",
-        content: "Access your revenue recovery workspace.",
+        content: "Never miss a WhatsApp lead again.",
       },
     ],
   }),
@@ -116,15 +116,15 @@ function AuthPage() {
   }
 
   return (
-    <main className="hero-gradient flex min-h-screen items-center justify-center px-4 py-12">
+    <main className="flex bg-background min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <Logo className="h-10" />
+          <Logo />
         </div>
-        <div className="surface-card p-6 shadow-2xl">
-          <h1 className="text-center text-xl font-bold">Revenue Operating System</h1>
+        <div className="rounded-lg border border-border bg-card p-6">
+          <h1 className="text-center text-xl font-bold">Sign in to your inbox</h1>
           <p className="mt-1 text-center text-sm text-muted-foreground">
-            Sign in to your recovery workspace
+            Never miss a WhatsApp lead again
           </p>
 
           {pendingConfirm ? (
@@ -142,7 +142,7 @@ function AuthPage() {
             <TabsContent value="signin">
               <form className="space-y-4" onSubmit={(e) => handleSubmit(e, "signin")}>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Work email</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input id="signin-email" name="email" type="email" autoComplete="email" required />
                 </div>
                 <div className="space-y-2">
@@ -168,7 +168,7 @@ function AuthPage() {
                   <Input id="signup-name" name="fullName" autoComplete="name" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Work email</Label>
+                  <Label htmlFor="signup-email">Email</Label>
                   <Input id="signup-email" name="email" type="email" autoComplete="email" required />
                 </div>
                 <div className="space-y-2">
@@ -199,7 +199,7 @@ function AuthPage() {
           </Button>
         </div>
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          POPIA compliant · Built for South African businesses
+          LeadCatch SA · For South African service businesses
         </p>
       </div>
     </main>
