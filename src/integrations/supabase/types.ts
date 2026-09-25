@@ -10,10 +10,122 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      auto_reply_configs: {
+        Row: {
+          after_hours_message: string
+          created_at: string
+          enabled: boolean
+          greeting: string
+          handoff_message: string
+          id: string
+          qualification_questions: string[]
+          review_link: string | null
+          review_request_message: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          after_hours_message?: string
+          created_at?: string
+          enabled?: boolean
+          greeting?: string
+          handoff_message?: string
+          id?: string
+          qualification_questions?: string[]
+          review_link?: string | null
+          review_request_message?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Update: {
+          after_hours_message?: string
+          created_at?: string
+          enabled?: boolean
+          greeting?: string
+          handoff_message?: string
+          id?: string
+          qualification_questions?: string[]
+          review_link?: string | null
+          review_request_message?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_reply_configs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_profiles: {
+        Row: {
+          brand_voice: string
+          business_name: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          pricing_notes: string
+          services: string
+          suburb: string | null
+          tenant_id: string
+          trade: string
+          updated_at: string
+          whatsapp_last_seen_at: string | null
+          whatsapp_number: string | null
+          whatsapp_status: string
+          working_hours: Json
+        }
+        Insert: {
+          brand_voice?: string
+          business_name: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          pricing_notes?: string
+          services?: string
+          suburb?: string | null
+          tenant_id?: string
+          trade?: string
+          updated_at?: string
+          whatsapp_last_seen_at?: string | null
+          whatsapp_number?: string | null
+          whatsapp_status?: string
+          working_hours?: Json
+        }
+        Update: {
+          brand_voice?: string
+          business_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          pricing_notes?: string
+          services?: string
+          suburb?: string | null
+          tenant_id?: string
+          trade?: string
+          updated_at?: string
+          whatsapp_last_seen_at?: string | null
+          whatsapp_number?: string | null
+          whatsapp_status?: string
+          working_hours?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           audience: string
@@ -179,6 +291,57 @@ export type Database = {
           },
           {
             foreignKeyName: "content_opportunities_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_messages: {
+        Row: {
+          body: string
+          created_at: string
+          delivery_status: string
+          direction: Database["public"]["Enums"]["message_direction"]
+          external_id: string | null
+          id: string
+          lead_id: string
+          sender: string
+          tenant_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          delivery_status?: string
+          direction: Database["public"]["Enums"]["message_direction"]
+          external_id?: string | null
+          id?: string
+          lead_id: string
+          sender?: string
+          tenant_id?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          delivery_status?: string
+          direction?: Database["public"]["Enums"]["message_direction"]
+          external_id?: string | null
+          id?: string
+          lead_id?: string
+          sender?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_messages_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -382,6 +545,116 @@ export type Database = {
           },
         ]
       }
+      lead_events: {
+        Row: {
+          actor_id: string | null
+          event_type: string
+          id: string
+          lead_id: string
+          metadata: Json
+          occurred_at: string
+          tenant_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          event_type: string
+          id?: string
+          lead_id: string
+          metadata?: Json
+          occurred_at?: string
+          tenant_id?: string
+        }
+        Update: {
+          actor_id?: string | null
+          event_type?: string
+          id?: string
+          lead_id?: string
+          metadata?: Json
+          occurred_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          actual_revenue_cents: number | null
+          created_at: string
+          estimated_value_cents: number | null
+          first_response_at: string | null
+          id: string
+          last_message_at: string
+          name: string | null
+          notes: string | null
+          phone: string
+          service: string | null
+          source: string
+          status: Database["public"]["Enums"]["lead_status"]
+          suburb: string | null
+          tenant_id: string
+          updated_at: string
+          urgency: string | null
+        }
+        Insert: {
+          actual_revenue_cents?: number | null
+          created_at?: string
+          estimated_value_cents?: number | null
+          first_response_at?: string | null
+          id?: string
+          last_message_at?: string
+          name?: string | null
+          notes?: string | null
+          phone: string
+          service?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          suburb?: string | null
+          tenant_id?: string
+          updated_at?: string
+          urgency?: string | null
+        }
+        Update: {
+          actual_revenue_cents?: number | null
+          created_at?: string
+          estimated_value_cents?: number | null
+          first_response_at?: string | null
+          id?: string
+          last_message_at?: string
+          name?: string | null
+          notes?: string | null
+          phone?: string
+          service?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          suburb?: string | null
+          tenant_id?: string
+          updated_at?: string
+          urgency?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leakage_records: {
         Row: {
           amount_cents: number
@@ -532,6 +805,73 @@ export type Database = {
           },
         ]
       }
+      pending_actions: {
+        Row: {
+          action_type: string
+          attempts: number
+          created_at: string
+          created_by: string | null
+          id: string
+          last_error: string | null
+          lead_id: string | null
+          message_id: string | null
+          payload: Json
+          processed_at: string | null
+          status: Database["public"]["Enums"]["action_status"]
+          tenant_id: string
+        }
+        Insert: {
+          action_type: string
+          attempts?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id?: string | null
+          message_id?: string | null
+          payload?: Json
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["action_status"]
+          tenant_id?: string
+        }
+        Update: {
+          action_type?: string
+          attempts?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id?: string | null
+          message_id?: string | null
+          payload?: Json
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["action_status"]
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_actions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_actions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_actions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       policies: {
         Row: {
           contact_id: string | null
@@ -637,6 +977,7 @@ export type Database = {
           id: string
           industry: string
           name: string
+          onboarded: boolean
           slug: string
           updated_at: string
         }
@@ -646,6 +987,7 @@ export type Database = {
           id?: string
           industry?: string
           name: string
+          onboarded?: boolean
           slug: string
           updated_at?: string
         }
@@ -655,6 +997,7 @@ export type Database = {
           id?: string
           industry?: string
           name?: string
+          onboarded?: boolean
           slug?: string
           updated_at?: string
         }
@@ -697,6 +1040,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_onboarding: {
+        Args: {
+          p_business_name: string
+          p_contact_phone: string
+          p_end?: string
+          p_start?: string
+          p_suburb: string
+          p_trade: string
+        }
+        Returns: string
+      }
       current_tenant_id: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -708,6 +1062,7 @@ export type Database = {
       is_tenant_member: { Args: { _tenant_id: string }; Returns: boolean }
     }
     Enums: {
+      action_status: "pending" | "processing" | "done" | "failed"
       app_role: "owner" | "admin" | "agent" | "viewer"
       campaign_status:
         | "draft"
@@ -718,6 +1073,7 @@ export type Database = {
       confidence_level: "high" | "medium" | "estimated"
       conversation_status: "open" | "waiting" | "escalated" | "closed"
       import_status: "pending" | "processing" | "completed" | "failed"
+      lead_status: "new" | "replied" | "qualified" | "quoted" | "won" | "lost"
       lifecycle_stage:
         | "lead"
         | "active"
@@ -744,12 +1100,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -773,11 +1129,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -798,11 +1154,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -823,11 +1179,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -840,11 +1196,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -856,11 +1212,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      action_status: ["pending", "processing", "done", "failed"],
       app_role: ["owner", "admin", "agent", "viewer"],
       campaign_status: ["draft", "scheduled", "running", "paused", "completed"],
       confidence_level: ["high", "medium", "estimated"],
       conversation_status: ["open", "waiting", "escalated", "closed"],
       import_status: ["pending", "processing", "completed", "failed"],
+      lead_status: ["new", "replied", "qualified", "quoted", "won", "lost"],
       lifecycle_stage: [
         "lead",
         "active",

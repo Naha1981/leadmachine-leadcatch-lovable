@@ -79,21 +79,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "2ndLife Revenue OS" },
+      { title: "LeadCatch SA" },
       {
         name: "description",
         content:
-          "2ndLife finds the revenue hiding in your existing systems and recovers it automatically over WhatsApp.",
+          "Instant WhatsApp lead capture and auto-reply for South African service businesses.",
       },
-      { name: "author", content: "NahaLabs (Pty) Ltd" },
-      { property: "og:title", content: "2ndLife Revenue OS" },
+            { property: "og:title", content: "LeadCatch SA" },
       {
         property: "og:description",
-        content: "AI revenue recovery for South African service businesses.",
+        content: "Never miss a WhatsApp lead again.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
@@ -105,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap",
       },
     ],
   }),

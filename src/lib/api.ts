@@ -3,165 +3,110 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-export type Tables = Database["public"]["Tables"];
-export type Campaign = Tables["campaigns"]["Row"];
-export type Contact = Tables["contacts"]["Row"];
-export type Policy = Tables["policies"]["Row"];
-export type Payment = Tables["payments"]["Row"];
-export type Conversation = Tables["conversations"]["Row"];
-export type Message = Tables["messages"]["Row"];
-export type DemandSignal = Tables["demand_signals"]["Row"];
-export type ContentOpportunity = Tables["content_opportunities"]["Row"];
-export type ImportRow = Tables["imports"]["Row"];
-export type LeakageRecord = Tables["leakage_records"]["Row"];
-export type Integration = Tables["integrations"]["Row"];
-export type Profile = Tables["profiles"]["Row"];
+type T = Database["public"]["Tables"];
+export type Lead = T["leads"]["Row"];
+export type LeadStatus = Database["public"]["Enums"]["lead_status"];
+export type ConversationMessage = T["conversation_messages"]["Row"];
+export type LeadEvent = T["lead_events"]["Row"];
+export type BusinessProfile = T["business_profiles"]["Row"];
+export type AutoReplyConfig = T["auto_reply_configs"]["Row"];
+export type PendingAction = T["pending_actions"]["Row"];
 
-function unwrap<T>(result: { data: T | null; error: { message: string } | null }): T {
-  if (result.error) throw new Error(result.error.message);
-  return (result.data ?? []) as T;
+export const LEAD_STATUSES: LeadStatus[] = ["new", "replied", "qualified", "quoted", "won", "lost"];
+
+function check<D>(r: { data: D | null; error: { message: string } | null }): D {
+  if (r.error) throw new Error(r.error.message);
+  return r.data as D;
 }
 
-export const profileQuery = (userId: string | undefined) =>
+export const workspaceQuery = (userId: string | undefined) =>
   queryOptions({
-    queryKey: ["profile", userId],
+    queryKey: ["workspace", userId],
     enabled: Boolean(userId),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*, tenants(name, slug, currency)")
-        .eq("id", userId!)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      return data;
+      const profile = check(
+        await supabase
+          .from("profiles")
+          .select("id, full_name, email, tenant_id, tenants(id, name, onboarded)")
+          .eq("id", userId!)
+          .maybeSingle(),
+      );
+      return profile;
     },
   });
 
-export const campaignsQuery = () =>
+export const businessProfileQuery = () =>
   queryOptions({
-    queryKey: ["campaigns"],
+    queryKey: ["business_profile"],
     queryFn: async () =>
-      unwrap<Campaign[]>(
-        await supabase.from("campaigns").select("*").order("created_at", { ascending: false }),
-      ),
+      check(await supabase.from("business_profiles").select("*").maybeSingle()),
   });
 
-export const contactsQuery = () =>
+export const autoReplyQuery = () =>
   queryOptions({
-    queryKey: ["contacts"],
+    queryKey: ["auto_reply"],
     queryFn: async () =>
-      unwrap<Contact[]>(
+      check(await supabase.from("auto_reply_configs").select("*").maybeSingle()),
+  });
+
+export const leadsQuery = () =>
+  queryOptions({
+    queryKey: ["leads"],
+    queryFn: async () =>
+      check(
         await supabase
-          .from("contacts")
+          .from("leads")
           .select("*")
-          .order("recovery_score", { ascending: false })
-          .limit(500),
-      ),
-  });
-
-export const policiesQuery = () =>
-  queryOptions({
-    queryKey: ["policies"],
-    queryFn: async () =>
-      unwrap<(Policy & { contacts: { full_name: string } | null })[]>(
-        await supabase
-          .from("policies")
-          .select("*, contacts(full_name)")
-          .order("created_at", { ascending: false })
-          .limit(500),
-      ),
-  });
-
-export const paymentsQuery = () =>
-  queryOptions({
-    queryKey: ["payments"],
-    queryFn: async () =>
-      unwrap<(Payment & { contacts: { full_name: string } | null })[]>(
-        await supabase
-          .from("payments")
-          .select("*, contacts(full_name)")
-          .order("created_at", { ascending: false })
-          .limit(500),
-      ),
-  });
-
-export const conversationsQuery = () =>
-  queryOptions({
-    queryKey: ["conversations"],
-    queryFn: async () =>
-      unwrap<(Conversation & { contacts: { full_name: string; phone: string | null } | null })[]>(
-        await supabase
-          .from("conversations")
-          .select("*, contacts(full_name, phone)")
           .order("last_message_at", { ascending: false })
-          .limit(200),
+          .limit(300),
       ),
   });
 
-export const messagesQuery = (conversationId: string | undefined) =>
+export const leadQuery = (id: string) =>
   queryOptions({
-    queryKey: ["messages", conversationId],
-    enabled: Boolean(conversationId),
+    queryKey: ["lead", id],
+    queryFn: async () => check(await supabase.from("leads").select("*").eq("id", id).maybeSingle()),
+  });
+
+export const messagesQuery = (leadId: string) =>
+  queryOptions({
+    queryKey: ["messages", leadId],
     queryFn: async () =>
-      unwrap<Message[]>(
+      check(
         await supabase
-          .from("messages")
+          .from("conversation_messages")
           .select("*")
-          .eq("conversation_id", conversationId!)
-          .order("created_at", { ascending: true }),
+          .eq("lead_id", leadId)
+          .order("created_at", { ascending: true })
+          .limit(500),
       ),
   });
 
-export const signalsQuery = () =>
-  queryOptions({
-    queryKey: ["demand_signals"],
-    queryFn: async () =>
-      unwrap<DemandSignal[]>(
-        await supabase
-          .from("demand_signals")
-          .select("*")
-          .order("frequency", { ascending: false }),
-      ),
-  });
+export const needsReply = (lead: Lead) =>
+  lead.status === "new" && lead.first_response_at === null;
 
-export const opportunitiesQuery = () =>
-  queryOptions({
-    queryKey: ["content_opportunities"],
-    queryFn: async () =>
-      unwrap<ContentOpportunity[]>(
-        await supabase
-          .from("content_opportunities")
-          .select("*")
-          .order("occurrences", { ascending: false }),
-      ),
-  });
-
-export const importsQuery = () =>
-  queryOptions({
-    queryKey: ["imports"],
-    queryFn: async () =>
-      unwrap<ImportRow[]>(
-        await supabase.from("imports").select("*").order("created_at", { ascending: false }),
-      ),
-  });
-
-export const leakageQuery = () =>
-  queryOptions({
-    queryKey: ["leakage"],
-    queryFn: async () =>
-      unwrap<LeakageRecord[]>(
-        await supabase
-          .from("leakage_records")
-          .select("*")
-          .order("amount_cents", { ascending: false }),
-      ),
-  });
-
-export const integrationsQuery = () =>
-  queryOptions({
-    queryKey: ["integrations"],
-    queryFn: async () =>
-      unwrap<Integration[]>(
-        await supabase.from("integrations").select("*").order("provider", { ascending: true }),
-      ),
-  });
+/** Queue an outbound WhatsApp message: stored message + pending action for the external connector. */
+export async function queueMessage(opts: {
+  leadId: string;
+  phone: string;
+  body: string;
+  actionType?: "send_message" | "send_quote" | "send_review_request";
+  extra?: Record<string, unknown>;
+}) {
+  const msg = check(
+    await supabase
+      .from("conversation_messages")
+      .insert({ lead_id: opts.leadId, direction: "outbound", sender: "agent", body: opts.body })
+      .select("id")
+      .single(),
+  );
+  check(
+    await supabase.from("pending_actions").insert({
+      action_type: opts.actionType ?? "send_message",
+      lead_id: opts.leadId,
+      message_id: msg.id,
+      payload: { to: opts.phone, body: opts.body, ...(opts.extra ?? {}) },
+    }),
+  );
+  return msg.id;
+}
