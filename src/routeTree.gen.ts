@@ -18,6 +18,7 @@ import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authe
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellInboxRouteImport } from './routes/_authenticated/_shell/inbox'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
+import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -66,6 +67,11 @@ const AuthenticatedShellSettingsRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
+const ApiPublicSiteLeadRoute = ApiPublicSiteLeadRouteImport.update({
+  id: '/api/public/site-lead',
+  path: '/api/public/site-lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp/webhook',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
+  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
+  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesById {
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/inbox': typeof AuthenticatedShellInboxRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
+  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inbox'
     | '/settings'
+    | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inbox'
     | '/settings'
+    | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
   id:
     | '__root__'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/inbox'
     | '/_authenticated/_shell/settings'
+    | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
 
@@ -213,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellSettingsRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
+    '/api/public/site-lead': {
+      id: '/api/public/site-lead'
+      path: '/api/public/site-lead'
+      fullPath: '/api/public/site-lead'
+      preLoaderRoute: typeof ApiPublicSiteLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/whatsapp/webhook': {
       id: '/api/public/whatsapp/webhook'
       path: '/api/public/whatsapp/webhook'
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }
 export const routeTree = rootRouteImport
