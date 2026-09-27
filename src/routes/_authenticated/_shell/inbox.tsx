@@ -218,7 +218,7 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
   }
 
   async function setStatus(status: string) {
-    const { error } = await supabase.from("leads").update({ status, updated_at: new Date().toISOString() }).eq("id", lead.id);
+    const { error } = await supabase.from("leads").update({ status: status as LeadStatus, updated_at: new Date().toISOString() }).eq("id", lead.id);
     if (error) { toast.error("Could not update status"); return; }
     await supabase.from("lead_events").insert({ tenant_id: tenantId, lead_id: lead.id, type: "status_changed", payload: { status } });
     qc.invalidateQueries({ queryKey: ["conversations"] });

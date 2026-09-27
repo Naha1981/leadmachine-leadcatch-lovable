@@ -53,8 +53,10 @@ function Dashboard() {
       const diffs: number[] = [];
       for (const m of msgs.data ?? []) {
         const t = new Date(m.created_at).getTime();
-        if (m.direction === "inbound") { if (!pending.has(m.conversation_id)) pending.set(m.conversation_id, t); }
-        else if (pending.has(m.conversation_id)) { diffs.push(t - pending.get(m.conversation_id)!); pending.delete(m.conversation_id); }
+        const cid = m.conversation_id;
+        if (!cid) continue;
+        if (m.direction === "inbound") { if (!pending.has(cid)) pending.set(cid, t); }
+        else if (pending.has(cid)) { diffs.push(t - pending.get(cid)!); pending.delete(cid); }
       }
       const avg = diffs.length ? diffs.reduce((a, b) => a + b, 0) / diffs.length / 1000 : null;
       return { newLeads: newLeads.count ?? 0, unanswered: unanswered.count ?? 0, events: events.data ?? [], avg };
