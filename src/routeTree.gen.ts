@@ -12,17 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
-import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticated/contacts'
-import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedDemandRouteImport } from './routes/_authenticated/demand'
-import { Route as AuthenticatedImportsRouteImport } from './routes/_authenticated/imports'
-import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
-import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
-import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
-import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authenticated/_shell/route'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authenticated/_shell/auto-reply'
+import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
+import { Route as AuthenticatedShellInboxRouteImport } from './routes/_authenticated/_shell/inbox'
+import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
+import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,164 +34,118 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
-  id: '/campaigns',
-  path: '/campaigns',
+const AuthenticatedShellRouteRoute = AuthenticatedShellRouteRouteImport.update({
+  id: '/_shell',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedContactsRoute = AuthenticatedContactsRouteImport.update({
-  id: '/contacts',
-  path: '/contacts',
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConversationsRoute =
-  AuthenticatedConversationsRouteImport.update({
-    id: '/conversations',
-    path: '/conversations',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const AuthenticatedShellAutoReplyRoute =
+  AuthenticatedShellAutoReplyRouteImport.update({
+    id: '/auto-reply',
+    path: '/auto-reply',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDemandRoute = AuthenticatedDemandRouteImport.update({
-  id: '/demand',
-  path: '/demand',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedImportsRoute = AuthenticatedImportsRouteImport.update({
-  id: '/imports',
-  path: '/imports',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedIntegrationsRoute =
-  AuthenticatedIntegrationsRouteImport.update({
-    id: '/integrations',
-    path: '/integrations',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const AuthenticatedShellDashboardRoute =
+  AuthenticatedShellDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
-const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
-  id: '/payments',
-  path: '/payments',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const AuthenticatedShellInboxRoute = AuthenticatedShellInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AuthenticatedShellRouteRoute,
 } as any)
-const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
-  id: '/policies',
-  path: '/policies',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedShellSettingsRoute =
+  AuthenticatedShellSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
+const ApiPublicWhatsappWebhookRoute =
+  ApiPublicWhatsappWebhookRouteImport.update({
+    id: '/api/public/whatsapp/webhook',
+    path: '/api/public/whatsapp/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/campaigns': typeof AuthenticatedCampaignsRoute
-  '/contacts': typeof AuthenticatedContactsRoute
-  '/conversations': typeof AuthenticatedConversationsRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/demand': typeof AuthenticatedDemandRoute
-  '/imports': typeof AuthenticatedImportsRoute
-  '/integrations': typeof AuthenticatedIntegrationsRoute
-  '/payments': typeof AuthenticatedPaymentsRoute
-  '/policies': typeof AuthenticatedPoliciesRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/dashboard': typeof AuthenticatedShellDashboardRoute
+  '/inbox': typeof AuthenticatedShellInboxRoute
+  '/settings': typeof AuthenticatedShellSettingsRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/campaigns': typeof AuthenticatedCampaignsRoute
-  '/contacts': typeof AuthenticatedContactsRoute
-  '/conversations': typeof AuthenticatedConversationsRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/demand': typeof AuthenticatedDemandRoute
-  '/imports': typeof AuthenticatedImportsRoute
-  '/integrations': typeof AuthenticatedIntegrationsRoute
-  '/payments': typeof AuthenticatedPaymentsRoute
-  '/policies': typeof AuthenticatedPoliciesRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/dashboard': typeof AuthenticatedShellDashboardRoute
+  '/inbox': typeof AuthenticatedShellInboxRoute
+  '/settings': typeof AuthenticatedShellSettingsRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
-  '/_authenticated/contacts': typeof AuthenticatedContactsRoute
-  '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/demand': typeof AuthenticatedDemandRoute
-  '/_authenticated/imports': typeof AuthenticatedImportsRoute
-  '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
-  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
-  '/_authenticated/policies': typeof AuthenticatedPoliciesRoute
-  '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/_shell/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
+  '/_authenticated/_shell/inbox': typeof AuthenticatedShellInboxRoute
+  '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/campaigns'
-    | '/contacts'
-    | '/conversations'
+    | '/onboarding'
+    | '/auto-reply'
     | '/dashboard'
-    | '/demand'
-    | '/imports'
-    | '/integrations'
-    | '/payments'
-    | '/policies'
-    | '/reports'
+    | '/inbox'
     | '/settings'
+    | '/api/public/whatsapp/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/campaigns'
-    | '/contacts'
-    | '/conversations'
+    | '/onboarding'
+    | '/auto-reply'
     | '/dashboard'
-    | '/demand'
-    | '/imports'
-    | '/integrations'
-    | '/payments'
-    | '/policies'
-    | '/reports'
+    | '/inbox'
     | '/settings'
+    | '/api/public/whatsapp/webhook'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/campaigns'
-    | '/_authenticated/contacts'
-    | '/_authenticated/conversations'
-    | '/_authenticated/dashboard'
-    | '/_authenticated/demand'
-    | '/_authenticated/imports'
-    | '/_authenticated/integrations'
-    | '/_authenticated/payments'
-    | '/_authenticated/policies'
-    | '/_authenticated/reports'
-    | '/_authenticated/settings'
+    | '/_authenticated/_shell'
+    | '/_authenticated/onboarding'
+    | '/_authenticated/_shell/auto-reply'
+    | '/_authenticated/_shell/dashboard'
+    | '/_authenticated/_shell/inbox'
+    | '/_authenticated/_shell/settings'
+    | '/api/public/whatsapp/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -221,112 +171,86 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/campaigns': {
-      id: '/_authenticated/campaigns'
-      path: '/campaigns'
-      fullPath: '/campaigns'
-      preLoaderRoute: typeof AuthenticatedCampaignsRouteImport
+    '/_authenticated/_shell': {
+      id: '/_authenticated/_shell'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedShellRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/contacts': {
-      id: '/_authenticated/contacts'
-      path: '/contacts'
-      fullPath: '/contacts'
-      preLoaderRoute: typeof AuthenticatedContactsRouteImport
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/conversations': {
-      id: '/_authenticated/conversations'
-      path: '/conversations'
-      fullPath: '/conversations'
-      preLoaderRoute: typeof AuthenticatedConversationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/_authenticated/_shell/auto-reply': {
+      id: '/_authenticated/_shell/auto-reply'
+      path: '/auto-reply'
+      fullPath: '/auto-reply'
+      preLoaderRoute: typeof AuthenticatedShellAutoReplyRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
+    '/_authenticated/_shell/dashboard': {
+      id: '/_authenticated/_shell/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof AuthenticatedShellDashboardRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
     }
-    '/_authenticated/demand': {
-      id: '/_authenticated/demand'
-      path: '/demand'
-      fullPath: '/demand'
-      preLoaderRoute: typeof AuthenticatedDemandRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/_authenticated/_shell/inbox': {
+      id: '/_authenticated/_shell/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AuthenticatedShellInboxRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
     }
-    '/_authenticated/imports': {
-      id: '/_authenticated/imports'
-      path: '/imports'
-      fullPath: '/imports'
-      preLoaderRoute: typeof AuthenticatedImportsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/integrations': {
-      id: '/_authenticated/integrations'
-      path: '/integrations'
-      fullPath: '/integrations'
-      preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/payments': {
-      id: '/_authenticated/payments'
-      path: '/payments'
-      fullPath: '/payments'
-      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/policies': {
-      id: '/_authenticated/policies'
-      path: '/policies'
-      fullPath: '/policies'
-      preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/reports': {
-      id: '/_authenticated/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AuthenticatedReportsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
+    '/_authenticated/_shell/settings': {
+      id: '/_authenticated/_shell/settings'
       path: '/settings'
       fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof AuthenticatedShellSettingsRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
+    '/api/public/whatsapp/webhook': {
+      id: '/api/public/whatsapp/webhook'
+      path: '/api/public/whatsapp/webhook'
+      fullPath: '/api/public/whatsapp/webhook'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
+interface AuthenticatedShellRouteRouteChildren {
+  AuthenticatedShellAutoReplyRoute: typeof AuthenticatedShellAutoReplyRoute
+  AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
+  AuthenticatedShellInboxRoute: typeof AuthenticatedShellInboxRoute
+  AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
+}
+
+const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren =
+  {
+    AuthenticatedShellAutoReplyRoute: AuthenticatedShellAutoReplyRoute,
+    AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
+    AuthenticatedShellInboxRoute: AuthenticatedShellInboxRoute,
+    AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
+  }
+
+const AuthenticatedShellRouteRouteWithChildren =
+  AuthenticatedShellRouteRoute._addFileChildren(
+    AuthenticatedShellRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
-  AuthenticatedContactsRoute: typeof AuthenticatedContactsRoute
-  AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDemandRoute: typeof AuthenticatedDemandRoute
-  AuthenticatedImportsRoute: typeof AuthenticatedImportsRoute
-  AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
-  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
-  AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRoute
-  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedShellRouteRoute: typeof AuthenticatedShellRouteRouteWithChildren
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
-  AuthenticatedContactsRoute: AuthenticatedContactsRoute,
-  AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedDemandRoute: AuthenticatedDemandRoute,
-  AuthenticatedImportsRoute: AuthenticatedImportsRoute,
-  AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
-  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
-  AuthenticatedPoliciesRoute: AuthenticatedPoliciesRoute,
-  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedShellRouteRoute: AuthenticatedShellRouteRouteWithChildren,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -336,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
