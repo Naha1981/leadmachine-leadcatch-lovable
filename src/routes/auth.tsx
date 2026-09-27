@@ -1,207 +1,131 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import { toast } from "sonner";
-
-import { Logo } from "@/components/brand/Logo";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
-
-const credentialsSchema = z.object({
-  email: z.string().trim().email("Enter a valid email address").max(255),
-  password: z.string().min(8, "Password must be at least 8 characters").max(72),
-  fullName: z.string().trim().min(2, "Enter your full name").max(80).optional(),
-});
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search["redirect"] === "string" ? (search["redirect"] as string) : undefined,
-  }),
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Sign in — LeadCatch SA" },
-      {
-        name: "description",
-        content: "Sign in to LeadCatch SA to see and answer your WhatsApp leads.",
-      },
+      { name: "description", content: "Sign in or create your LeadCatch SA account." },
       { property: "og:title", content: "Sign in — LeadCatch SA" },
-      {
-        property: "og:description",
-        content: "Never miss a WhatsApp lead again.",
-      },
+      { property: "og:description", content: "Sign in or create your LeadCatch SA account." },
     ],
   }),
   component: AuthPage,
 });
 
-function safePath(path: string | undefined): string {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) return "/dashboard";
-  return path;
-}
-
 function AuthPage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/auth" });
-  const { session } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [pendingConfirm, setPendingConfirm] = useState(false);
-
-  const target = safePath(search.redirect);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (session) void navigate({ to: target });
-  }, [session, navigate, target]);
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>, mode: "signin" | "signup") {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const parsed = credentialsSchema.safeParse({
-      email: form.get("email"),
-      password: form.get("password"),
-      ...(mode === "signup" ? { fullName: form.get("fullName") } : {}),
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/dashboard" });
     });
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Check your details");
-      return;
-    }
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s) navigate({ to: "/dashboard" });
+    });
+    return () => data.subscription.unsubscribe();
+  }, [navigate]);
 
-    setLoading(true);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: parsed.data.email,
-          password: parsed.data.password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Welcome back");
       } else {
         const { data, error } = await supabase.auth.signUp({
-          email: parsed.data.email,
-          password: parsed.data.password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: parsed.data.fullName },
-          },
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        if (!data.session) {
-          setPendingConfirm(true);
-          toast.success("Check your email to confirm your account");
-        }
+        if (!data.session) toast.success("Check your email to confirm your account.");
       }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Authentication failed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(false);
-      toast.error("Google sign-in failed. Try email instead.");
-      return;
-    }
-    if (result.redirected) return;
-    void navigate({ to: target });
+  async function google() {
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (r.error) toast.error("Google sign-in failed");
   }
 
   return (
-    <main className="flex bg-background min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-          <Logo />
-        </div>
-        <div className="rounded-lg border border-border bg-card p-6">
-          <h1 className="text-center text-xl font-bold">Sign in to your inbox</h1>
-          <p className="mt-1 text-center text-sm text-muted-foreground">
-            Never miss a WhatsApp lead again
-          </p>
-
-          {pendingConfirm ? (
-            <p className="mt-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm">
-              We sent you a confirmation link. Confirm your email, then sign in.
-            </p>
-          ) : null}
-
-          <Tabs defaultValue="signin" className="mt-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Create account</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin">
-              <form className="space-y-4" onSubmit={(e) => handleSubmit(e, "signin")}>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input id="signin-email" name="email" type="email" autoComplete="email" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input
-                    id="signin-password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  Sign in
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form className="space-y-4" onSubmit={(e) => handleSubmit(e, "signup")}>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full name</Label>
-                  <Input id="signup-name" name="fullName" autoComplete="name" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input id="signup-email" name="email" type="email" autoComplete="email" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    name="password"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  Create account
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or
-            <span className="h-px flex-1 bg-border" />
-          </div>
-
-          <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={loading}>
-            Continue with Google
-          </Button>
-        </div>
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          LeadCatch SA · For South African service businesses
+    <div className="flex min-h-dvh flex-col px-5 py-8">
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
+        <Logo />
+        <h1 className="mt-10 text-2xl font-semibold tracking-tight">
+          {mode === "signin" ? "Sign in" : "Create account"}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {mode === "signin" ? "Welcome back." : "Takes under a minute."}
         </p>
+
+        <Button variant="outline" className="mt-8 h-11 w-full rounded-xl" onClick={google} type="button">
+          <GoogleIcon /> Continue with Google
+        </Button>
+
+        <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-xl" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              required
+              minLength={8}
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-11 rounded-xl"
+            />
+          </div>
+          <Button type="submit" disabled={busy} className="h-11 w-full rounded-xl font-semibold">
+            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+          </Button>
+        </form>
+
+        <button
+          className="mt-5 text-sm text-muted-foreground hover:text-foreground"
+          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+        >
+          {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
+        </button>
       </div>
-    </main>
+      <p className="mx-auto mt-8 max-w-sm text-center text-xs leading-relaxed text-muted-foreground">
+        Your data is processed in line with the Protection of Personal Information Act (POPIA). We only store what's needed to manage your leads.
+      </p>
+    </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.5 12 2.5 6.8 2.5 2.6 6.7 2.6 12s4.2 9.5 9.4 9.5c5.4 0 9-3.8 9-9.2 0-.6-.1-1.1-.2-1.6H12Z" />
+    </svg>
   );
 }
