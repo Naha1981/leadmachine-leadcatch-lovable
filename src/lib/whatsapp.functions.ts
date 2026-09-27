@@ -100,11 +100,12 @@ export const sendMessage = createServerFn({ method: "POST" })
       .select("id, lead_id, leads(phone, status)")
       .eq("id", data.conversationId)
       .single();
-    if (error || !convo) throw new Error("Conversation not found");
+    if (error || !convo || !convo.lead_id) throw new Error("Conversation not found");
+    const leadId = convo.lead_id;
     const lead = (convo as any).leads;
     const { data: msg } = await sb
       .from("conversation_messages")
-      .insert({ tenant_id: tenantId, conversation_id: convo.id, direction: "outbound", body: data.body, delivery_status: "pending" })
+      .insert({ tenant_id: tenantId, conversation_id: convo.id, lead_id: leadId, direction: "outbound", body: data.body, sender: "agent", delivery_status: "pending" })
       .select("id")
       .single();
     let status = "failed";
@@ -121,8 +122,8 @@ export const sendMessage = createServerFn({ method: "POST" })
     const now = new Date().toISOString();
     await sb.from("conversations").update({ last_message_preview: data.body, last_message_at: now, unread_count: 0 }).eq("id", convo.id);
     if (status === "sent") {
-      if (lead.status === "new") await sb.from("leads").update({ status: "replied", updated_at: now }).eq("id", convo.lead_id);
-      await sb.from("lead_events").insert({ tenant_id: tenantId, lead_id: convo.lead_id, type: "reply_sent", payload: { manual: true } });
+      if (lead.status === "new") await sb.from("leads").update({ status: "replied", updated_at: now }).eq("id", leadId);
+      await sb.from("lead_events").insert({ tenant_id: tenantId, lead_id: leadId, type: "reply_sent", payload: { manual: true } });
     }
     return { status, error: errorMsg };
   });

@@ -10,7 +10,7 @@ import { sendMessage } from "@/lib/whatsapp.functions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { LEAD_STATUSES, StatusBadge, displayPhone, timeAgo } from "@/components/ui-bits";
+import { LEAD_STATUSES, type LeadStatus, StatusBadge, displayPhone, timeAgo } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/_shell/inbox")({
   head: () => ({
