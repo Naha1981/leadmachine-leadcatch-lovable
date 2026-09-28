@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Inbox, MessageSquareReply, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, Inbox, MessageSquareReply, Settings, Menu, Globe, Sparkles } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -12,7 +12,9 @@ export const Route = createFileRoute("/_authenticated/_shell")({
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/lead-intent", label: "Lead Intent", icon: Sparkles },
   { to: "/auto-reply", label: "Auto-Reply", icon: MessageSquareReply },
+  { to: "/website", label: "Business Page", icon: Globe },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
