@@ -129,32 +129,21 @@ export const scoreLead = createServerFn({ method: "POST" })
       .eq("tenant_id", lead.tenant_id)
       .maybeSingle();
 
-    const raw = await chat(
-      [
-        {
-          role: "system",
-          content:
-            "You qualify inbound WhatsApp leads for a South African service business. " +
-            "Reply with JSON only: {\"score\": 1-10, \"temperature\": \"hot\"|\"warm\"|\"cold\", \"summary\": \"one short sentence\"}. " +
-            "Hot = ready to buy or urgent, warm = interested but undecided, cold = browsing, spam or irrelevant.",
-        },
-        {
-          role: "user",
-          content: `Business: ${profile?.business_name || "Unknown"} (${profile?.industry || profile?.trade || "services"}). Services: ${profile?.services || "n/a"}.\n\nConversation:\n${msgs}`,
-        },
-      ],
-      200,
-    );
-    const parsed = extractJson(raw);
-    const score = Math.min(10, Math.max(1, Math.round(Number(parsed.score) || 1)));
-    const temperature = ["hot", "warm", "cold"].includes(parsed.temperature) ? parsed.temperature : score >= 8 ? "hot" : score >= 5 ? "warm" : "cold";
-    const summary = String(parsed.summary ?? "").slice(0, 300);
+    const raw = await chat([
+      { role: "system", content: INTENT_SYSTEM },
+      {
+        role: "user",
+        content: `Business: ${profile?.business_name || "Unknown"} (${profile?.industry || profile?.trade || "services"}). Services: ${profile?.services || "n/a"}.\n\nConversation:\n${msgs}`,
+      },
+    ]);
+    const r = normaliseIntent(extractJson(raw));
+    const stored = [r.summary, r.followUp.length ? `Next: ${r.followUp.join("; ")}` : ""].filter(Boolean).join(" ").slice(0, 600);
 
     await sb
       .from("leads")
-      .update({ ai_score: score, ai_temperature: temperature, ai_summary: summary, ai_scored_at: new Date().toISOString() })
+      .update({ ai_score: r.score, ai_temperature: r.temperature, ai_summary: stored, ai_scored_at: new Date().toISOString() })
       .eq("id", lead.id);
-    return { score, temperature, summary };
+    return r;
   });
 
 /** Generate landing-page copy for the tenant's public business site. */
