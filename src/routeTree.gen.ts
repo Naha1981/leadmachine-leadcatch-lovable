@@ -14,10 +14,13 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authenticated/_shell/route'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authenticated/_shell/auto-reply'
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellInboxRouteImport } from './routes/_authenticated/_shell/inbox'
+import { Route as AuthenticatedShellLeadIntentRouteImport } from './routes/_authenticated/_shell/lead-intent'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
+import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authenticated/_shell/website'
 import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
@@ -44,6 +47,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const SSlugRoute = SSlugRouteImport.update({
+  id: '/s/$slug',
+  path: '/s/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedShellAutoReplyRoute =
   AuthenticatedShellAutoReplyRouteImport.update({
     id: '/auto-reply',
@@ -61,10 +69,22 @@ const AuthenticatedShellInboxRoute = AuthenticatedShellInboxRouteImport.update({
   path: '/inbox',
   getParentRoute: () => AuthenticatedShellRouteRoute,
 } as any)
+const AuthenticatedShellLeadIntentRoute =
+  AuthenticatedShellLeadIntentRouteImport.update({
+    id: '/lead-intent',
+    path: '/lead-intent',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
 const AuthenticatedShellSettingsRoute =
   AuthenticatedShellSettingsRouteImport.update({
     id: '/settings',
     path: '/settings',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
+const AuthenticatedShellWebsiteRoute =
+  AuthenticatedShellWebsiteRouteImport.update({
+    id: '/website',
+    path: '/website',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
 const ApiPublicSiteLeadRoute = ApiPublicSiteLeadRouteImport.update({
@@ -83,10 +103,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/s/$slug': typeof SSlugRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
+  '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
+  '/website': typeof AuthenticatedShellWebsiteRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
@@ -94,10 +117,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/s/$slug': typeof SSlugRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
+  '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
+  '/website': typeof AuthenticatedShellWebsiteRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
@@ -108,10 +134,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/s/$slug': typeof SSlugRoute
   '/_authenticated/_shell/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/inbox': typeof AuthenticatedShellInboxRoute
+  '/_authenticated/_shell/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
+  '/_authenticated/_shell/website': typeof AuthenticatedShellWebsiteRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
@@ -121,10 +150,13 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/s/$slug'
     | '/auto-reply'
     | '/dashboard'
     | '/inbox'
+    | '/lead-intent'
     | '/settings'
+    | '/website'
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -132,10 +164,13 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/s/$slug'
     | '/auto-reply'
     | '/dashboard'
     | '/inbox'
+    | '/lead-intent'
     | '/settings'
+    | '/website'
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
   id:
@@ -145,10 +180,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
+    | '/s/$slug'
     | '/_authenticated/_shell/auto-reply'
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/inbox'
+    | '/_authenticated/_shell/lead-intent'
     | '/_authenticated/_shell/settings'
+    | '/_authenticated/_shell/website'
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
   fileRoutesById: FileRoutesById
@@ -157,6 +195,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  SSlugRoute: typeof SSlugRoute
   ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
@@ -198,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/s/$slug': {
+      id: '/s/$slug'
+      path: '/s/$slug'
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof SSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_shell/auto-reply': {
       id: '/_authenticated/_shell/auto-reply'
       path: '/auto-reply'
@@ -219,11 +265,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellInboxRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
+    '/_authenticated/_shell/lead-intent': {
+      id: '/_authenticated/_shell/lead-intent'
+      path: '/lead-intent'
+      fullPath: '/lead-intent'
+      preLoaderRoute: typeof AuthenticatedShellLeadIntentRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
     '/_authenticated/_shell/settings': {
       id: '/_authenticated/_shell/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedShellSettingsRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
+    '/_authenticated/_shell/website': {
+      id: '/_authenticated/_shell/website'
+      path: '/website'
+      fullPath: '/website'
+      preLoaderRoute: typeof AuthenticatedShellWebsiteRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
     '/api/public/site-lead': {
@@ -247,7 +307,9 @@ interface AuthenticatedShellRouteRouteChildren {
   AuthenticatedShellAutoReplyRoute: typeof AuthenticatedShellAutoReplyRoute
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellInboxRoute: typeof AuthenticatedShellInboxRoute
+  AuthenticatedShellLeadIntentRoute: typeof AuthenticatedShellLeadIntentRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
+  AuthenticatedShellWebsiteRoute: typeof AuthenticatedShellWebsiteRoute
 }
 
 const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren =
@@ -255,7 +317,9 @@ const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren
     AuthenticatedShellAutoReplyRoute: AuthenticatedShellAutoReplyRoute,
     AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
     AuthenticatedShellInboxRoute: AuthenticatedShellInboxRoute,
+    AuthenticatedShellLeadIntentRoute: AuthenticatedShellLeadIntentRoute,
     AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
+    AuthenticatedShellWebsiteRoute: AuthenticatedShellWebsiteRoute,
   }
 
 const AuthenticatedShellRouteRouteWithChildren =
@@ -280,6 +344,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  SSlugRoute: SSlugRoute,
   ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }
