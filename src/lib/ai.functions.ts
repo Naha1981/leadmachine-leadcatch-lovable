@@ -2,26 +2,98 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
+const GATEWAY = "https://ai.gateway.lovable.dev/v1/responses";
+const MODEL = "openai/gpt-6-astra";
 
-async function chat(messages: Array<{ role: string; content: string }>, maxTokens = 900): Promise<string> {
+/** Streams a Responses call through the Lovable AI Gateway and returns the final text. */
+async function chat(messages: Array<{ role: string; content: string }>, _maxTokens = 900): Promise<string> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI is not configured yet.");
   const res = await fetch(GATEWAY, {
     method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: MODEL, messages, max_tokens: maxTokens }),
+    headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: MODEL,
+      input: messages,
+      stream: true,
+      store: false,
+      reasoning: { effort: "low", summary: "auto" },
+      include: ["reasoning.encrypted_content"],
+    }),
   });
   if (res.status === 429) throw new Error("AI is busy right now. Please try again in a moment.");
   if (res.status === 402) throw new Error("AI credits have run out. Top up to keep using AI features.");
-  if (!res.ok) {
+  if (res.status === 403) throw new Error("AI access is currently blocked for this workspace.");
+  if (!res.ok || !res.body) {
     console.error("AI gateway error", res.status, await res.text().catch(() => ""));
     throw new Error("The AI service could not be reached.");
   }
-  const json: any = await res.json();
-  return json?.choices?.[0]?.message?.content ?? "";
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  let out = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i: number;
+    while ((i = buf.indexOf("\n")) >= 0) {
+      const line = buf.slice(0, i).trim();
+      buf = buf.slice(i + 1);
+      if (!line.startsWith("data:")) continue;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === "[DONE]") continue;
+      try {
+        const ev = JSON.parse(payload);
+        if (ev.type === "response.output_text.delta") out += ev.delta ?? "";
+        else if (ev.type === "response.failed" || ev.type === "error") throw new Error("The AI could not finish this request.");
+      } catch (e) {
+        if (e instanceof Error && e.message.startsWith("The AI")) throw e;
+      }
+    }
+  }
+  if (!out.trim()) throw new Error("The AI returned no answer. Please try again later.");
+  return out;
 }
+
+const INTENT_SYSTEM =
+  "You qualify inbound WhatsApp leads for a South African service business. Assess purchase intent. " +
+  'Reply with JSON only: {"score": 1-10, "temperature": "hot"|"warm"|"cold", "intent": "one short sentence on what they want and how ready they are", ' +
+  '"summary": "one short sentence", "follow_up": ["2-4 short, concrete next steps for the owner"]}. ' +
+  "Hot = ready to buy or urgent, warm = interested but undecided, cold = browsing, spam or irrelevant. South African English, no emojis.";
+
+function normaliseIntent(parsed: any) {
+  const score = Math.min(10, Math.max(1, Math.round(Number(parsed.score) || 1)));
+  const temperature: "hot" | "warm" | "cold" = ["hot", "warm", "cold"].includes(parsed.temperature)
+    ? parsed.temperature
+    : score >= 8 ? "hot" : score >= 5 ? "warm" : "cold";
+  return {
+    score,
+    temperature,
+    intent: String(parsed.intent ?? "").slice(0, 300),
+    summary: String(parsed.summary ?? "").slice(0, 300),
+    followUp: (Array.isArray(parsed.follow_up) ? parsed.follow_up : []).slice(0, 5).map((s: unknown) => String(s).slice(0, 200)),
+  };
+}
+
+/** Assess a pasted WhatsApp conversation (not tied to a saved lead). */
+export const analyzeConversation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ conversation: z.string().trim().min(10).max(12000) }).parse(d))
+  .handler(async ({ context, data }) => {
+    const { data: tenant } = await context.supabase.from("tenants").select("id").eq("owner_id", context.userId).maybeSingle();
+    const { data: profile } = tenant
+      ? await context.supabase.from("business_profiles").select("business_name, industry, services").eq("tenant_id", tenant.id).maybeSingle()
+      : { data: null };
+    const raw = await chat([
+      { role: "system", content: INTENT_SYSTEM },
+      {
+        role: "user",
+        content: `Business: ${profile?.business_name || "Unknown"} (${profile?.industry || "services"}). Services: ${profile?.services || "n/a"}.\n\nConversation:\n${data.conversation}`,
+      },
+    ]);
+    return normaliseIntent(extractJson(raw));
+  });
 
 function extractJson(raw: string): any {
   const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
