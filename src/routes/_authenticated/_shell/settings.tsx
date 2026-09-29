@@ -17,10 +17,10 @@ import { WhatsAppConnect } from "@/components/WhatsAppConnect";
 export const Route = createFileRoute("/_authenticated/_shell/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — LeadCatch SA" },
+      { title: "Settings — LeadMachine" },
       { name: "description", content: "Business profile, working hours, WhatsApp connection and account." },
-      { property: "og:title", content: "Settings — LeadCatch SA" },
-      { property: "og:description", content: "Manage your LeadCatch SA settings." },
+      { property: "og:title", content: "Settings — LeadMachine" },
+      { property: "og:description", content: "Manage your LeadMachine settings." },
     ],
   }),
   component: SettingsPage,

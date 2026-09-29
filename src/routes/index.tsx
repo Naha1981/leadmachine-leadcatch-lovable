@@ -5,9 +5,9 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "LeadCatch SA — Never miss another WhatsApp lead" },
+      { title: "LeadMachine — Never miss another WhatsApp lead" },
       { name: "description", content: "Every WhatsApp enquiry in one inbox, answered instantly, logged cleanly." },
-      { property: "og:title", content: "LeadCatch SA" },
+      { property: "og:title", content: "LeadMachine" },
       { property: "og:description", content: "Every WhatsApp enquiry in one inbox, answered instantly, logged cleanly." },
     ],
   }),

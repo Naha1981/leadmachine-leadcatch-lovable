@@ -17,7 +17,7 @@ export function Logo() {
     <span className="inline-flex items-center gap-2">
       <LogoMark />
       <span className="text-[15px] font-semibold tracking-tight text-foreground">
-        LeadCatch <span className="text-muted-foreground">SA</span>
+        LeadMachine <span className="text-muted-foreground">SA</span>
       </span>
     </span>
   );

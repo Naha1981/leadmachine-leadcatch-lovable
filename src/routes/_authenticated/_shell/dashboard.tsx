@@ -9,9 +9,9 @@ import { Card, PageHeader, timeAgo } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/_shell/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — LeadCatch SA" },
+      { title: "Dashboard — LeadMachine" },
       { name: "description", content: "Today's leads, unanswered enquiries and WhatsApp status at a glance." },
-      { property: "og:title", content: "Dashboard — LeadCatch SA" },
+      { property: "og:title", content: "Dashboard — LeadMachine" },
       { property: "og:description", content: "Today's leads at a glance." },
     ],
   }),

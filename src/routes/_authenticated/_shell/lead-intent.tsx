@@ -11,9 +11,9 @@ import { TemperatureBadge } from "@/components/TemperatureBadge";
 export const Route = createFileRoute("/_authenticated/_shell/lead-intent")({
   head: () => ({
     meta: [
-      { title: "Lead Intent — LeadCatch SA" },
+      { title: "Lead Intent — LeadMachine" },
       { name: "description", content: "Paste a WhatsApp chat and get an AI hot/warm/cold score with next steps." },
-      { property: "og:title", content: "Lead Intent — LeadCatch SA" },
+      { property: "og:title", content: "Lead Intent — LeadMachine" },
       { property: "og:description", content: "Paste a WhatsApp chat and get an AI hot/warm/cold score with next steps." },
     ],
   }),

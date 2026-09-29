@@ -26,7 +26,7 @@ export const connectWhatsApp = createServerFn({ method: "POST" })
     const webhookUrl = `${origin}/api/public/whatsapp/webhook`;
     const boot = await operatorRequest<{ waAccountId: string; status: string }>(tenantId, "/accounts/bootstrap", {
       method: "POST",
-      body: JSON.stringify({ label: "LeadCatch SA", appId: "leadcatch-sa", tenantId, webhookUrl }),
+      body: JSON.stringify({ label: "LeadMachine", appId: "leadcatch-sa", tenantId, webhookUrl }),
     });
     if (boot.status !== "connected") {
       await operatorRequest(tenantId, `/accounts/${encodeURIComponent(boot.waAccountId)}/connect`, { method: "POST" }).catch(() => null);

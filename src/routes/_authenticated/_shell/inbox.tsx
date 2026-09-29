@@ -15,9 +15,9 @@ import { LEAD_STATUSES, type LeadStatus, StatusBadge, displayPhone, timeAgo } fr
 export const Route = createFileRoute("/_authenticated/_shell/inbox")({
   head: () => ({
     meta: [
-      { title: "Inbox — LeadCatch SA" },
+      { title: "Inbox — LeadMachine" },
       { name: "description", content: "Every WhatsApp lead and conversation in one place." },
-      { property: "og:title", content: "Inbox — LeadCatch SA" },
+      { property: "og:title", content: "Inbox — LeadMachine" },
       { property: "og:description", content: "Every WhatsApp lead and conversation in one place." },
     ],
   }),

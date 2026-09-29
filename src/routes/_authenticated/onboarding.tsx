@@ -16,9 +16,9 @@ import type { WorkingHours } from "@/lib/autoreply";
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
-      { title: "Set up — LeadCatch SA" },
+      { title: "Set up — LeadMachine" },
       { name: "description", content: "Set up your business in three short steps." },
-      { property: "og:title", content: "Set up — LeadCatch SA" },
+      { property: "og:title", content: "Set up — LeadMachine" },
       { property: "og:description", content: "Set up your business in three short steps." },
     ],
   }),
