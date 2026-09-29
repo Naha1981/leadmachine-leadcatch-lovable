@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles } from "lucide-react";
-import { analyzeConversation } from "@/lib/ai.functions";
+import { Sparkles, PenLine, Copy } from "lucide-react";
+import { toast } from "sonner";
+import { analyzeConversation, draftReply } from "@/lib/ai.functions";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/components/ui-bits";
@@ -28,6 +29,16 @@ function LeadIntentPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [res, setRes] = useState<Result | null>(null);
+  const draft = useServerFn(draftReply);
+  const [drafting, setDrafting] = useState(false);
+  const [reply, setReply] = useState<{ reply: string; reasoning: string; temperature: string; score: number } | null>(null);
+
+  async function runDraft() {
+    setDrafting(true); setErr(null); setReply(null);
+    try { setReply(await draft({ data: { conversation: text } })); }
+    catch (e) { setErr(e instanceof Error ? e.message : "Could not draft a reply."); }
+    finally { setDrafting(false); }
+  }
 
   async function run() {
     setBusy(true); setErr(null); setRes(null);
@@ -38,7 +49,7 @@ function LeadIntentPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-5 md:p-8">
-      <PageHeader title="Lead Intent" subtitle="Paste a WhatsApp conversation to see how ready the customer is to buy." />
+      <PageHeader title="Lead Intent" subtitle="Paste a WhatsApp conversation to score how ready the customer is to buy, or draft a personal reply." />
       <Card className="space-y-3">
         <Textarea
           value={text}
@@ -50,12 +61,30 @@ function LeadIntentPage() {
         />
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">{text.length}/12000</span>
-          <Button onClick={run} disabled={busy || text.trim().length < 10} className="rounded-xl">
-            <Sparkles className="mr-2 h-4 w-4" />{busy ? "Analysing…" : "Analyse"}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={runDraft} disabled={drafting || text.trim().length < 10} className="rounded-xl">
+              <PenLine className="mr-2 h-4 w-4" />{drafting ? "Writing…" : "Draft reply"}
+            </Button>
+            <Button onClick={run} disabled={busy || text.trim().length < 10} className="rounded-xl">
+              <Sparkles className="mr-2 h-4 w-4" />{busy ? "Analysing…" : "Analyse"}
+            </Button>
+          </div>
         </div>
         {err && <p className="text-sm text-destructive">{err}</p>}
       </Card>
+      {reply && (
+        <Card className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium">Suggested reply</p>
+            <TemperatureBadge temperature={reply.temperature} />
+          </div>
+          <p className="whitespace-pre-wrap rounded-xl bg-secondary p-3 text-sm text-secondary-foreground">{reply.reply}</p>
+          {reply.reasoning && <p className="text-xs text-muted-foreground">{reply.reasoning}</p>}
+          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => { navigator.clipboard.writeText(reply.reply); toast.success("Copied"); }}>
+            <Copy className="mr-2 h-4 w-4" />Copy reply
+          </Button>
+        </Card>
+      )}
       {res && (
         <Card className="space-y-4">
           <div className="flex items-center gap-3">
