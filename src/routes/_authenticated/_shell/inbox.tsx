@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Search, Send, Bot } from "lucide-react";
+import { ArrowLeft, Search, Send, Bot, Gauge, PenLine } from "lucide-react";
+import { scoreLead, draftReply } from "@/lib/ai.functions";
+import { TemperatureBadge } from "@/components/TemperatureBadge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/lib/workspace";
@@ -30,7 +32,7 @@ type Convo = {
   last_message_preview: string | null;
   last_message_at: string;
   unread_count: number;
-  leads: { id: string; name: string | null; phone: string; status: string } | null;
+  leads: { id: string; name: string | null; phone: string; status: string; ai_score: number | null; ai_temperature: string | null; ai_summary: string | null } | null;
 };
 
 function InboxPage() {
@@ -46,7 +48,7 @@ function InboxPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("conversations")
-        .select("id, lead_id, last_message_preview, last_message_at, unread_count, leads(id, name, phone, status)")
+        .select("id, lead_id, last_message_preview, last_message_at, unread_count, leads(id, name, phone, status, ai_score, ai_temperature, ai_summary)")
         .order("last_message_at", { ascending: false })
         .limit(200);
       if (error) throw error;
@@ -125,7 +127,10 @@ function InboxPage() {
                         <span className={`truncate text-sm ${c.unread_count ? "font-semibold" : "font-medium"}`}>
                           {c.leads?.name || displayPhone(c.leads?.phone ?? "")}
                         </span>
-                        <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(c.last_message_at)}</span>
+                        <span className="flex shrink-0 items-center gap-1.5">
+                          {c.leads?.ai_temperature && <TemperatureBadge temperature={c.leads.ai_temperature} />}
+                          <span className="text-[11px] text-muted-foreground">{timeAgo(c.last_message_at)}</span>
+                        </span>
                       </div>
                       <div className="mt-1 flex items-center justify-between gap-2">
                         <span className={`truncate text-[13px] ${c.unread_count ? "text-foreground" : "text-muted-foreground"}`}>{c.last_message_preview}</span>
@@ -165,6 +170,10 @@ type Msg = { id: string; direction: string; body: string; is_auto: boolean; deli
 function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; onBack: () => void }) {
   const qc = useQueryClient();
   const send = useServerFn(sendMessage);
+  const score = useServerFn(scoreLead);
+  const draft = useServerFn(draftReply);
+  const [scoring, setScoring] = useState(false);
+  const [drafting, setDrafting] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
@@ -217,6 +226,28 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
     }
   }
 
+  async function runScore() {
+    setScoring(true);
+    try {
+      const r = await score({ data: { leadId: lead.id } });
+      toast.success(`Scored ${r.score}/10 — ${r.temperature}`);
+      qc.invalidateQueries({ queryKey: ["conversations"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not score this lead");
+    } finally { setScoring(false); }
+  }
+
+  async function runDraft() {
+    setDrafting(true);
+    try {
+      const r = await draft({ data: { leadId: lead.id } });
+      setText(r.reply);
+      toast.success("Draft ready — check it, then send");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not draft a reply");
+    } finally { setDrafting(false); }
+  }
+
   async function setStatus(status: string) {
     const { error } = await supabase.from("leads").update({ status: status as LeadStatus, updated_at: new Date().toISOString() }).eq("id", lead.id);
     if (error) { toast.error("Could not update status"); return; }
@@ -233,6 +264,15 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
           <p className="truncate text-sm font-semibold">{lead.name || displayPhone(lead.phone)}</p>
           <p className="text-xs text-muted-foreground">{displayPhone(lead.phone)}</p>
         </div>
+        {lead.ai_temperature && lead.ai_score != null && (
+          <span className="hidden items-center gap-1.5 sm:flex">
+            <span className="text-sm font-semibold">{lead.ai_score}/10</span>
+            <TemperatureBadge temperature={lead.ai_temperature} />
+          </span>
+        )}
+        <Button variant="outline" size="sm" onClick={runScore} disabled={scoring} className="h-9 rounded-xl">
+          <Gauge className="mr-1.5 h-4 w-4" />{scoring ? "Scoring…" : lead.ai_score != null ? "Re-score" : "Score with AI"}
+        </Button>
         <select
           value={lead.status}
           onChange={(e) => setStatus(e.target.value)}
@@ -243,6 +283,11 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
         </select>
       </header>
 
+      {lead.ai_summary && (
+        <div className="border-b border-border bg-card px-4 py-2.5 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">AI: </span>{lead.ai_summary}
+        </div>
+      )}
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-5">
         {msgs.map((m) => (
           <div key={m.id} className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}>
@@ -260,6 +305,11 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
       </div>
 
       <div className="border-t border-border p-3">
+        <div className="mb-2 flex">
+          <Button variant="ghost" size="sm" onClick={runDraft} disabled={drafting} className="h-8 rounded-lg text-xs">
+            <PenLine className="mr-1.5 h-3.5 w-3.5" />{drafting ? "Writing…" : "Draft reply with AI"}
+          </Button>
+        </div>
         <div className="flex items-end gap-2">
           <Textarea
             value={text}
