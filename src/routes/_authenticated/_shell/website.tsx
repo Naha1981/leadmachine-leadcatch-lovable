@@ -15,9 +15,9 @@ import { Card, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/_shell/website")({
   head: () => ({
     meta: [
-      { title: "Business Page — LeadCatch SA" },
+      { title: "Business Page — LeadMachine" },
       { name: "description", content: "Edit and publish your public business page with services, FAQs and a lead form." },
-      { property: "og:title", content: "Business Page — LeadCatch SA" },
+      { property: "og:title", content: "Business Page — LeadMachine" },
       { property: "og:description", content: "Edit and publish your public business page with services, FAQs and a lead form." },
     ],
   }),

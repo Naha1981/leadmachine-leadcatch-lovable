@@ -181,3 +181,61 @@ export const generateSiteCopy = createServerFn({ method: "POST" })
       cta_text: String(c.cta_text ?? "Get a free quote on WhatsApp").slice(0, 80),
     };
   });
+
+const REPLY_SYSTEM =
+  "You write WhatsApp replies for a South African service business owner to send to a lead. " +
+  "First judge purchase intent, then write ONE reply that matches it: hot = confirm availability fast and propose a concrete next step (time slot, call-out, quote); " +
+  "warm = answer their question, mention the most relevant service and ask one qualifying question; cold = friendly, short, leave the door open. " +
+  "Only mention services the business actually offers. Never invent prices unless given in pricing notes. Keep it under 90 words, warm and personal, use the customer's name if known. " +
+  "South African English, WhatsApp style, no emojis, no markdown. " +
+  'Reply with JSON only: {"score": 1-10, "temperature": "hot"|"warm"|"cold", "reasoning": "one short sentence on why this reply", "reply": "the message text"}.';
+
+/** Draft a personalised WhatsApp reply from a pasted chat or a saved lead's thread. */
+export const draftReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({ conversation: z.string().trim().min(10).max(12000).optional(), leadId: z.string().uuid().optional() })
+      .refine((v) => v.conversation || v.leadId, "Provide a conversation")
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    const sb = context.supabase;
+    let convo = data.conversation ?? "";
+    let tenantId: string | null = null;
+    let leadName: string | null = null;
+    if (data.leadId) {
+      const { data: lead } = await sb
+        .from("leads")
+        .select("tenant_id, name, conversation_messages(direction, body, created_at)")
+        .eq("id", data.leadId)
+        .single();
+      if (!lead) throw new Error("Lead not found");
+      tenantId = lead.tenant_id;
+      leadName = lead.name;
+      convo = ((lead as any).conversation_messages ?? [])
+        .sort((a: any, b: any) => a.created_at.localeCompare(b.created_at))
+        .slice(-25)
+        .map((m: any) => `${m.direction === "inbound" ? "Customer" : "Business"}: ${m.body}`)
+        .join("\n");
+      if (!convo) throw new Error("This lead has no messages yet.");
+    } else {
+      const { data: t } = await sb.from("tenants").select("id").eq("owner_id", context.userId).maybeSingle();
+      tenantId = t?.id ?? null;
+    }
+    const { data: p } = tenantId
+      ? await sb.from("business_profiles").select("business_name, industry, trade, services, pricing_notes, suburb").eq("tenant_id", tenantId).maybeSingle()
+      : { data: null };
+    const raw = await chat([
+      { role: "system", content: REPLY_SYSTEM },
+      {
+        role: "user",
+        content: `Business: ${p?.business_name || "our business"} (${p?.industry || p?.trade || "services"}), area: ${p?.suburb || "South Africa"}. Services: ${p?.services || "n/a"}. Pricing notes: ${p?.pricing_notes || "none"}.${leadName ? ` Customer name: ${leadName}.` : ""}\n\nConversation:\n${convo}`,
+      },
+    ]);
+    const j = extractJson(raw);
+    const n = normaliseIntent(j);
+    const reply = String(j.reply ?? "").trim().slice(0, 1000);
+    if (!reply) throw new Error("The AI returned no reply. Please try again.");
+    return { score: n.score, temperature: n.temperature, reasoning: String(j.reasoning ?? "").slice(0, 300), reply };
+  });
