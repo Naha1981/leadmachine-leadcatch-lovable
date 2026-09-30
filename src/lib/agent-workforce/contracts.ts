@@ -30,7 +30,7 @@ export type WorkerFinding = {
 
 export type SalesWorkerResult = {
   runId: string;
-  mode: "live-check" | "demo";
+  mode: "live-runtime-check" | "public-research";
   completedAt: string;
   target: {
     businessName: string;
