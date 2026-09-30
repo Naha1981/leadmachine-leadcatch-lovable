@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { verifyOperatorSignature, sendText } from "@/lib/operator.server";
+import { resolveWhatsAppTenant, getZeroUIConfig } from "@/lib/zero-ui-tenant.server";
+import { normalizePhoneNumber, phonesEqual } from "@/lib/zero-ui-phone.server";
+import { handleOwnerCommand } from "@/lib/zero-ui-agent.server";
+import { notifyOwner } from "@/lib/zero-ui-tools.server";
 import { decideReplies, type AutoReplyConfig, type WorkingHours } from "@/lib/autoreply";
 import { scoreInboundLead } from "@/lib/lead-scoring.server";
 import { getE2EBusiness, isE2EEnabled, recordWhatsAppLead } from "@/lib/e2e-store.server";
@@ -67,8 +71,14 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
 
         const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
         const db = rawDb as any;
-        const { data: tenant } = await db.from("tenants").select("id").eq("id", payload.tenantId).maybeSingle();
-        if (!tenant) return Response.json({ ok: true, ignored: "unknown tenant" });
+        let tenantContext: Awaited<ReturnType<typeof resolveWhatsAppTenant>>;
+        try {
+          tenantContext = await resolveWhatsAppTenant(db, payload.tenantId, payload.waAccountId);
+        } catch (error) {
+          console.error("webhook tenant/account validation failed", error);
+          return Response.json({ ok: false, ignored: "invalid tenant/account binding" }, { status: 401 });
+        }
+        const tenant = { id: tenantContext.tenantId };
 
         const webhookData = payload.data ?? {};
         const messageId: string | null = typeof webhookData.messageId === "string" ? webhookData.messageId : null;
@@ -98,7 +108,38 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
         }
 
         try {
-          if (payload.event === "message") await handleMessage(db, tenant.id, payload);
+          if (payload.event === "message") {
+            const chatId = String(payload.data?.chatId ?? "");
+            const incomingPhone = normalizePhoneNumber(chatId.split("@")[0] ?? "");
+            const fromMe = payload.data?.fromMe === true;
+            const config = await getZeroUIConfig(db, tenant.id);
+            const isOwnerMessage =
+              !fromMe &&
+              tenantContext.ownerPhone &&
+              phonesEqual(incomingPhone, tenantContext.ownerPhone) &&
+              Boolean(config);
+
+            if (isOwnerMessage) {
+              const text = String(payload.data?.text ?? "").trim();
+              if (text) {
+                const reply = await handleOwnerCommand(
+                  { tenantId: tenant.id, actorType: "owner_whatsapp", actorId: incomingPhone },
+                  text,
+                );
+                if (tenantContext.profile.wa_account_id) {
+                  await sendText(tenant.id, tenantContext.profile.wa_account_id, incomingPhone, reply);
+                }
+                await db.from("zero_ui_usage_events").insert({
+                  tenant_id: tenant.id,
+                  event_type: "owner_command",
+                  idempotency_key: messageId ? "owner-command:" + messageId : null,
+                  metadata: { messageId, intentMessageLength: text.length },
+                }).select("id").maybeSingle();
+              }
+            } else {
+              await handleMessage(db, tenant.id, payload, tenantContext.profile);
+            }
+          }
           await db.from("whatsapp_webhook_events").update({ processed_at: new Date().toISOString(), processing_error: null }).eq("id", eventRowId);
           return Response.json({ ok: true });
         } catch (e) {
@@ -112,7 +153,7 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
   },
 });
 
-async function handleMessage(db: any, tenantId: string, p: OperatorPayload) {
+async function handleMessage(db: any, tenantId: string, p: OperatorPayload, validatedProfile?: any) {
   const d = p.data ?? {};
   const chatId: string = d.chatId ?? "";
   if (!chatId || chatId.endsWith("@g.us") || chatId === "status@broadcast") return;
@@ -166,10 +207,11 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload) {
   await db.from("lead_events").insert({ tenant_id: tenantId, lead_id: lead.id, type: "message_received", payload: { messageId: d.messageId ?? null } });
 
   // Auto-reply
-  const [{ data: cfg }, { data: profile }, { count }] = await Promise.all([
+  const [{ data: cfg }, { data: profile }, { count }, zeroUiConfig] = await Promise.all([
     db.from("auto_reply_configs").select("*").eq("tenant_id", tenantId).maybeSingle(),
-    db.from("business_profiles").select("business_name, industry, services, working_hours, wa_account_id").eq("tenant_id", tenantId).maybeSingle(),
+    db.from("business_profiles").select("business_name, industry, services, working_hours, wa_account_id, contact_phone").eq("tenant_id", tenantId).maybeSingle(),
     db.from("conversation_messages").select("id", { count: "exact", head: true }).eq("conversation_id", convo.id).eq("direction", "inbound"),
+    getZeroUIConfig(db, tenantId),
   ]);
   if (!fromMe && lead?.id) {
     const scored = await scoreInboundLead({
@@ -193,6 +235,24 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload) {
       type: "lead_scored",
       payload: { score: scored.score, temperature: scored.temperature, summary: scored.summary },
     });
+    if (zeroUiConfig.enabled && zeroUiConfig.automation_enabled && zeroUiConfig.owner_alerts_enabled && scored.temperature === "hot") {
+      try {
+        await notifyOwner(
+          { tenantId, actorType: "agent", actorId: "lead-scoring", agentRunId: null },
+          "🔥 HOT LEAD\n\n" +
+            (lead.name || phone) +
+            " wants " +
+            (profile?.industry || "your service") +
+            (lead.suburb ? " in " + lead.suburb : "") +
+            ".\n\n" +
+            (scored.summary || "High purchase intent detected.") +
+            "\n\nScore: " + scored.score + "/10\n\nLeadMachine has captured and scored the enquiry.",
+          "hot-lead:" + lead.id + ":" + new Date().toISOString().slice(0, 13),
+        );
+      } catch (error) {
+        console.error("zero ui hot lead owner notification failed", error);
+      }
+    }
   }
 
   if (!cfg || !profile?.wa_account_id) return;
