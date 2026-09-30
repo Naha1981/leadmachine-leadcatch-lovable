@@ -3,6 +3,7 @@ name: LeadMachine CI
 # Launch validation: typecheck + production build
 
 on:
+  pull_request:
   push:
     branches: [main]
     paths:
