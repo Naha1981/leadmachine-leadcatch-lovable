@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { getE2EState, isE2EEnabled, resetE2EState } from "@/lib/e2e-store.server";
 
 function authorized(request: Request) {
   const secret = process.env["E2E_TEST_SECRET"];
@@ -10,6 +11,17 @@ export const Route = createFileRoute("/api/test/acceptance")({
     handlers: {
       POST: async ({ request }) => {
         if (!authorized(request)) return Response.json({ error: "Not found" }, { status: 404 });
+        if (isE2EEnabled()) {
+          resetE2EState();
+          return Response.json({
+            ok: true,
+            tenantId: "e2e-tenant",
+            slug: "e2e-leadmachine",
+            siteUrl: "/s/e2e-leadmachine",
+            leakageLeadId: "e2e-leakage-lead",
+            e2e: true,
+          });
+        }
 
         const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
         const db = rawDb as any;
@@ -96,6 +108,8 @@ export const Route = createFileRoute("/api/test/acceptance")({
       },
       GET: async ({ request }) => {
         if (!authorized(request)) return Response.json({ error: "Not found" }, { status: 404 });
+        if (isE2EEnabled()) return Response.json(getE2EState());
+
         const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
         const db = rawDb as any;
         const { data: tenant } = await db.from("tenants").select("id").eq("slug", "e2e-leadmachine").maybeSingle();
