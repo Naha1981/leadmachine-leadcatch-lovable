@@ -171,11 +171,11 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload, vali
   const now = new Date().toISOString();
 
   // Lead
-  let { data: lead } = await db.from("leads").select("id, status, name").eq("tenant_id", tenantId).eq("phone", phone).maybeSingle();
+  let { data: lead } = await db.from("leads").select("id, status, name, service, suburb").eq("tenant_id", tenantId).eq("phone", phone).maybeSingle();
   let isNewLead = false;
   if (!lead) {
     if (fromMe) return; // don't create leads from our own outbound messages
-    const r = await db.from("leads").insert({ tenant_id: tenantId, phone, name: d.pushName ?? null }).select("id, status, name").single();
+    const r = await db.from("leads").insert({ tenant_id: tenantId, phone, name: d.pushName ?? null }).select("id, status, name, service, suburb").single();
     if (r.error) throw r.error;
     lead = r.data;
     isNewLead = true;
