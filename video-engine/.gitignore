@@ -1,0 +1,5 @@
+.remotion-bundle/
+out/
+node_modules/
+.env
+*.local
