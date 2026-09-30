@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeProvider, useTheme } from "@/lib/theme";
+import { getCookie } from "@tanstack/react-start/server";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 function NotFoundComponent() {
@@ -98,9 +99,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const serverTheme = typeof window === "undefined"
+    ? (getCookie("leadmachine-theme") === "dark" ? "dark" : "light")
+    : "light";
+  const dark = serverTheme === "dark";
+
   return (
     <ThemeProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html
+        lang="en"
+        suppressHydrationWarning
+        className={dark ? "dark" : undefined}
+        data-theme={serverTheme}
+      >
         <head>
           <HeadContent />
         </head>
