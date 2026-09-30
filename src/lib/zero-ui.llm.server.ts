@@ -14,12 +14,12 @@ async function chatNahaLLM(messages: ChatMessage[]): Promise<ChatResult> {
   const res = await fetch(\`\${base.replace(/\\/$/, "")}/v1/chat/completions\`, {
     method: "POST",
     headers: {
-      Authorization: \`Bearer \${key}\`,
+      Authorization: "Bearer " + key,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ model, messages, temperature: 0, stream: false }),
   });
-  if (!res.ok) throw new Error(\`NahaLLM error \${res.status}\`);
+  if (!res.ok) throw new Error("NahaLLM error " + res.status);
   const body = await res.json();
   const text = body.choices?.[0]?.message?.content;
   if (typeof text !== "string" || !text.trim()) throw new Error("NahaLLM returned no content");
@@ -35,7 +35,7 @@ async function chatExistingGateway(messages: ChatMessage[]): Promise<ChatResult>
     headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
     body: JSON.stringify({ model, input: messages, stream: false, store: false }),
   });
-  if (!res.ok) throw new Error(\`Existing AI gateway error \${res.status}\`);
+  if (!res.ok) throw new Error("Existing AI gateway error " + res.status);
   const body = await res.json();
   const text = body.output_text ?? body.output?.map?.((x: any) => x?.content?.map?.((c: any) => c?.text ?? "").join("") ?? "").join("") ?? "";
   if (typeof text !== "string" || !text.trim()) throw new Error("AI gateway returned no content");
