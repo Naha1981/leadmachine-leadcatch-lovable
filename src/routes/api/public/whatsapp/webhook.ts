@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
             return Response.json({ ok: true, ignored: e2eData.fromMe ? "outbound" : "non-message", e2e: true });
           }
           const business = getE2EBusiness();
-          const phone = String(e2eData.chatId ?? "").split("@")[0].replace(/\D/g, "");
+          const phone = String(String(e2eData.chatId ?? "").split("@")[0] ?? "").replace(/\D/g, "");
           const text = String(e2eData.text ?? "");
           const scored = await scoreInboundLead({
             businessName: business.businessName,
