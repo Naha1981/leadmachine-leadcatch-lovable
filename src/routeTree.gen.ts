@@ -225,6 +225,7 @@ export interface FileRouteTypes {
     | '/api/cron/lead-leakage'
     | '/api/cron/demand-radar'
     | '/api/demand-radar/latest'
+    | '/api/cron/zero-ui'
     | '/api/test/acceptance'
   id:
     | '__root__'
@@ -245,6 +246,7 @@ export interface FileRouteTypes {
     | '/api/cron/lead-leakage'
     | '/api/cron/demand-radar'
     | '/api/demand-radar/latest'
+    | '/api/cron/zero-ui'
     | '/api/test/acceptance'
   fileRoutesById: FileRoutesById
 }
