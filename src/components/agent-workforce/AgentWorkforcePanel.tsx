@@ -1,5 +1,5 @@
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, Play, ShieldCheck, Sparkles, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -30,14 +30,14 @@ export function AgentWorkforcePanel() {
   const [execution, setExecution] = useState<SalesExecutionStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function refreshExecution(actionId: string) {
+  const refreshExecution = useCallback(async (actionId: string) => {
     try {
       const value = await getExecution({ data: { actionId } });
       setExecution(value);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not refresh execution status.");
     }
-  }
+  }, [getExecution]);
 
   useEffect(() => {
     const actionId = result?.approvalActionId;
@@ -50,7 +50,7 @@ export function AgentWorkforcePanel() {
       void refreshExecution(actionId);
     }, 4000);
     return () => window.clearInterval(timer);
-  }, [result?.approvalActionId, execution?.approval?.status, execution?.action.status]);
+  }, [result?.approvalActionId, execution?.approval?.status, execution?.action.status, refreshExecution]);
 
   async function run() {
     setBusy(true);
