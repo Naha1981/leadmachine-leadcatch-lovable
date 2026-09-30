@@ -11,6 +11,7 @@ export function ThemeToggle() {
     document.documentElement.classList.toggle("dark", next === "dark");
     document.documentElement.setAttribute("data-theme", next);
     document.documentElement.style.colorScheme = next;
+    document.cookie = "leadmachine-theme=" + next + "; Max-Age=31536000; Path=/; SameSite=Lax";
     setTheme(next);
   }
 
