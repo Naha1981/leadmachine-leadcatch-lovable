@@ -64,10 +64,10 @@ export const setZeroUISettings = createServerFn({ method: "POST" })
     }
 
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    if (typeof data.enabled === "boolean") patch.enabled = data.enabled;
-    if (typeof data.automationEnabled === "boolean") patch.automation_enabled = data.automationEnabled;
-    if (typeof data.ownerAlertsEnabled === "boolean") patch.owner_alerts_enabled = data.ownerAlertsEnabled;
-    if (typeof data.autoFollowupsEnabled === "boolean") patch.auto_followups_enabled = data.autoFollowupsEnabled;
+    if (typeof data.enabled === "boolean") patch["enabled"] = data.enabled;
+    if (typeof data.automationEnabled === "boolean") patch["automation_enabled"] = data.automationEnabled;
+    if (typeof data.ownerAlertsEnabled === "boolean") patch["owner_alerts_enabled"] = data.ownerAlertsEnabled;
+    if (typeof data.autoFollowupsEnabled === "boolean") patch["auto_followups_enabled"] = data.autoFollowupsEnabled;
 
     await db.from("zero_ui_configs").update(patch).eq("tenant_id", tenantId);
 
