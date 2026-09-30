@@ -304,7 +304,7 @@ export const runSalesWorker = createServerFn({ method: "POST" })
 
     return {
       runId: crypto.randomUUID(),
-      mode: inspected.liveRuntime ? "live-check" : "demo",
+      mode: inspected.liveRuntime ? "live-runtime-check" : "public-research",
       completedAt: new Date().toISOString(),
       target: {
         businessName: data.businessName,
