@@ -331,6 +331,7 @@ export const runSalesWorker = createServerFn({ method: "POST" })
     try {
       const inspected = await inspectWebsite(data);
       const approval = await requestSalesExecutionApproval(context.userId, {
+        runId,
         businessName: data.businessName,
         contactName: data.contactName,
         prospectPhone: data.prospectPhone,
