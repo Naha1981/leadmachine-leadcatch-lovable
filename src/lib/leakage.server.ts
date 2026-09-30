@@ -1,4 +1,4 @@
-import { sendText, operatorRequest } from "@/lib/operator.server";
+import { sendText } from "@/lib/operator.server";
 
 const WAIT_MS = 15 * 60 * 1000;
 
@@ -22,7 +22,8 @@ export async function sendSmsAlert(opts: { to: string; text: string; tenantId: s
 }
 
 export async function processHotLeadLeakageAlerts(limit = 25) {
-  const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
+  const db = rawDb as any;
   const cutoff = new Date(Date.now() - WAIT_MS).toISOString();
   const { data: leads, error } = await db
     .from("leads")
