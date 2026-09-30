@@ -35,9 +35,9 @@ export function getActionClass(action: ZeroUIAction): ZeroUIActionClass {
 
 export function assertActionAllowed(action: ZeroUIAction, opts: { requireApproval?: boolean; approved?: boolean } = {}) {
   const actionClass = getActionClass(action);
-  if (actionClass === "forbidden") throw new Error(\`Zero UI policy forbids action: \${action}\`);
+  if (actionClass === "forbidden") throw new Error("Zero UI policy forbids action: " + action);
   if (actionClass === "approval_required" && !(opts.approved || opts.requireApproval === true)) {
-    throw new Error(\`Zero UI approval required for action: \${action}\`);
+    throw new Error("Zero UI approval required for action: " + action);
   }
   return actionClass;
 }
