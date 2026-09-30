@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getE2EState, isE2EEnabled, resetE2EState } from "@/lib/e2e-store.server";
+import { getE2EState, getE2EZeroUIState, isE2EEnabled, resetE2EState } from "@/lib/e2e-store.server";
 
 function authorized(request: Request) {
   const secret = process.env["E2E_TEST_SECRET"];
@@ -83,6 +83,14 @@ export const Route = createFileRoute("/api/test/acceptance")({
           whatsapp_number: "27825550111",
         }, { onConflict: "tenant_id" });
 
+        await db.from("zero_ui_configs").upsert({
+          tenant_id: tenant.id,
+          enabled: true,
+          automation_enabled: true,
+          owner_alerts_enabled: true,
+          auto_followups_enabled: true,
+        }, { onConflict: "tenant_id" });
+
         const oldLead = await db.from("leads").insert({
           tenant_id: tenant.id,
           phone: "27825550999",
@@ -108,7 +116,7 @@ export const Route = createFileRoute("/api/test/acceptance")({
       },
       GET: async ({ request }) => {
         if (!authorized(request)) return Response.json({ error: "Not found" }, { status: 404 });
-        if (isE2EEnabled()) return Response.json(getE2EState());
+        if (isE2EEnabled()) return Response.json({ ...getE2EState(), zeroUi: getE2EZeroUIState() });
 
         const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
         const db = rawDb as any;
