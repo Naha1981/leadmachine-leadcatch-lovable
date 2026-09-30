@@ -59,7 +59,7 @@ function SettingsPage() {
     if (!ws) return;
     let active = true;
     setZeroLoading(true);
-    loadZeroUI({ data: undefined })
+    loadZeroUI()
       .then((settings) => {
         if (!active) return;
         setZeroEnabled(settings.enabled);
