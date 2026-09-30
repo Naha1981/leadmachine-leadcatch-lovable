@@ -171,12 +171,14 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload) {
   for (const body of replies) {
     let status = "sent";
     let extId: string | null = null;
-    try {
-      const r = await sendText(tenantId, profile.wa_account_id, phone, body);
-      extId = r.message?.key?.id ?? null;
-    } catch (e) {
-      status = "failed";
-      console.error("auto-reply send failed", e);
+    if (process.env.SIMULATE_WHATSAPP !== "true") {
+      try {
+        const r = await sendText(tenantId, profile.wa_account_id, phone, body);
+        extId = r.message?.key?.id ?? null;
+      } catch (e) {
+        status = "failed";
+        console.error("auto-reply send failed", e);
+      }
     }
     await db.from("conversation_messages").insert({
       tenant_id: tenantId,
