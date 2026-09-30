@@ -132,14 +132,45 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
                   { tenantId: tenant.id, actorType: "owner_whatsapp", actorId: incomingPhone },
                   text,
                 );
-                if (tenantContext.profile.wa_account_id) {
-                  await sendText(tenant.id, tenantContext.profile.wa_account_id, incomingPhone, reply);
+                const responseKey = messageId ? "owner-response:" + messageId : "owner-response:" + Date.now();
+                const actionInsert = await db.from("zero_ui_agent_actions").insert({
+                  tenant_id: tenant.id,
+                  action: "send_whatsapp_message",
+                  action_class: "automatic",
+                  target_type: "owner_phone",
+                  target_id: incomingPhone,
+                  idempotency_key: responseKey,
+                  input: { reply, sourceMessageId: messageId },
+                  status: "processing",
+                }).select("id").maybeSingle();
+
+                if (actionInsert.error?.code === "23505") {
+                  return Response.json({ ok: true, duplicate: true });
                 }
+                if (actionInsert.error) throw actionInsert.error;
+
+                try {
+                  if (!tenantContext.profile.wa_account_id) throw new Error("WhatsApp is not connected");
+                  const sent = await sendText(tenant.id, tenantContext.profile.wa_account_id, incomingPhone, reply);
+                  await db.from("zero_ui_agent_actions").update({
+                    status: "completed",
+                    result: { externalId: sent.message?.key?.id ?? null },
+                    completed_at: new Date().toISOString(),
+                  }).eq("id", actionInsert.data.id).eq("tenant_id", tenant.id);
+                } catch (sendError) {
+                  await db.from("zero_ui_agent_actions").update({
+                    status: "failed",
+                    error: sendError instanceof Error ? sendError.message : "Owner response failed",
+                    completed_at: new Date().toISOString(),
+                  }).eq("id", actionInsert.data.id).eq("tenant_id", tenant.id);
+                  throw sendError;
+                }
+
                 await db.from("zero_ui_usage_events").insert({
                   tenant_id: tenant.id,
                   event_type: "owner_command",
                   idempotency_key: messageId ? "owner-command:" + messageId : null,
-                  metadata: { messageId, intentMessageLength: text.length },
+                  metadata: { messageId, intentMessageLength: text.length, responseActionId: actionInsert.data.id },
                 }).select("id").maybeSingle();
               }
             } else {
