@@ -17,7 +17,8 @@ function readStoredTheme(): Theme {
 
 function applyTheme(theme: Theme) {
   if (typeof document === "undefined") return;
-  const root = document.documentElement;
+  const root = document.body;
+  if (!root) return;
   root.classList.toggle("dark", theme === "dark");
   root.setAttribute("data-theme", theme);
   root.style.colorScheme = theme;
