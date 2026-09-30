@@ -3,7 +3,7 @@ services:
     name: leadmachine-video-engine
     runtime: node
     rootDir: video-engine
-    buildCommand: npm install
+    buildCommand: npm install && npx remotion browser ensure
     startCommand: node server.mjs
     plan: free
     healthCheckPath: /health
