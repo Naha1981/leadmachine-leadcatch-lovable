@@ -29,7 +29,7 @@ let state = {
 };
 
 const e2eBusiness = {
-  tenantId: "e2e-tenant",
+  tenantId: "00000000-0000-0000-0000-00000000e2e1",
   slug: "e2e-leadmachine",
   businessName: "E2E Test Plumbing",
   industry: "Plumber",
