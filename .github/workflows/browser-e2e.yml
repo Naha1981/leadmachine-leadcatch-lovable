@@ -1,0 +1,54 @@
+name: LeadMachine browser acceptance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/browser-e2e.mjs"
+      - "supabase/**"
+      - "drizzle/**"
+      - ".github/workflows/browser-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-e2e:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: http://127.0.0.1:3000
+      SUPABASE_URL: ${{ secrets.LEAD_MACHINE_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.LEAD_MACHINE_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.LEAD_MACHINE_SUPABASE_PUBLISHABLE_KEY }}
+      OPERATOR_URL: ${{ secrets.LEAD_MACHINE_OPERATOR_URL }}
+      OPERATOR_API_KEY: ${{ secrets.LEAD_MACHINE_OPERATOR_API_KEY }}
+      WEBHOOK_SECRET: ${{ secrets.LEAD_MACHINE_WEBHOOK_SECRET }}
+      CRON_SECRET: ${{ secrets.LEAD_MACHINE_CRON_SECRET }}
+      E2E_TEST_SECRET: ${{ secrets.LEAD_MACHINE_E2E_TEST_SECRET }}
+      SIMULATE_WHATSAPP: "true"
+      SIMULATE_SMS: "true"
+      LOVABLE_API_KEY: ${{ secrets.LEAD_MACHINE_LOVABLE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Install Playwright
+        run: bun add --no-save playwright && bunx playwright install --with-deps chromium
+      - name: Start app
+        run: |
+          nohup bun run dev -- --host 127.0.0.1 > /tmp/leadmachine.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/leadmachine.log
+          exit 1
+      - name: Run browser acceptance
+        run: bun scripts/browser-e2e.mjs
+      - name: App log on failure
+        if: failure()
+        run: cat /tmp/leadmachine.log
