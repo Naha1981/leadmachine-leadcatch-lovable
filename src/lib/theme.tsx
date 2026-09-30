@@ -56,6 +56,7 @@ export function ThemeProvider({
     const stored = readStoredTheme();
     setThemeState(stored);
     applyTheme(stored);
+    document.documentElement.setAttribute("data-theme-ready", "true");
   }, []);
 
   const setTheme = (next: Theme) => {
