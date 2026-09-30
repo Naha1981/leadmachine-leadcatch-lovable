@@ -9,10 +9,21 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "leadmachine-theme";
+const COOKIE_KEY = "leadmachine-theme";
+
+function readCookieTheme(): Theme | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|; )leadmachine-theme=(dark|light)(?:;|$)/);
+  return match?.[1] === "dark" ? "dark" : match?.[1] === "light" ? "light" : null;
+}
 
 function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-  return window.localStorage.getItem(STORAGE_KEY) === "dark" ? "dark" : "light";
+  if (typeof document === "undefined") return "light";
+  return readCookieTheme() ?? (
+    typeof window !== "undefined" && window.localStorage.getItem(STORAGE_KEY) === "dark"
+      ? "dark"
+      : "light"
+  );
 }
 
 function applyTheme(theme: Theme) {
@@ -21,6 +32,15 @@ function applyTheme(theme: Theme) {
   root.classList.toggle("dark", theme === "dark");
   root.setAttribute("data-theme", theme);
   root.style.colorScheme = theme;
+}
+
+function persistTheme(theme: Theme) {
+  if (typeof document !== "undefined") {
+    document.cookie = COOKIE_KEY + "=" + theme + "; Max-Age=31536000; Path=/; SameSite=Lax";
+  }
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(STORAGE_KEY, theme);
+  }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -34,9 +54,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = (next: Theme) => {
     setThemeState(next);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    }
+    persistTheme(next);
     applyTheme(next);
   };
 
@@ -51,6 +69,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
+
+export { applyTheme, persistTheme };
 
 export function useTheme() {
   const ctx = useContext(ThemeContext);
