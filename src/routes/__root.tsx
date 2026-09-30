@@ -13,7 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ThemeProvider } from "@/lib/theme";
+import { ThemeProvider, useTheme } from "@/lib/theme";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 function NotFoundComponent() {
@@ -111,6 +111,11 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function RootToaster() {
+  const { theme } = useTheme();
+  return <Toaster theme={theme} position="top-center" />;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
@@ -130,7 +135,7 @@ function RootComponent() {
       <ThemeProvider>
         <Outlet />
         <ThemeToggle />
-        <Toaster theme="light" position="top-center" />
+        <RootToaster />
       </ThemeProvider>
     </QueryClientProvider>
   );
