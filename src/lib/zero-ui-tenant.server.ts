@@ -38,3 +38,23 @@ export async function requireTenantRole(db: any, userId: string, tenantId: strin
   if (!data) throw new Error("Insufficient tenant permissions");
   return data.role as string;
 }
+
+
+export async function isPlatformOwner(db: any, userId: string) {
+  const configured = process.env["PLATFORM_OWNER_USER_ID"];
+  if (configured && configured === userId) return true;
+  const { data, error } = await db
+    .from("platform_admins")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data?.user_id);
+}
+
+export async function requirePlatformOwner(db: any, userId: string) {
+  if (!(await isPlatformOwner(db, userId))) {
+    throw new Error("Platform owner access required");
+  }
+  return true;
+}
