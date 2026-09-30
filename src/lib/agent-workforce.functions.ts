@@ -11,6 +11,32 @@ const Input = z.object({
   category: z.string().trim().max(120).optional(),
 });
 
+function assertPublicResearchUrl(input: string) {
+  const url = new URL(input);
+  if (!["http:", "https:"].includes(url.protocol)) throw new Error("Only public HTTP(S) websites can be researched.");
+  const host = url.hostname.toLowerCase();
+  const blockedNames = ["localhost", "metadata.google.internal", "host.docker.internal"];
+  if (blockedNames.includes(host) || host.endsWith(".local") || host.endsWith(".internal")) {
+    throw new Error("Private or internal destinations are not allowed.");
+  }
+
+  const ipv4 = host.match(/^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$/);
+  if (ipv4) {
+    const octets = ipv4.slice(1).map(Number);
+    if (
+      octets.some((n) => n > 255) ||
+      octets[0] === 10 ||
+      octets[0] === 127 ||
+      (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+      (octets[0] === 192 && octets[1] === 168) ||
+      (octets[0] === 169 && octets[1] === 254)
+    ) {
+      throw new Error("Private or link-local destinations are not allowed.");
+    }
+  }
+  return url;
+}
+
 function stripHtml(html: string) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
@@ -98,8 +124,9 @@ async function probeRuntime(kind: "openmuse" | "openbot"): Promise<RuntimeStatus
 }
 
 async function inspectWebsite(input: z.infer<typeof Input>) {
-  const response = await fetch(input.websiteUrl, {
-    redirect: "follow",
+  const researchUrl = assertPublicResearchUrl(input.websiteUrl);
+  const response = await fetch(researchUrl.toString(), {
+    redirect: "error",
     signal: AbortSignal.timeout(8000),
     headers: {
       "user-agent": "NahaLabs-LeadMachine-Research/1.0 (+https://nahalabs.co.za)",
@@ -108,7 +135,10 @@ async function inspectWebsite(input: z.infer<typeof Input>) {
   });
 
   if (!response.ok) throw new Error("Website returned HTTP " + response.status + ".");
-  const finalUrl = response.url || input.websiteUrl;
+  const finalUrl = response.url || researchUrl.toString();
+  if (new URL(finalUrl).hostname !== researchUrl.hostname) {
+    throw new Error("The destination changed during research; rerun with the final public URL.");
+  }
   const html = (await response.text()).slice(0, 600_000);
   const text = stripHtml(html).slice(0, 35_000);
 
