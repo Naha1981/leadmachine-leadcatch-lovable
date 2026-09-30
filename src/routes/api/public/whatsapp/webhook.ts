@@ -34,17 +34,18 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
         if (!payload?.event || !UUID.test(payload.tenantId ?? "")) return new Response("Bad payload", { status: 400 });
 
         if (isE2EEnabled()) {
-          if (payload.event !== "message" || payload.data?.fromMe === true) {
-            return Response.json({ ok: true, ignored: payload.data?.fromMe ? "outbound" : "non-message", e2e: true });
+          const e2eData = payload.data ?? {};
+          if (payload.event !== "message" || e2eData.fromMe === true) {
+            return Response.json({ ok: true, ignored: e2eData.fromMe ? "outbound" : "non-message", e2e: true });
           }
           const business = getE2EBusiness();
-          const phone = String(payload.data?.chatId ?? "").split("@")[0].replace(/\D/g, "");
-          const text = String(payload.data?.text ?? "");
+          const phone = String(e2eData.chatId ?? "").split("@")[0].replace(/\D/g, "");
+          const text = String(e2eData.text ?? "");
           const scored = await scoreInboundLead({
             businessName: business.businessName,
             industry: business.industry,
             services: business.services,
-            leadName: payload.data?.pushName ?? "WhatsApp Test Customer",
+            leadName: e2eData.pushName ?? "WhatsApp Test Customer",
             phone,
             message: text,
           });
