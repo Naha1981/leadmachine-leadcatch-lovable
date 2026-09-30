@@ -139,8 +139,6 @@ export interface FileRoutesByFullPath {
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
-  '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
-  '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRoutesByTo {
@@ -157,6 +155,8 @@ export interface FileRoutesByTo {
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
+  '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRoutesById {
@@ -176,6 +176,8 @@ export interface FileRoutesById {
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
+  '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRouteTypes {
@@ -194,6 +196,8 @@ export interface FileRouteTypes {
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
     | '/api/cron/lead-leakage'
+    | '/api/cron/demand-radar'
+    | '/api/demand-radar/latest'
     | '/api/test/acceptance'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -210,6 +214,8 @@ export interface FileRouteTypes {
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
     | '/api/cron/lead-leakage'
+    | '/api/cron/demand-radar'
+    | '/api/demand-radar/latest'
     | '/api/test/acceptance'
   id:
     | '__root__'
@@ -228,6 +234,8 @@ export interface FileRouteTypes {
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
     | '/api/cron/lead-leakage'
+    | '/api/cron/demand-radar'
+    | '/api/demand-radar/latest'
     | '/api/test/acceptance'
   fileRoutesById: FileRoutesById
 }
@@ -349,6 +357,20 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/lead-leakage'
       fullPath: '/api/cron/lead-leakage'
       preLoaderRoute: typeof ApiCronLeadLeakageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/demand-radar': {
+      id: '/api/cron/demand-radar'
+      path: '/api/cron/demand-radar'
+      fullPath: '/api/cron/demand-radar'
+      preLoaderRoute: typeof ApiCronDemandRadarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/demand-radar/latest': {
+      id: '/api/demand-radar/latest'
+      path: '/api/demand-radar/latest'
+      fullPath: '/api/demand-radar/latest'
+      preLoaderRoute: typeof ApiDemandRadarLatestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/test/acceptance': {
