@@ -24,6 +24,8 @@ import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authent
 import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
+import { Route as ApiCronDemandRadarRouteImport } from './routes/api/cron/demand-radar'
+import { Route as ApiDemandRadarLatestRouteImport } from './routes/api/demand-radar/latest'
 import { Route as ApiTestAcceptanceRouteImport } from './routes/api/test/acceptance'
 
 const IndexRoute = IndexRouteImport.update({
@@ -105,6 +107,16 @@ const ApiCronLeadLeakageRoute = ApiCronLeadLeakageRouteImport.update({
   path: '/api/cron/lead-leakage',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronDemandRadarRoute = ApiCronDemandRadarRouteImport.update({
+  id: '/api/cron/demand-radar',
+  path: '/api/cron/demand-radar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDemandRadarLatestRoute = ApiDemandRadarLatestRouteImport.update({
+  id: '/api/demand-radar/latest',
+  path: '/api/demand-radar/latest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTestAcceptanceRoute = ApiTestAcceptanceRouteImport.update({
   id: '/api/test/acceptance',
   path: '/api/test/acceptance',
@@ -125,6 +137,10 @@ export interface FileRoutesByFullPath {
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
+  '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
+  '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
+  '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRoutesByTo {
@@ -223,6 +239,8 @@ export interface RootRouteChildren {
   ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
   ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
+  ApiCronDemandRadarRoute: typeof ApiCronDemandRadarRoute
+  ApiDemandRadarLatestRoute: typeof ApiDemandRadarLatestRoute
   ApiTestAcceptanceRoute: typeof ApiTestAcceptanceRoute
 }
 
@@ -388,6 +406,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
   ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
+  ApiCronDemandRadarRoute: ApiCronDemandRadarRoute,
+  ApiDemandRadarLatestRoute: ApiDemandRadarLatestRoute,
   ApiTestAcceptanceRoute: ApiTestAcceptanceRoute,
 }
 export const routeTree = rootRouteImport
