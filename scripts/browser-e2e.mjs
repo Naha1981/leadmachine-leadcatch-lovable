@@ -89,6 +89,44 @@ try {
     throw new Error("15-minute leakage alert did not fire: " + JSON.stringify(cron));
   }
 
+  const ownerPayload = {
+    schemaVersion: 1,
+    waAccountId: "e2e-account",
+    appId: "leadcatch-sa",
+    tenantId: seed.tenantId,
+    event: "message",
+    deliveredAt: new Date().toISOString(),
+    data: {
+      messageId: "e2e-owner-" + Date.now(),
+      chatId: "27825550111@s.whatsapp.net",
+      pushName: "E2E Owner",
+      text: "Any new leads?",
+      fromMe: false,
+      messageType: "text",
+      timestamp: Math.floor(Date.now() / 1000),
+    },
+  };
+  const ownerRaw = JSON.stringify(ownerPayload);
+  const ownerSignature = createHmac("sha256", webhookSecret).update(ownerRaw).digest("hex");
+  const ownerWebhook = await desktop.request.post(base + "/api/public/whatsapp/webhook", {
+    data: ownerRaw,
+    headers: {
+      "Content-Type": "application/json",
+      "x-webhook-signature": ownerSignature,
+    },
+  });
+  if (!ownerWebhook.ok()) throw new Error("Owner Zero UI webhook failed: HTTP " + ownerWebhook.status());
+  const ownerBody = await ownerWebhook.json();
+  if (ownerBody.zeroUi !== true || ownerBody.intent !== "new_leads_summary") {
+    throw new Error("Owner Zero UI intent was not handled: " + JSON.stringify(ownerBody));
+  }
+  const stateAfterOwner = await json(await desktop.request.get(base + "/api/test/acceptance", {
+    headers: { "x-e2e-secret": e2eSecret },
+  }));
+  if (stateAfterOwner.zeroUi?.lastIntent !== "new_leads_summary") {
+    throw new Error("Owner Zero UI state did not record the command: " + JSON.stringify(stateAfterOwner));
+  }
+
   const demandCron = await json(await desktop.request.get(base + "/api/cron/demand-radar", {
     headers: { Authorization: "Bearer " + cronSecret },
   }));
@@ -162,6 +200,7 @@ try {
     leakageAlert: leakage,
     whatsappLeadScored: stateAfterWhatsapp.lead.ai_score + "/" + stateAfterWhatsapp.lead.ai_temperature,
     demandRadarAlert: demandLatest.signal?.intent_score + "/10 " + demandLatest.signal?.status,
+    zeroUiOwnerCommand: stateAfterOwner.zeroUi?.lastIntent,
     themeDesktopMobile: true,
   }, null, 2));
 } finally {
