@@ -37,8 +37,15 @@ try {
   if (!(await desktop.locator("html").getAttribute("class"))?.includes("dark")) {
     throw new Error("Desktop dark theme did not apply");
   }
+  const persisted = await desktop.evaluate(() => ({
+    localStorageTheme: localStorage.getItem("leadmachine-theme"),
+    cookieTheme: document.cookie.match(/(?:^|; )leadmachine-theme=(dark|light)(?:;|$)/)?.[1] ?? null,
+  }));
+  if (persisted.localStorageTheme !== "dark" && persisted.cookieTheme !== "dark") {
+    throw new Error("Theme preference was not persisted before reload: " + JSON.stringify(persisted));
+  }
   await desktop.reload({ waitUntil: "domcontentloaded" });
-  await desktop.waitForTimeout(150);
+  await desktop.waitForTimeout(250);
   if (!(await desktop.locator("html").getAttribute("class"))?.includes("dark")) {
     throw new Error("Theme did not persist across reload");
   }
