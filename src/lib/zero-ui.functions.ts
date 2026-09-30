@@ -80,8 +80,13 @@ export const setZeroUISettings = createServerFn({ method: "POST" })
       metadata: patch,
     });
 
-    return getZeroUISettings().handler
-      ? { ok: true }
-      : { ok: true };
+    const config = await getZeroUIConfig(db, tenantId);
+    return {
+      ok: true,
+      enabled: Boolean(config.enabled),
+      automationEnabled: Boolean(config.automation_enabled),
+      ownerAlertsEnabled: Boolean(config.owner_alerts_enabled),
+      autoFollowupsEnabled: Boolean(config.auto_followups_enabled),
+    };
   });
 
