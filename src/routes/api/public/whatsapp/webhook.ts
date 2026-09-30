@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { verifyOperatorSignature, sendText } from "@/lib/operator.server";
 import { decideReplies, type AutoReplyConfig, type WorkingHours } from "@/lib/autoreply";
+import { scoreInboundLead } from "@/lib/lead-scoring.server";
 
 type OperatorPayload = {
   schemaVersion: number;
@@ -132,9 +133,33 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload) {
   // Auto-reply
   const [{ data: cfg }, { data: profile }, { count }] = await Promise.all([
     db.from("auto_reply_configs").select("*").eq("tenant_id", tenantId).maybeSingle(),
-    db.from("business_profiles").select("working_hours, wa_account_id").eq("tenant_id", tenantId).maybeSingle(),
+    db.from("business_profiles").select("business_name, industry, services, working_hours, wa_account_id").eq("tenant_id", tenantId).maybeSingle(),
     db.from("conversation_messages").select("id", { count: "exact", head: true }).eq("conversation_id", convo.id).eq("direction", "inbound"),
   ]);
+  if (!fromMe && lead?.id) {
+    const scored = await scoreInboundLead({
+      businessName: profile?.business_name || "Your business",
+      industry: profile?.industry || "",
+      services: profile?.services || "",
+      leadName: lead.name,
+      phone,
+      message: text,
+    });
+    await db.from("leads").update({
+      ai_score: scored.score,
+      ai_temperature: scored.temperature,
+      ai_summary: scored.summary,
+      ai_scored_at: now,
+      ai_last_scored_message_at: now,
+    }).eq("id", lead.id);
+    await db.from("lead_events").insert({
+      tenant_id: tenantId,
+      lead_id: lead.id,
+      type: "lead_scored",
+      payload: { score: scored.score, temperature: scored.temperature, summary: scored.summary },
+    });
+  }
+
   if (!cfg || !profile?.wa_account_id) return;
   const replies = decideReplies({
     config: cfg as AutoReplyConfig,
