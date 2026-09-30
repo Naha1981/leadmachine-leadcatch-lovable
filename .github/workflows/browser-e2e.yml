@@ -19,17 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BASE_URL: http://127.0.0.1:3000
-      SUPABASE_URL: ${{ secrets.LEAD_MACHINE_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.LEAD_MACHINE_SUPABASE_SERVICE_ROLE_KEY }}
-      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.LEAD_MACHINE_SUPABASE_PUBLISHABLE_KEY }}
-      OPERATOR_URL: ${{ secrets.LEAD_MACHINE_OPERATOR_URL }}
-      OPERATOR_API_KEY: ${{ secrets.LEAD_MACHINE_OPERATOR_API_KEY }}
-      WEBHOOK_SECRET: ${{ secrets.LEAD_MACHINE_WEBHOOK_SECRET }}
-      CRON_SECRET: ${{ secrets.LEAD_MACHINE_CRON_SECRET }}
-      E2E_TEST_SECRET: ${{ secrets.LEAD_MACHINE_E2E_TEST_SECRET }}
+      E2E_MODE: "true"
+      E2E_TEST_SECRET: "e2e-local-acceptance"
+      WEBHOOK_SECRET: "smoke-webhook"
+      CRON_SECRET: "smoke-cron"
       SIMULATE_WHATSAPP: "true"
       SIMULATE_SMS: "true"
-      LOVABLE_API_KEY: ${{ secrets.LEAD_MACHINE_LOVABLE_API_KEY }}
+      LOVABLE_API_KEY: ""
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
