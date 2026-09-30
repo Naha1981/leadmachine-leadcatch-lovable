@@ -26,6 +26,7 @@ let state = {
   leakageLeadId: "e2e-leakage-lead",
   leakageAlert: null as E2EAlert | null,
   autoReplySent: false,
+  zeroUi: { enabled: true, automationEnabled: true, ownerCommandCount: 0, lastIntent: "", lastReply: "" },
 };
 
 const e2eBusiness = {
@@ -34,6 +35,7 @@ const e2eBusiness = {
   businessName: "E2E Test Plumbing",
   industry: "Plumber",
   services: "Emergency plumbing\nLeak detection and repairs\nBlocked drains\nGeyser repairs",
+  ownerPhone: "27825550111",
 };
 
 export function resetE2EState() {
@@ -55,6 +57,7 @@ export function resetE2EState() {
     leakageLeadId: "e2e-leakage-lead",
     leakageAlert: null,
     autoReplySent: false,
+    zeroUi: { enabled: true, automationEnabled: true, ownerCommandCount: 0, lastIntent: "", lastReply: "" },
   };
 }
 
@@ -134,4 +137,15 @@ export function getE2EState() {
 
 export function isE2EEnabled() {
   return process.env["E2E_MODE"] === "true";
+}
+
+
+export function recordE2EOwnerCommand(intent: string, reply: string) {
+  state.zeroUi.ownerCommandCount += 1;
+  state.zeroUi.lastIntent = intent;
+  state.zeroUi.lastReply = reply;
+}
+
+export function getE2EZeroUIState() {
+  return { ...state.zeroUi };
 }
