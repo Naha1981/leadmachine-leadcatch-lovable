@@ -19,7 +19,7 @@ function applyTheme(theme: Theme) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
-  root.dataset.theme = theme;
+  root.setAttribute("data-theme", theme);
   root.style.colorScheme = theme;
 }
 
