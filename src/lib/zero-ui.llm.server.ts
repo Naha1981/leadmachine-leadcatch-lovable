@@ -11,7 +11,7 @@ async function chatNahaLLM(messages: ChatMessage[]): Promise<ChatResult> {
   const key = process.env["NAHALLM_API_KEY"];
   if (!base || !key) throw new Error("NahaLLM not configured");
   const model = process.env["NAHALLM_MODEL"] || "fast";
-  const res = await fetch(\`\${base.replace(/\\/$/, "")}/v1/chat/completions\`, {
+  const res = await fetch(base.replace(/\/$/, "") + "/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: "Bearer " + key,
