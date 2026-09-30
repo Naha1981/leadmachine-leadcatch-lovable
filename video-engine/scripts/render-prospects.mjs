@@ -3,7 +3,6 @@ import path from "node:path";
 import os from "node:os";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { execFileSync } from "node:child_process";
 import * as XLSX from "xlsx";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
@@ -31,9 +30,9 @@ const allRows = String(args.get("all") || "false").toLowerCase() === "true";
 const jobs = Math.max(1, Number(args.get("jobs") || "1"));
 const upload = String(args.get("upload") || process.env.SUPABASE_UPLOAD || "false").toLowerCase() === "true";
 
-function nonEmpty(value) {
+function nonEmpty(value, fallback = "") {
   const text = String(value ?? "").trim();
-  if (!text) return "";
+  if (!text) return fallback;
   if (/^(pending stage|n\/a|unknown|unverified|none observed|not contacted)/i.test(text)) return "";
   return text.replace(/\s+/g, " ");
 }
@@ -43,7 +42,7 @@ function safeSlug(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 70);
+    .slice(0, 70) || "prospect";
 }
 
 function safeFilePart(value) {
