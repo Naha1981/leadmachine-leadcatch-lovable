@@ -45,7 +45,8 @@ try {
     throw new Error("Theme preference was not persisted before reload: " + JSON.stringify(persisted));
   }
   await desktop.reload({ waitUntil: "domcontentloaded" });
-  await desktop.waitForTimeout(250);
+  await desktop.locator('html[data-theme-ready="true"]').waitFor({ state: "attached", timeout: 10000 });
+  await desktop.waitForTimeout(150);
   if (!(await desktop.locator("html").getAttribute("class"))?.includes("dark")) {
     throw new Error("Theme did not persist across reload");
   }
