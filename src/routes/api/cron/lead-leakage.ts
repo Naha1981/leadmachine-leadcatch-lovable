@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { processHotLeadLeakageAlerts } from "@/lib/leakage.server";
+import { alertLeakage, isE2EEnabled } from "@/lib/e2e-store.server";
 
 function authorized(request: Request) {
   const secret = process.env["CRON_SECRET"];
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/api/cron/lead-leakage")({
       GET: async ({ request }) => {
         if (!authorized(request)) return Response.json({ error: "Unauthorized" }, { status: 401 });
         try {
+          if (isE2EEnabled()) return Response.json({ ok: true, processed: [alertLeakage()], count: 1, e2e: true });
           const processed = await processHotLeadLeakageAlerts(50);
           return Response.json({ ok: true, processed, count: processed.length });
         } catch (e) {
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/api/cron/lead-leakage")({
       POST: async ({ request }) => {
         if (!authorized(request)) return Response.json({ error: "Unauthorized" }, { status: 401 });
         try {
+          if (isE2EEnabled()) return Response.json({ ok: true, processed: [alertLeakage()], count: 1, e2e: true });
           const processed = await processHotLeadLeakageAlerts(50);
           return Response.json({ ok: true, processed, count: processed.length });
         } catch (e) {
