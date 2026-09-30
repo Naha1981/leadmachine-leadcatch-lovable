@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/components/ui-bits";
 import { TemperatureBadge } from "@/components/TemperatureBadge";
+import { AgentWorkforcePanel } from "@/components/agent-workforce/AgentWorkforcePanel";
 
 export const Route = createFileRoute("/_authenticated/_shell/lead-intent")({
   head: () => ({
