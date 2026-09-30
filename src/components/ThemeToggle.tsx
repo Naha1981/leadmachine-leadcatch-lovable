@@ -8,9 +8,9 @@ export function ThemeToggle() {
 
   function handleToggle() {
     const next = dark ? "light" : "dark";
-    document.body.classList.toggle("dark", next === "dark");
-    document.body.setAttribute("data-theme", next);
-    document.body.style.colorScheme = next;
+    document.documentElement.classList.toggle("dark", next === "dark");
+    document.documentElement.setAttribute("data-theme", next);
+    document.documentElement.style.colorScheme = next;
     setTheme(next);
   }
 
