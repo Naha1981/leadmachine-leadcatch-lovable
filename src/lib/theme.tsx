@@ -24,17 +24,20 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    const stored = readStoredTheme();
+    setThemeState(stored);
+    applyTheme(stored);
+  }, []);
 
   const setTheme = (next: Theme) => {
     setThemeState(next);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, next);
     }
+    applyTheme(next);
   };
 
   const toggleTheme = () => {
