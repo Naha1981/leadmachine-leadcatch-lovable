@@ -1,7 +1,7 @@
 
 export type EvidenceLabel = "SOURCE-BACKED" | "CUSTOMER-CONFIRMED" | "PROPOSAL" | "ASSUMPTION";
 
-export type RuntimeKind = "openmuse" | "openbot" | "demo";
+export type RuntimeKind = "openmuse" | "openbot";
 
 export type RuntimeStatus = {
   kind: RuntimeKind;
