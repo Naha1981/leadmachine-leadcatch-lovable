@@ -98,6 +98,7 @@ async function renderJob(payload, jobId) {
     crf: 20,
   });
   const videoUrl = await uploadVideo(outputLocation, "prospects/" + safeSlug(payload.prospectId) + "/" + path.basename(outputLocation));
+  await fs.promises.unlink(outputLocation).catch(() => undefined);
   return { videoUrl };
 }
 
