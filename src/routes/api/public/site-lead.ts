@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { scoreInboundLead } from "@/lib/lead-scoring.server";
+import { getE2EBusiness, isE2EEnabled, recordQuoteLead } from "@/lib/e2e-store.server";
 
 const Body = z.object({
   slug: z.string().trim().min(1).max(80),
@@ -30,6 +31,32 @@ export const Route = createFileRoute("/api/public/site-lead")({
         }
         const phone = normalisePhone(parsed.phone);
         if (!phone) return Response.json({ ok: false, error: "That phone number doesn't look right." }, { status: 400 });
+
+        if (isE2EEnabled() && parsed.slug.toLowerCase() === "e2e-leadmachine") {
+          const business = getE2EBusiness();
+          const scored = await scoreInboundLead({
+            businessName: business.businessName,
+            industry: business.industry,
+            services: business.services,
+            leadName: parsed.name,
+            phone,
+            message: parsed.message || "",
+          });
+          recordQuoteLead({
+            name: parsed.name,
+            phone,
+            score: scored.score,
+            temperature: scored.temperature,
+            summary: scored.summary,
+          });
+          return Response.json({
+            ok: true,
+            leadId: "e2e-quote-lead",
+            score: scored.score,
+            temperature: scored.temperature,
+            e2e: true,
+          });
+        }
 
         const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
         const db = rawDb as any;
