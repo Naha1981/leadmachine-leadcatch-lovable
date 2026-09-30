@@ -151,20 +151,40 @@ export async function notifyOwner(ctx: ZeroUIToolContext, message: string, idemp
   const phone = normalizePhoneNumber(profile?.contact_phone);
   if (!phone || !profile?.wa_account_id) return { ok: false, ignored: true, reason: "Owner alert WhatsApp is not configured" };
 
-  const inserted = await database.from("zero_ui_agent_actions").insert({
-    tenant_id: ctx.tenantId,
-    agent_run_id: ctx.agentRunId ?? null,
-    action: "notify_owner",
-    action_class: getActionClass("notify_owner"),
-    target_type: "owner_phone",
-    target_id: phone,
-    idempotency_key: idempotencyKey,
-    input: { message },
-    status: "processing",
-  }).select("id").maybeSingle();
+  let actionId: string | null = null;
+  const { data: existingAction } = await database
+    .from("zero_ui_agent_actions")
+    .select("id,status")
+    .eq("tenant_id", ctx.tenantId)
+    .eq("idempotency_key", idempotencyKey)
+    .maybeSingle();
 
-  if (inserted.error?.code === "23505") return { ok: true, duplicate: true };
-  if (inserted.error) throw inserted.error;
+  if (existingAction?.status === "completed" || existingAction?.status === "processing") {
+    return { ok: true, duplicate: true };
+  }
+
+  if (existingAction?.status === "failed") {
+    actionId = existingAction.id;
+    await database.from("zero_ui_agent_actions").update({
+      status: "processing",
+      error: null,
+      input: { message },
+    }).eq("id", actionId).eq("tenant_id", ctx.tenantId);
+  } else {
+    const inserted = await database.from("zero_ui_agent_actions").insert({
+      tenant_id: ctx.tenantId,
+      agent_run_id: ctx.agentRunId ?? null,
+      action: "notify_owner",
+      action_class: getActionClass("notify_owner"),
+      target_type: "owner_phone",
+      target_id: phone,
+      idempotency_key: idempotencyKey,
+      input: { message },
+      status: "processing",
+    }).select("id").maybeSingle();
+    if (inserted.error) throw inserted.error;
+    actionId = inserted.data.id;
+  }
 
   try {
     const sent = await sendText(ctx.tenantId, profile.wa_account_id, phone, message);
@@ -172,12 +192,12 @@ export async function notifyOwner(ctx: ZeroUIToolContext, message: string, idemp
       status: "completed",
       result: { externalId: sent.message?.key?.id ?? null },
       completed_at: new Date().toISOString(),
-    }).eq("id", inserted.data.id).eq("tenant_id", ctx.tenantId);
+    }).eq("id", actionId).eq("tenant_id", ctx.tenantId);
     await database.from("zero_ui_usage_events").insert({
       tenant_id: ctx.tenantId,
       event_type: "owner_notification",
       idempotency_key: "owner-notification:" + idempotencyKey,
-      metadata: { actionId: inserted.data.id },
+      metadata: { actionId },
     }).select("id").maybeSingle();
     return { ok: true, externalId: sent.message?.key?.id ?? null };
   } catch (error) {
@@ -185,7 +205,7 @@ export async function notifyOwner(ctx: ZeroUIToolContext, message: string, idemp
       status: "failed",
       error: error instanceof Error ? error.message : "Owner notification failed",
       completed_at: new Date().toISOString(),
-    }).eq("id", inserted.data.id).eq("tenant_id", ctx.tenantId);
+    }).eq("id", actionId).eq("tenant_id", ctx.tenantId);
     throw error;
   }
 }
