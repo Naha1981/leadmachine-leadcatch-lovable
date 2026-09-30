@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/test/acceptance")({
           resetE2EState();
           return Response.json({
             ok: true,
-            tenantId: "e2e-tenant",
+            tenantId: "00000000-0000-0000-0000-00000000e2e1",
             slug: "e2e-leadmachine",
             siteUrl: "/s/e2e-leadmachine",
             leakageLeadId: "e2e-leakage-lead",
