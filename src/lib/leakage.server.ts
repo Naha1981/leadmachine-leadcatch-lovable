@@ -3,15 +3,15 @@ import { sendText } from "@/lib/operator.server";
 const WAIT_MS = 15 * 60 * 1000;
 
 export async function sendSmsAlert(opts: { to: string; text: string; tenantId: string }) {
-  if (process.env.SIMULATE_SMS === "true") return { ok: true, simulated: true };
-  const url = process.env.SMS_ALERT_WEBHOOK_URL;
+  if (process.env["SIMULATE_SMS"] === "true") return { ok: true, simulated: true };
+  const url = process.env["SMS_ALERT_WEBHOOK_URL"];
   if (!url) return { ok: false, simulated: false, reason: "SMS gateway not configured" };
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(process.env.SMS_ALERT_WEBHOOK_SECRET ? { "X-Lead-Machine-Secret": process.env.SMS_ALERT_WEBHOOK_SECRET } : {}),
+        ...(process.env["SMS_ALERT_WEBHOOK_SECRET"] ? { "X-Lead-Machine-Secret": process.env["SMS_ALERT_WEBHOOK_SECRET"] } : {}),
       },
       body: JSON.stringify({ event: "lead.leakage_alert", tenantId: opts.tenantId, to: opts.to, message: opts.text }),
     });
@@ -64,7 +64,7 @@ export async function processHotLeadLeakageAlerts(limit = 25) {
 
       let whatsapp = false;
       let sms = false;
-      if (process.env.SIMULATE_WHATSAPP === "true") {
+      if (process.env["SIMULATE_WHATSAPP"] === "true") {
         whatsapp = true;
       } else if (profile?.whatsapp_status === "connected" && profile.wa_account_id) {
         const sent = await sendText(lead.tenant_id, profile.wa_account_id, ownerPhone, text);
