@@ -36,6 +36,7 @@ function Onboarding() {
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
   const [suburb, setSuburb] = useState("");
+  const [alertPhone, setAlertPhone] = useState("");
   const [hours, setHours] = useState<WorkingHours>({ days: [1, 2, 3, 4, 5], start: "08:00", end: "17:00" });
   const [greeting, setGreeting] = useState("");
   const [services, setServices] = useState("");
@@ -46,6 +47,7 @@ function Onboarding() {
     setName(ws.profile.business_name);
     setIndustry(ws.profile.industry);
     setSuburb(ws.profile.suburb ?? "");
+    setAlertPhone(ws.profile.contact_phone ?? "");
     setHours(ws.profile.working_hours as WorkingHours);
     setGreeting(ws.config.greeting);
     setServices(ws.profile.services ?? "");
@@ -63,7 +65,7 @@ function Onboarding() {
     setSaving(true);
     const p = await supabase
       .from("business_profiles")
-      .update({ business_name: name.trim(), industry, suburb: suburb.trim(), services, working_hours: hours, ...(finish ? { onboarded: true } : {}) })
+      .update({ business_name: name.trim(), industry, suburb: suburb.trim(), contact_phone: alertPhone.trim(), services, working_hours: hours, ...(finish ? { onboarded: true } : {}) })
       .eq("tenant_id", ws.tenantId);
     const pack = getVerticalPack(industry);
     const c = await supabase
