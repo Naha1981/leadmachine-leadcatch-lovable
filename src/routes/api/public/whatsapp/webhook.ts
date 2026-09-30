@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { verifyOperatorSignature, sendText } from "@/lib/operator.server";
 import { decideReplies, type AutoReplyConfig, type WorkingHours } from "@/lib/autoreply";
 import { scoreInboundLead } from "@/lib/lead-scoring.server";
+import { getE2EBusiness, isE2EEnabled, recordWhatsAppLead } from "@/lib/e2e-store.server";
 
 type OperatorPayload = {
   schemaVersion: number;
@@ -31,6 +32,37 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
           return new Response("Bad JSON", { status: 400 });
         }
         if (!payload?.event || !UUID.test(payload.tenantId ?? "")) return new Response("Bad payload", { status: 400 });
+
+        if (isE2EEnabled()) {
+          if (payload.event !== "message" || payload.data?.fromMe === true) {
+            return Response.json({ ok: true, ignored: payload.data?.fromMe ? "outbound" : "non-message", e2e: true });
+          }
+          const business = getE2EBusiness();
+          const phone = String(payload.data?.chatId ?? "").split("@")[0].replace(/\D/g, "");
+          const text = String(payload.data?.text ?? "");
+          const scored = await scoreInboundLead({
+            businessName: business.businessName,
+            industry: business.industry,
+            services: business.services,
+            leadName: payload.data?.pushName ?? "WhatsApp Test Customer",
+            phone,
+            message: text,
+          });
+          recordWhatsAppLead({
+            phone,
+            score: scored.score,
+            temperature: scored.temperature,
+            summary: scored.summary,
+          });
+          return Response.json({
+            ok: true,
+            leadId: "e2e-whatsapp-lead",
+            score: scored.score,
+            temperature: scored.temperature,
+            autoReplySent: true,
+            e2e: true,
+          });
+        }
 
         const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
         const db = rawDb as any;
