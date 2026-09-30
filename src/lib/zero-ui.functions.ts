@@ -33,7 +33,7 @@ export const getZeroUISettings = createServerFn({ method: "GET" })
       automationEnabled: Boolean(config["automation_enabled"]),
       ownerAlertsEnabled: Boolean(config["owner_alerts_enabled"]),
       autoFollowupsEnabled: Boolean(config["auto_followups_enabled"]),
-      requireFollowupApproval: Boolean(config.require_followup_approval),
+      requireFollowupApproval: Boolean(config["require_followup_approval"]),
       ownerAlertPhone: normalizePhoneNumber(profile?.contact_phone),
       whatsappStatus: profile?.whatsapp_status ?? "disconnected",
       whatsappConnected: Boolean(profile?.wa_account_id) && profile?.whatsapp_status === "connected",
@@ -83,10 +83,10 @@ export const setZeroUISettings = createServerFn({ method: "POST" })
     const config = await getZeroUIConfig(db, tenantId);
     return {
       ok: true,
-      enabled: Boolean(config.enabled),
-      automationEnabled: Boolean(config.automation_enabled),
-      ownerAlertsEnabled: Boolean(config.owner_alerts_enabled),
-      autoFollowupsEnabled: Boolean(config.auto_followups_enabled),
+      enabled: Boolean(config["enabled"]),
+      automationEnabled: Boolean(config["automation_enabled"]),
+      ownerAlertsEnabled: Boolean(config["owner_alerts_enabled"]),
+      autoFollowupsEnabled: Boolean(config["auto_followups_enabled"]),
     };
   });
 
