@@ -5,6 +5,7 @@ import { normalizePhoneNumber } from "./zero-ui-phone.server";
 import { runOpenBotAgUi } from "./agent-workforce/openbot-agui.server";
 
 export type SalesExecutionInput = {
+  runId: string;
   businessName: string;
   contactName?: string;
   prospectPhone?: string;
@@ -46,7 +47,7 @@ export async function requestSalesExecutionApproval(userId: string, input: Sales
   const database = await db();
   const tenantId = await tenantForUser(userId);
   await requireTenantRole(database, userId, tenantId, ["owner", "admin"]);
-  const idempotencyKey = "sales-recovery:" + tenantId + ":" + Buffer.from([input.businessName, input.websiteUrl, input.prospectPhone ?? ""].join("|")).toString("base64url").slice(0, 120);
+  const idempotencyKey = "sales-recovery:" + tenantId + ":" + input.runId + ":" + Buffer.from([input.businessName, input.websiteUrl, input.prospectPhone ?? ""].join("|")).toString("base64url").slice(0, 100);
 
   const existing = await database.from("zero_ui_agent_actions").select("id,status").eq("tenant_id", tenantId).eq("idempotency_key", idempotencyKey).maybeSingle();
   if (existing.data) {
