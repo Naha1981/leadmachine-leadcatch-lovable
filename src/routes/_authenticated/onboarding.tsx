@@ -12,6 +12,7 @@ import { Logo } from "@/components/Logo";
 import { WhatsAppConnect } from "@/components/WhatsAppConnect";
 import { HoursEditor } from "@/components/HoursEditor";
 import type { WorkingHours } from "@/lib/autoreply";
+import { getVerticalPack } from "@/lib/vertical-packs";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -36,6 +37,7 @@ function Onboarding() {
   const [industry, setIndustry] = useState("");
   const [hours, setHours] = useState<WorkingHours>({ days: [1, 2, 3, 4, 5], start: "08:00", end: "17:00" });
   const [greeting, setGreeting] = useState("");
+  const [services, setServices] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -44,16 +46,31 @@ function Onboarding() {
     setIndustry(ws.profile.industry);
     setHours(ws.profile.working_hours as WorkingHours);
     setGreeting(ws.config.greeting);
+    setServices(ws.profile.services ?? "");
   }, [ws]);
+
+  useEffect(() => {
+    const pack = getVerticalPack(industry);
+    if (!pack) return;
+    setServices(pack.services.join("\n"));
+    setGreeting((current) => current || `Hi! Thanks for contacting ${name || "us"}. We’ll help you right away.`);
+  }, [industry, name]);
 
   async function save(finish: boolean) {
     if (!ws) return;
     setSaving(true);
     const p = await supabase
       .from("business_profiles")
-      .update({ business_name: name.trim(), industry, working_hours: hours, ...(finish ? { onboarded: true } : {}) })
+      .update({ business_name: name.trim(), industry, services, working_hours: hours, ...(finish ? { onboarded: true } : {}) })
       .eq("tenant_id", ws.tenantId);
-    const c = await supabase.from("auto_reply_configs").update({ greeting }).eq("tenant_id", ws.tenantId);
+    const pack = getVerticalPack(industry);
+    const c = await supabase
+      .from("auto_reply_configs")
+      .update({
+        greeting,
+        questions: (pack?.questions ?? []).map((q) => q.question),
+      })
+      .eq("tenant_id", ws.tenantId);
     setSaving(false);
     if (p.error || c.error) {
       toast.error("Couldn't save. Try again.");
@@ -96,6 +113,43 @@ function Onboarding() {
                     {i}
                   </button>
                 ))}
+              </div>
+              {(() => {
+                const pack = getVerticalPack(industry);
+                if (!pack) return null;
+                return (
+                  <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-sm font-semibold text-foreground">{pack.label} Intelligence Pack ready</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Services and qualification questions are pre-filled. You can customise them later.
+                    </p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Services</p>
+                        <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
+                          {pack.services.slice(0, 5).map((service) => <li key={service}>• {service}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Questions</p>
+                        <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
+                          {pack.questions.slice(0, 4).map((q) => <li key={q.id}>• {q.question}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              <div className="space-y-1.5">
+                <Label htmlFor="services">Services covered by LeadMachine</Label>
+                <Textarea
+                  id="services"
+                  value={services}
+                  onChange={(e) => setServices(e.target.value)}
+                  rows={5}
+                  className="rounded-xl"
+                  placeholder="One service per line"
+                />
               </div>
             </div>
           </div>
