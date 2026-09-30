@@ -24,6 +24,7 @@ import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authent
 import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
+import { Route as ApiCronZeroUIRouteImport } from './routes/api/cron/zero-ui'
 import { Route as ApiCronDemandRadarRouteImport } from './routes/api/cron/demand-radar'
 import { Route as ApiDemandRadarLatestRouteImport } from './routes/api/demand-radar/latest'
 import { Route as ApiTestAcceptanceRouteImport } from './routes/api/test/acceptance'
@@ -117,6 +118,11 @@ const ApiDemandRadarLatestRoute = ApiDemandRadarLatestRouteImport.update({
   path: '/api/demand-radar/latest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronZeroUIRoute = ApiCronZeroUIRouteImport.update({
+  id: '/api/cron/zero-ui',
+  path: '/api/cron/zero-ui',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTestAcceptanceRoute = ApiTestAcceptanceRouteImport.update({
   id: '/api/test/acceptance',
   path: '/api/test/acceptance',
@@ -139,6 +145,8 @@ export interface FileRoutesByFullPath {
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
+  '/api/cron/zero-ui': typeof ApiCronZeroUIRoute
+  '/api/cron/zero-ui': typeof ApiCronZeroUIRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRoutesByTo {
@@ -198,6 +206,7 @@ export interface FileRouteTypes {
     | '/api/cron/lead-leakage'
     | '/api/cron/demand-radar'
     | '/api/demand-radar/latest'
+    | '/api/cron/zero-ui'
     | '/api/test/acceptance'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -249,6 +258,7 @@ export interface RootRouteChildren {
   ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
   ApiCronDemandRadarRoute: typeof ApiCronDemandRadarRoute
   ApiDemandRadarLatestRoute: typeof ApiDemandRadarLatestRoute
+  ApiCronZeroUIRoute: typeof ApiCronZeroUIRoute
   ApiTestAcceptanceRoute: typeof ApiTestAcceptanceRoute
 }
 
@@ -373,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDemandRadarLatestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/zero-ui': {
+      id: '/api/cron/zero-ui'
+      path: '/api/cron/zero-ui'
+      fullPath: '/api/cron/zero-ui'
+      preLoaderRoute: typeof ApiCronZeroUIRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/test/acceptance': {
       id: '/api/test/acceptance'
       path: '/api/test/acceptance'
@@ -430,6 +447,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
   ApiCronDemandRadarRoute: ApiCronDemandRadarRoute,
   ApiDemandRadarLatestRoute: ApiDemandRadarLatestRoute,
+  ApiCronZeroUIRoute: ApiCronZeroUIRoute,
   ApiTestAcceptanceRoute: ApiTestAcceptanceRoute,
 }
 export const routeTree = rootRouteImport
