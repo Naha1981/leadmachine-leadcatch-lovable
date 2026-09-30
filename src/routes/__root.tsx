@@ -118,7 +118,11 @@ function RootShell({ children }: { children: ReactNode }) {
                     root.setAttribute("data-theme", theme);
                     root.style.colorScheme = theme;
                   };
-                  const read = () => localStorage.getItem(key) === "dark" ? "dark" : "light";
+                  const read = () => {
+                    const cookie = document.cookie.match(/(?:^|; )leadmachine-theme=(dark|light)(?:;|$)/);
+                    if (cookie?.[1]) return cookie[1];
+                    return localStorage.getItem(key) === "dark" ? "dark" : "light";
+                  };
                   apply(read());
                   document.addEventListener("click", (event) => {
                     const target = event.target;
@@ -126,6 +130,7 @@ function RootShell({ children }: { children: ReactNode }) {
                     if (!button) return;
                     const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
                     localStorage.setItem(key, next);
+                    document.cookie = key + "=" + next + "; Max-Age=31536000; Path=/; SameSite=Lax";
                     apply(next);
                   }, true);
                 })();
