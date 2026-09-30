@@ -32,7 +32,8 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
         }
         if (!payload?.event || !UUID.test(payload.tenantId ?? "")) return new Response("Bad payload", { status: 400 });
 
-        const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+        const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
+        const db = rawDb as any;
         const { data: tenant } = await db.from("tenants").select("id").eq("id", payload.tenantId).maybeSingle();
         if (!tenant) return Response.json({ ok: true, ignored: "unknown tenant" });
 
