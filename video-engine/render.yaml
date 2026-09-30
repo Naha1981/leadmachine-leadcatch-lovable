@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: leadmachine-video-engine
+    runtime: node
+    rootDir: video-engine
+    buildCommand: npm install
+    startCommand: node server.mjs
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: VIDEO_ENGINE_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: LEAD_MACHINE_VIDEO_BUCKET
+        value: lead-machine-videos
+      - key: RENDER_CONCURRENCY
+        value: "2"
