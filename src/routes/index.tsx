@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  Bell,
   Bot,
   Car,
   CheckCheck,
@@ -11,9 +12,11 @@ import {
   Inbox,
   LayoutDashboard,
   MapPin,
+  MapPinned,
   MessageCircle,
   Phone,
   QrCode,
+  Radio,
   Send,
   ShieldCheck,
   Sparkles,
@@ -55,6 +58,9 @@ function Landing() {
           <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
             <a href="#problem" className="transition-colors hover:text-foreground">
               Why
+            </a>
+            <a href="#demand-radar" className="transition-colors hover:text-foreground">
+              Demand Radar
             </a>
             <a href="#features" className="transition-colors hover:text-foreground">
               Features
@@ -193,6 +199,29 @@ function Landing() {
               </div>
             </StoryCard>
           </div>
+        </div>
+      </section>
+
+      {/* Demand Radar */}
+      <section id="demand-radar" className="border-y border-border bg-card/45">
+        <div className="mx-auto max-w-6xl px-5 py-20">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                Pillar 01 · Proactive lead capture
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-semibold text-primary">
+                <Radio className="h-3 w-3" /> Live social signal
+              </span>
+            </div>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+              Someone just asked for your service. LeadMachine found the post.
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              LeadMachine monitors public Reddit community conversations for service demand, matches the signal to your business and alerts you with the exact post while the customer is still looking.
+            </p>
+          </div>
+          <DemandRadarPreview />
         </div>
       </section>
 
@@ -520,6 +549,89 @@ function Landing() {
           <span>© {new Date().getFullYear()} LeadMachine · Made in South Africa</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function DemandRadarPreview() {
+  return (
+    <div className="mt-10 rounded-[2rem] border border-border bg-card p-3 shadow-soft sm:p-5">
+      <div className="flex flex-col gap-3 border-b border-border px-2 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Demand Radar · Live signal</p>
+          <p className="mt-1 text-xs text-muted-foreground">Public community post → buying intent → owner alert</p>
+        </div>
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1.5 text-[10px] font-semibold text-primary">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+          Monitoring public demand
+        </span>
+      </div>
+
+      <div className="mt-5 grid items-stretch gap-4 lg:grid-cols-[1fr_auto_1fr]">
+        <div className="rounded-3xl border border-border bg-background p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-sm font-bold text-muted-foreground">SC</div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">Community enquiry</p>
+              <p className="text-[11px] text-muted-foreground">Sandton community · 3 min ago</p>
+            </div>
+            <span className="rounded-full border border-border bg-card px-2 py-1 text-[10px] text-muted-foreground">Public</span>
+          </div>
+          <p className="mt-5 text-sm leading-6 text-foreground">
+            “Looking for a reliable plumber in Sandton. My geyser burst and I need someone tonight. Any recommendations?”
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-medium text-muted-foreground">Sandton</span>
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary">Plumbing</span>
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary">Urgent</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center gap-2 px-1 py-1 lg:w-28 lg:px-0">
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-primary/25 bg-primary/5 text-primary">
+            <span className="absolute inset-0 animate-ping rounded-full border border-primary/15" />
+            <Radio className="relative h-5 w-5" />
+          </div>
+          <p className="max-w-[130px] text-center text-[10px] font-semibold leading-4 text-primary">LeadMachine detected buying intent</p>
+          <div className="hidden h-px w-full bg-border lg:block" />
+          <MapPinned className="hidden h-4 w-4 text-muted-foreground lg:block" />
+        </div>
+
+        <div className="rounded-3xl border border-primary/25 bg-primary/5 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">NEW LEAD SIGNAL</p>
+              <p className="mt-1 text-sm font-semibold">Plumbing demand detected</p>
+            </div>
+            <TemperatureBadge temperature="hot" />
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <MiniStat label="Service" value="Plumbing" />
+            <MiniStat label="Location" value="Sandton" />
+            <MiniStat label="Intent" value="High" />
+            <MiniStat label="Urgency" value="Tonight" />
+          </div>
+
+          <div className="mt-4 flex items-center justify-between rounded-2xl border border-primary/20 bg-card px-3 py-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Buying intent</p>
+              <p className="mt-0.5 text-lg font-semibold">Hot lead</p>
+            </div>
+            <span className="rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">10/10</span>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-border bg-card p-3">
+            <div className="flex items-center gap-2 text-[11px] font-semibold">
+              <Bell className="h-3.5 w-3.5 text-primary" /> LeadMachine alerted you
+            </div>
+            <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground">Exact post + source link sent to the owner's connected alert channel.</p>
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1.5 text-[10px] font-semibold text-primary-foreground">
+              View signal <ArrowRight className="h-3 w-3" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
