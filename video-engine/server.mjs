@@ -74,7 +74,7 @@ async function uploadVideo(localPath, objectPath) {
 }
 
 function auth(request) {
-  if (!API_KEY) return true;
+  if (!API_KEY) return false;
   const supplied = request.headers["x-video-engine-key"];
   if (typeof supplied !== "string") return false;
   const a = Buffer.from(supplied);
