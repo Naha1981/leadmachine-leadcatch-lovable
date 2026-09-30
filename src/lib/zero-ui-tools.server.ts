@@ -176,7 +176,7 @@ export async function notifyOwner(ctx: ZeroUIToolContext, message: string, idemp
     await database.from("zero_ui_usage_events").insert({
       tenant_id: ctx.tenantId,
       event_type: "owner_notification",
-      idempotency_key: \`owner-notification:\${idempotencyKey}\`,
+      idempotency_key: "owner-notification:" + idempotencyKey,
       metadata: { actionId: inserted.data.id },
     }).select("id").maybeSingle();
     return { ok: true, externalId: sent.message?.key?.id ?? null };
@@ -194,7 +194,7 @@ export async function scheduleFollowup(ctx: ZeroUIToolContext, leadId: string, s
   assertActionAllowed("schedule_followup");
   const database = await db();
   const lead = await getLead(ctx, leadId);
-  const key = \`followup:\${ctx.tenantId}:\${lead.id}:\${scheduledAt}\`;
+  const key = "followup:" + ctx.tenantId + ":" + lead.id + ":" + scheduledAt;
   const inserted = await database.from("zero_ui_agent_actions").insert({
     tenant_id: ctx.tenantId,
     agent_run_id: ctx.agentRunId ?? null,
