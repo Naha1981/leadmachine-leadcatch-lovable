@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { scoreInboundLead } from "@/lib/lead-scoring.server";
 
 const Body = z.object({
   slug: z.string().trim().min(1).max(80),
@@ -40,13 +41,37 @@ export const Route = createFileRoute("/api/public/site-lead")({
         if (!site) return Response.json({ ok: false, error: "This page is not available." }, { status: 404 });
 
         const tenantId = site.tenant_id;
+        const { data: profile } = await db
+          .from("business_profiles")
+          .select("business_name, industry, services")
+          .eq("tenant_id", tenantId)
+          .maybeSingle();
         const { data: existing } = await db.from("leads").select("id").eq("tenant_id", tenantId).eq("phone", phone).maybeSingle();
+
+        const scored = await scoreInboundLead({
+          businessName: profile?.business_name || "Your business",
+          industry: profile?.industry || "",
+          services: profile?.services || "",
+          leadName: parsed.name,
+          phone,
+          message: parsed.message || "",
+        });
 
         let leadId = existing?.id;
         if (!leadId) {
           const r = await db
             .from("leads")
-            .insert({ tenant_id: tenantId, phone, name: parsed.name, source: "website" })
+            .insert({
+              tenant_id: tenantId,
+              phone,
+              name: parsed.name,
+              source: "website",
+              ai_score: scored.score,
+              ai_temperature: scored.temperature,
+              ai_summary: scored.summary,
+              ai_scored_at: new Date().toISOString(),
+              ai_last_scored_message_at: new Date().toISOString(),
+            })
             .select("id")
             .single();
           if (r.error) {
@@ -55,7 +80,15 @@ export const Route = createFileRoute("/api/public/site-lead")({
           }
           leadId = r.data.id;
         } else {
-          await db.from("leads").update({ name: parsed.name, status: "new" }).eq("id", leadId);
+          await db.from("leads").update({
+            name: parsed.name,
+            status: "new",
+            ai_score: scored.score,
+            ai_temperature: scored.temperature,
+            ai_summary: scored.summary,
+            ai_scored_at: new Date().toISOString(),
+            ai_last_scored_message_at: new Date().toISOString(),
+          }).eq("id", leadId);
         }
 
         if (parsed.message) {
@@ -74,8 +107,19 @@ export const Route = createFileRoute("/api/public/site-lead")({
           type: "lead_created",
           payload: { source: "website", slug: parsed.slug, consent: true },
         });
+        await db.from("lead_events").insert({
+          tenant_id: tenantId,
+          lead_id: leadId,
+          type: "lead_scored",
+          payload: { score: scored.score, temperature: scored.temperature, summary: scored.summary },
+        });
 
-        return Response.json({ ok: true });
+        return Response.json({
+          ok: true,
+          leadId,
+          score: scored.score,
+          temperature: scored.temperature,
+        });
       },
     },
   },
