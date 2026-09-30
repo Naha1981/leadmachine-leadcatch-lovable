@@ -300,19 +300,6 @@ export async function processDemandRadar(limit = 25) {
             alert_channels: { whatsapp: alert.whatsapp, sms: alert.sms },
           }).eq("id", inserted.data.id);
 
-          await db.from("lead_events").insert({
-            tenant_id: signal.tenantId,
-            lead_id: inserted.data.id,
-            type: "demand_radar_alerted",
-            event_type: "demand_radar_alerted",
-            payload: {
-              source: signal.source,
-              source_url: signal.sourceUrl,
-              intent_score: signal.intentScore,
-              whatsapp: alert.whatsapp,
-              sms: alert.sms,
-            },
-          }).catch(() => undefined);
 
           alerted += 1;
         }
