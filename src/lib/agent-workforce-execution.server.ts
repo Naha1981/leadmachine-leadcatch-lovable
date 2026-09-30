@@ -174,7 +174,6 @@ async function executeSalesActionRow(action: any) {
         context: [{ type: "tenant", tenantId }, { type: "prospect", businessName: input.businessName, websiteUrl: input.websiteUrl, location: input.location ?? null }],
         forwardedProps: { openbotRun: { tenantId, actionId, runId, approved: true } },
       });
-      successfulSteps += 1;
       results.openbot = result;
       await receipt(tenantId, actionId, "openbot.prepare", "openbot-ag-ui", result.status === "completed" ? "completed" : "failed", { outputText: result.outputText.slice(0, 4000), eventCount: result.eventCount }, result.runId);
     } catch (error) {
