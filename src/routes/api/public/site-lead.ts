@@ -31,7 +31,8 @@ export const Route = createFileRoute("/api/public/site-lead")({
         const phone = normalisePhone(parsed.phone);
         if (!phone) return Response.json({ ok: false, error: "That phone number doesn't look right." }, { status: 400 });
 
-        const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+        const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
+        const db = rawDb as any;
         const { data: site } = await db
           .from("websites")
           .select("tenant_id")
