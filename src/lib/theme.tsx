@@ -32,7 +32,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = (next: Theme) => {
     setThemeState(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    }
   };
 
   const toggleTheme = () => {
