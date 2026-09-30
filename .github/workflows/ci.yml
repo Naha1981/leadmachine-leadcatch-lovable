@@ -1,4 +1,5 @@
 name: LeadMachine CI
+# Launch validation: typecheck + production build
 
 on:
   push:
