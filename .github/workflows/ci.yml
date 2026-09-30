@@ -1,0 +1,40 @@
+name: LeadMachine CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "drizzle/**"
+      - "supabase/**"
+      - "package.json"
+      - "bun.lock"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.LEAD_MACHINE_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.LEAD_MACHINE_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.LEAD_MACHINE_SUPABASE_PUBLISHABLE_KEY }}
+      LOVABLE_API_KEY: ${{ secrets.LEAD_MACHINE_LOVABLE_API_KEY }}
+      OPERATOR_URL: ${{ secrets.LEAD_MACHINE_OPERATOR_URL }}
+      OPERATOR_API_KEY: ${{ secrets.LEAD_MACHINE_OPERATOR_API_KEY }}
+      WEBHOOK_SECRET: ${{ secrets.LEAD_MACHINE_WEBHOOK_SECRET }}
+      SIMULATE_WHATSAPP: "true"
+      SIMULATE_SMS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run build
