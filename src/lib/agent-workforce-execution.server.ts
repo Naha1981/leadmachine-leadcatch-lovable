@@ -57,6 +57,7 @@ export async function requestSalesExecutionApproval(userId: string, input: Sales
 
   const actionInsert = await database.from("zero_ui_agent_actions").insert({
     tenant_id: tenantId,
+    agent_run_id: input.runId,
     action: "sales.revenue_recovery",
     action_class: "approval_required",
     target_type: "prospect",
