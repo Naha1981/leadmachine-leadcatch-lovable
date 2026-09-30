@@ -106,8 +106,32 @@ function RootShell({ children }: { children: ReactNode }) {
         </head>
         <body>
           {children}
-          <ThemeToggle />
           <Scripts />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (() => {
+                  const key = "leadmachine-theme";
+                  const apply = (theme) => {
+                    const root = document.documentElement;
+                    root.classList.toggle("dark", theme === "dark");
+                    root.setAttribute("data-theme", theme);
+                    root.style.colorScheme = theme;
+                  };
+                  const read = () => localStorage.getItem(key) === "dark" ? "dark" : "light";
+                  apply(read());
+                  document.addEventListener("click", (event) => {
+                    const target = event.target;
+                    const button = target instanceof Element ? target.closest("[data-theme-toggle]") : null;
+                    if (!button) return;
+                    const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
+                    localStorage.setItem(key, next);
+                    apply(next);
+                  }, true);
+                })();
+              `,
+            }}
+          />
         </body>
       </html>
     </ThemeProvider>
@@ -136,6 +160,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <ThemeToggle />
       <RootToaster />
     </QueryClientProvider>
   );
