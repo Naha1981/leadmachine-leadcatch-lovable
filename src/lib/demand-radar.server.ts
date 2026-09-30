@@ -211,7 +211,8 @@ async function loadTenants(db: any) {
   const { data, error } = await db
     .from("business_profiles")
     .select("tenant_id, business_name, industry, services, suburb, demand_radar_enabled, demand_radar_terms, demand_radar_subreddits")
-    .eq("demand_radar_enabled", true);
+    .eq("demand_radar_enabled", true)
+    .neq("industry", "");
 
   if (error) throw error;
   return data ?? [];
@@ -228,7 +229,7 @@ export async function processDemandRadar(limit = 25) {
     const suburb = clean(tenant.suburb) || null;
     const terms = buildServiceTerms(clean(tenant.industry), clean(tenant.services), tenant.demand_radar_terms);
     const subreddits = Array.isArray(tenant.demand_radar_subreddits)
-      ? tenant.demand_radar_subreddits.map(String).map((v) => v.replace(/^r\//i, "").trim()).filter(Boolean).slice(0, 5)
+      ? (tenant.demand_radar_subreddits as unknown[]).map((v: unknown) => String(v).replace(/^r\//i, "").trim()).filter(Boolean).slice(0, 5)
       : [];
     const queries = buildQueries(terms, suburb);
 
