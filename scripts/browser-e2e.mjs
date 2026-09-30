@@ -57,8 +57,20 @@ try {
   await desktop.getByPlaceholder("WhatsApp number e.g. 082 123 4567").fill(phone);
   await desktop.getByPlaceholder("What do you need help with?").fill("Urgent geyser burst in Sandton. I need someone today.");
   await desktop.getByRole("checkbox").check();
+  const quoteResponsePromise = desktop.waitForResponse(
+    (response) => response.url().includes("/api/public/site-lead") && response.request().method() === "POST",
+    { timeout: 15000 }
+  );
   await desktop.getByRole("button", { name: "Send" }).click();
-  await desktop.getByText("Thanks, we've got your details.").waitFor({ timeout: 15000 });
+  const quoteResponse = await quoteResponsePromise;
+  const quoteBody = await quoteResponse.json().catch(() => ({}));
+  if (!quoteResponse.ok()) {
+    throw new Error("Quote submission failed: HTTP " + quoteResponse.status() + " " + JSON.stringify(quoteBody));
+  }
+  if (quoteBody?.ok !== true) {
+    throw new Error("Quote submission returned an unsuccessful payload: " + JSON.stringify(quoteBody));
+  }
+  await desktop.getByText("Thanks, we've got your details.").waitFor({ timeout: 5000 });
 
   const stateAfterQuote = await json(await desktop.request.get(base + "/api/test/acceptance", {
     headers: { "x-e2e-secret": e2eSecret },
