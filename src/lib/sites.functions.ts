@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { getE2EBusiness, isE2EEnabled } from "@/lib/e2e-store.server";
 
 export type PublicSite = {
   slug: string;
@@ -19,6 +20,24 @@ export type PublicSite = {
 export const getPublicSite = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ slug: z.string().trim().min(1).max(80) }).parse(d))
   .handler(async ({ data }): Promise<PublicSite | null> => {
+    if (isE2EEnabled() && data.slug.toLowerCase() === "e2e-leadmachine") {
+      const business = getE2EBusiness();
+      return {
+        slug: business.slug,
+        headline: business.businessName,
+        subheadline: "Fast plumbing help across Gauteng.",
+        about: "A controlled test business page for automated acceptance tests.",
+        services: [
+          { name: "Emergency plumbing", description: "Fast help for urgent plumbing problems." },
+          { name: "Geyser repairs", description: "Repairs for common geyser faults." },
+        ],
+        faqs: [{ q: "Do you handle emergencies?", a: "Yes. Send your suburb and the problem." }],
+        cta_text: "Get a free quote on WhatsApp",
+        accent: "emerald",
+        whatsapp_number: "27825550111",
+      };
+    }
+
     const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
     const db = createClient<Database>(process.env["SUPABASE_URL"]!, key, {
       auth: { persistSession: false },
