@@ -23,6 +23,8 @@ import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authenticated/_shell/website'
 import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
+import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
+import { Route as ApiTestAcceptanceRouteImport } from './routes/api/test/acceptance'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -98,6 +100,16 @@ const ApiPublicWhatsappWebhookRoute =
     path: '/api/public/whatsapp/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiCronLeadLeakageRoute = ApiCronLeadLeakageRouteImport.update({
+  id: '/api/cron/lead-leakage',
+  path: '/api/cron/lead-leakage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestAcceptanceRoute = ApiTestAcceptanceRouteImport.update({
+  id: '/api/test/acceptance',
+  path: '/api/test/acceptance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -112,6 +124,8 @@ export interface FileRoutesByFullPath {
   '/website': typeof AuthenticatedShellWebsiteRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +140,8 @@ export interface FileRoutesByTo {
   '/website': typeof AuthenticatedShellWebsiteRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +159,8 @@ export interface FileRoutesById {
   '/_authenticated/_shell/website': typeof AuthenticatedShellWebsiteRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/test/acceptance': typeof ApiTestAcceptanceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,6 +177,8 @@ export interface FileRouteTypes {
     | '/website'
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
+    | '/api/cron/lead-leakage'
+    | '/api/test/acceptance'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -173,6 +193,8 @@ export interface FileRouteTypes {
     | '/website'
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
+    | '/api/cron/lead-leakage'
+    | '/api/test/acceptance'
   id:
     | '__root__'
     | '/'
@@ -189,6 +211,8 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/website'
     | '/api/public/site-lead'
     | '/api/public/whatsapp/webhook'
+    | '/api/cron/lead-leakage'
+    | '/api/test/acceptance'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -198,6 +222,8 @@ export interface RootRouteChildren {
   SSlugRoute: typeof SSlugRoute
   ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
+  ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
+  ApiTestAcceptanceRoute: typeof ApiTestAcceptanceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -300,6 +326,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/lead-leakage': {
+      id: '/api/cron/lead-leakage'
+      path: '/api/cron/lead-leakage'
+      fullPath: '/api/cron/lead-leakage'
+      preLoaderRoute: typeof ApiCronLeadLeakageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/test/acceptance': {
+      id: '/api/test/acceptance'
+      path: '/api/test/acceptance'
+      fullPath: '/api/test/acceptance'
+      preLoaderRoute: typeof ApiTestAcceptanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -347,6 +387,8 @@ const rootRouteChildren: RootRouteChildren = {
   SSlugRoute: SSlugRoute,
   ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
+  ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
+  ApiTestAcceptanceRoute: ApiTestAcceptanceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
