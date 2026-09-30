@@ -1,0 +1,22 @@
+name: LeadMachine hot lead leakage alerts
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  leakage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger leakage worker
+        env:
+          APP_URL: ${{ secrets.LEAD_MACHINE_APP_URL }}
+          CRON_SECRET: ${{ secrets.LEAD_MACHINE_CRON_SECRET }}
+        run: |
+          test -n "$APP_URL"
+          test -n "$CRON_SECRET"
+          curl --fail --silent --show-error             -H "Authorization: Bearer $CRON_SECRET"             "$APP_URL/api/cron/lead-leakage"
