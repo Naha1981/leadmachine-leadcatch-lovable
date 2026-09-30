@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeProvider, useTheme } from "@/lib/theme";
-import { getCookie } from "@tanstack/react-start/server";
+import { getPersistedTheme } from "@/lib/theme.server";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 function NotFoundComponent() {
@@ -92,31 +92,52 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" },
     ],
   }),
-  shellComponent: RootShell,
+  beforeLoad: async () => ({
+    initialTheme: await getPersistedTheme(),
+  }),
+  headers: () => ({
+    "Cache-Control": "private, no-store",
+    Vary: "Cookie",
+  }),
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
-  const serverTheme = typeof window === "undefined"
-    ? (getCookie("leadmachine-theme") === "dark" ? "dark" : "light")
-    : "light";
-  const dark = serverTheme === "dark";
+function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+  const { initialTheme } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event === "SIGNED_OUT") queryClient.clear();
+      else queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router, queryClient]);
+
+  const dark = initialTheme === "dark";
 
   return (
-    <ThemeProvider>
+    <ThemeProvider initialTheme={initialTheme}>
       <html
         lang="en"
         suppressHydrationWarning
         className={dark ? "dark" : undefined}
-        data-theme={serverTheme}
+        data-theme={initialTheme}
       >
         <head>
           <HeadContent />
         </head>
         <body>
-          {children}
+          <QueryClientProvider client={queryClient}>
+            <Outlet />
+            <ThemeToggle />
+            <RootToaster />
+          </QueryClientProvider>
           <Scripts />
           <script
             dangerouslySetInnerHTML={{
@@ -159,25 +180,3 @@ function RootToaster() {
   return <Toaster theme={theme} position="top-center" />;
 }
 
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
-
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event === "SIGNED_OUT") queryClient.clear();
-      else queryClient.invalidateQueries();
-    });
-    return () => data.subscription.unsubscribe();
-  }, [router, queryClient]);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <ThemeToggle />
-      <RootToaster />
-    </QueryClientProvider>
-  );
-}
