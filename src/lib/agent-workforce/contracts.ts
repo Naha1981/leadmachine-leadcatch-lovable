@@ -1,4 +1,3 @@
-
 export type EvidenceLabel = "SOURCE-BACKED" | "CUSTOMER-CONFIRMED" | "PROPOSAL" | "ASSUMPTION";
 
 export type RuntimeKind = "openmuse" | "openbot";
@@ -28,6 +27,16 @@ export type WorkerFinding = {
   evidenceIds: string[];
 };
 
+export type SalesExecutionReceipt = {
+  id: string;
+  step: string;
+  provider: string;
+  status: "started" | "completed" | "failed" | "skipped" | "outcome_unknown";
+  externalId?: string | null;
+  outputSummary?: Record<string, unknown>;
+  createdAt: string;
+};
+
 export type SalesWorkerResult = {
   runId: string;
   mode: "live-runtime-check" | "public-research";
@@ -37,6 +46,8 @@ export type SalesWorkerResult = {
     websiteUrl: string;
     location?: string;
     category?: string;
+    contactName?: string;
+    prospectPhone?: string;
   };
   runtimes: RuntimeStatus[];
   evidence: EvidenceItem[];
@@ -47,4 +58,26 @@ export type SalesWorkerResult = {
     approvalRequired: boolean;
   }>;
   approvalRequired: boolean;
+  approvalActionId?: string;
+  approvalId?: string;
+};
+
+export type SalesExecutionStatus = {
+  action: {
+    id: string;
+    status: string;
+    result: Record<string, unknown>;
+    error?: string | null;
+    createdAt: string;
+    completedAt?: string | null;
+  };
+  approval: {
+    id: string;
+    status: string;
+    requested_at?: string;
+    resolved_at?: string | null;
+    resolved_by?: string | null;
+    note?: string | null;
+  } | null;
+  receipts: SalesExecutionReceipt[];
 };

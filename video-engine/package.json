@@ -5,7 +5,8 @@
   "scripts": {
     "studio": "remotion studio index.ts",
     "render:one": "remotion render index.ts LeadMachineVideo out/lead-machine-demo.mp4",
-    "render:sheet": "node scripts/render-prospects.mjs"
+    "render:sheet": "node scripts/render-prospects.mjs",
+    "serve": "node server.mjs"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.530",

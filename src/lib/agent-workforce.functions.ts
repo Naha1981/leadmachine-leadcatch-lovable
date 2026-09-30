@@ -3,12 +3,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { EvidenceItem, RuntimeStatus, SalesWorkerResult, WorkerFinding } from "./agent-workforce/contracts";
+import { requestSalesExecutionApproval } from "./agent-workforce-execution.server";
 
 const Input = z.object({
   businessName: z.string().trim().min(1).max(120),
   websiteUrl: z.string().trim().url().max(2048),
   location: z.string().trim().max(120).optional(),
   category: z.string().trim().max(120).optional(),
+  contactName: z.string().trim().max(120).optional(),
+  prospectPhone: z.string().trim().max(30).optional(),
 });
 
 function assertPublicResearchUrl(input: string) {
@@ -299,27 +302,88 @@ async function inspectWebsite(input: z.infer<typeof Input>) {
 export const runSalesWorker = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => Input.parse(data))
-  .handler(async ({ data }): Promise<SalesWorkerResult> => {
-    const inspected = await inspectWebsite(data);
+  .handler(async ({ context, data }): Promise<SalesWorkerResult> => {
+    const runId = crypto.randomUUID();
+    const { data: tenant, error: tenantError } = await context.supabase
+      .from("tenants")
+      .select("id")
+      .eq("owner_id", context.userId)
+      .maybeSingle();
+    if (tenantError) throw tenantError;
+    if (!tenant?.id) throw new Error("Workspace not found");
 
-    return {
-      runId: crypto.randomUUID(),
-      mode: inspected.liveRuntime ? "live-runtime-check" : "public-research",
-      completedAt: new Date().toISOString(),
-      target: {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const database = supabaseAdmin as any;
+    await database.from("zero_ui_agent_runs").insert({
+      id: runId,
+      tenant_id: tenant.id,
+      trigger: "sales_worker_scan",
+      status: "running",
+      input_summary: {
         businessName: data.businessName,
+        websiteUrl: data.websiteUrl,
+        location: data.location ?? null,
+        category: data.category ?? null,
+      },
+      started_at: new Date().toISOString(),
+    });
+
+    try {
+      const inspected = await inspectWebsite(data);
+      const approval = await requestSalesExecutionApproval(context.userId, {
+        runId,
+        businessName: data.businessName,
+        contactName: data.contactName,
+        prospectPhone: data.prospectPhone,
         websiteUrl: data.websiteUrl,
         location: data.location,
         category: data.category,
-      },
-      runtimes: inspected.runtimes,
-      evidence: inspected.evidence,
-      findings: inspected.findings,
-      recommendedActions: inspected.findings.map((item) => ({
-        title: item.title,
-        detail: item.detail,
+        evidence: inspected.evidence as Array<Record<string, unknown>>,
+        findings: inspected.findings as Array<Record<string, unknown>>,
+      });
+
+      await database.from("zero_ui_agent_runs").update({
+        status: "completed",
+        output_summary: {
+          findingCount: inspected.findings.length,
+          evidenceCount: inspected.evidence.length,
+          approvalActionId: approval.actionId,
+          approvalId: approval.approvalId ?? null,
+        },
+        completed_at: new Date().toISOString(),
+      }).eq("id", runId).eq("tenant_id", tenant.id);
+
+      return {
+        runId,
+        mode: inspected.liveRuntime ? "live-runtime-check" : "public-research",
+        completedAt: new Date().toISOString(),
+        target: {
+          businessName: data.businessName,
+          websiteUrl: data.websiteUrl,
+          location: data.location,
+          category: data.category,
+          contactName: data.contactName,
+          prospectPhone: data.prospectPhone,
+        },
+        runtimes: inspected.runtimes,
+        evidence: inspected.evidence,
+        findings: inspected.findings,
+        recommendedActions: inspected.findings.map((item) => ({
+          title: item.title,
+          detail: item.detail,
+          approvalRequired: true,
+        })),
         approvalRequired: true,
-      })),
-      approvalRequired: true,
-    };
+        approvalActionId: approval.actionId,
+        approvalId: approval.approvalId,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Sales Worker failed";
+      await database.from("zero_ui_agent_runs").update({
+        status: "failed",
+        error: message,
+        completed_at: new Date().toISOString(),
+      }).eq("id", runId).eq("tenant_id", tenant.id);
+      throw error;
+    }
   });

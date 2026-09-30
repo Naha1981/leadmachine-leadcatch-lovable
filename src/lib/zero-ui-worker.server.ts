@@ -1,10 +1,15 @@
 import { sendText } from "@/lib/operator.server";
 import { getZeroUIConfig } from "./zero-ui-tenant.server";
 import { normalizePhoneNumber } from "./zero-ui-phone.server";
+import { processApprovedSalesActions } from "./agent-workforce-execution.server";
 
 async function db() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin as any;
+}
+
+export async function processAgentWorkforceActions(limit = 5) {
+  return processApprovedSalesActions(limit);
 }
 
 export async function processZeroUIFollowups(limit = 25) {

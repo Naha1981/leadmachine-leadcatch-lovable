@@ -1,6 +1,7 @@
 name: LeadMachine browser acceptance
 
 on:
+  pull_request:
   push:
     branches: [main]
     paths:
