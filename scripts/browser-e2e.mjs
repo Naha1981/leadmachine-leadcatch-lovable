@@ -34,12 +34,12 @@ try {
   const themeToggle = desktop.getByRole("button", { name: "Switch to dark theme" });
   await themeToggle.click();
   await desktop.waitForTimeout(100);
-  if (!(await desktop.locator("html").getAttribute("class"))?.includes("dark")) {
+  if (!(await desktop.locator("body").getAttribute("class"))?.includes("dark")) {
     throw new Error("Desktop dark theme did not apply");
   }
   await desktop.reload({ waitUntil: "domcontentloaded" });
   await desktop.waitForTimeout(150);
-  if (!(await desktop.locator("html").getAttribute("class"))?.includes("dark")) {
+  if (!(await desktop.locator("body").getAttribute("class"))?.includes("dark")) {
     throw new Error("Theme did not persist across reload");
   }
   await desktop.getByRole("button", { name: "Switch to light theme" }).click();
@@ -116,7 +116,7 @@ try {
   const mobileToggle = mobile.getByRole("button", { name: "Switch to dark theme" });
   await mobileToggle.click();
   await mobile.waitForTimeout(100);
-  if (!(await mobile.locator("html").getAttribute("class"))?.includes("dark")) {
+  if (!(await mobile.locator("body").getAttribute("class"))?.includes("dark")) {
     throw new Error("Mobile dark theme did not apply");
   }
   await mobile.getByRole("button", { name: "Switch to light theme" }).click();
