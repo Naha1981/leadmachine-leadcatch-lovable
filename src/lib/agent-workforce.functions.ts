@@ -296,42 +296,6 @@ async function inspectWebsite(input: z.infer<typeof Input>) {
   };
 }
 
-async function runOpenBotAgent(input: {
-  agentId: string;
-  prompt: string;
-  signal?: AbortSignal;
-}) {
-  const base = process.env["OPENBOT_BASE_URL"];
-  const token = process.env["OPENBOT_AGENT_TOKEN"];
-  if (!base || !token) {
-    throw new Error("OpenBot execution is not configured.");
-  }
-
-  const response = await fetch(
-    new URL("/api/copilotkit/agent/" + encodeURIComponent(input.agentId) + "/run", base),
-    {
-      method: "POST",
-      signal: input.signal,
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        threadId: crypto.randomUUID(),
-        runId: crypto.randomUUID(),
-        messages: [{ role: "user", content: input.prompt }],
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error("OpenBot refused the worker run with HTTP " + response.status + ".");
-  }
-
-  return response;
-}
-
 export const runSalesWorker = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => Input.parse(data))
