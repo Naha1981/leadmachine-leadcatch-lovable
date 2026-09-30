@@ -89,6 +89,17 @@ try {
     throw new Error("15-minute leakage alert did not fire: " + JSON.stringify(cron));
   }
 
+  const demandCron = await json(await desktop.request.get(base + "/api/cron/demand-radar", {
+    headers: { Authorization: "Bearer " + cronSecret },
+  }));
+  if (demandCron.discovered !== 1 || demandCron.alerted !== 1) {
+    throw new Error("Demand Radar E2E signal did not alert: " + JSON.stringify(demandCron));
+  }
+  const demandLatest = await json(await desktop.request.get(base + "/api/demand-radar/latest"));
+  if (demandLatest.signal?.status !== "alerted" || demandLatest.signal?.intent_score !== 10) {
+    throw new Error("Demand Radar did not persist/alert the exact E2E signal: " + JSON.stringify(demandLatest));
+  }
+
   const payload = {
     schemaVersion: 1,
     waAccountId: "e2e-account",
@@ -147,6 +158,7 @@ try {
     quoteLeadScored: stateAfterQuote.lead.ai_score + "/" + stateAfterQuote.lead.ai_temperature,
     leakageAlert: leakage,
     whatsappLeadScored: stateAfterWhatsapp.lead.ai_score + "/" + stateAfterWhatsapp.lead.ai_temperature,
+    demandRadarAlert: demandLatest.signal?.intent_score + "/10 " + demandLatest.signal?.status,
     themeDesktopMobile: true,
   }, null, 2));
 } finally {
