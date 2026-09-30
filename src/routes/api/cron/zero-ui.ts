@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { processZeroUIFollowups } from "@/lib/zero-ui-worker.server";
+import { processZeroUIFollowups, processZeroUIDailySummaries } from "@/lib/zero-ui-worker.server";
 
 export const Route = createFileRoute("/api/cron/zero-ui")({
   server: {
@@ -19,7 +19,8 @@ async function run(request: Request) {
   }
   try {
     const processed = await processZeroUIFollowups(25);
-    return Response.json({ ok: true, processed });
+    const dailySummaries = await processZeroUIDailySummaries(50);
+    return Response.json({ ok: true, processed, dailySummaries });
   } catch (error) {
     console.error("[ZeroUI] worker failed", error);
     return Response.json({ ok: false, error: error instanceof Error ? error.message : "Zero UI worker failed" }, { status: 500 });
