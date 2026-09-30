@@ -70,7 +70,8 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
         const { data: tenant } = await db.from("tenants").select("id").eq("id", payload.tenantId).maybeSingle();
         if (!tenant) return Response.json({ ok: true, ignored: "unknown tenant" });
 
-        const messageId: string | null = typeof payload.data?.messageId === "string" ? payload.data.messageId : null;
+        const webhookData = payload.data ?? {};
+        const messageId: string | null = typeof webhookData.messageId === "string" ? webhookData.messageId : null;
 
         // Durable inbox first (idempotent on event+messageId).
         let eventRowId: string;
