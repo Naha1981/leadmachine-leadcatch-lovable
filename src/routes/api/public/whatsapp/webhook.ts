@@ -6,7 +6,8 @@ import { handleOwnerCommand } from "@/lib/zero-ui-agent.server";
 import { notifyOwner } from "@/lib/zero-ui-tools.server";
 import { decideReplies, type AutoReplyConfig, type WorkingHours } from "@/lib/autoreply";
 import { scoreInboundLead } from "@/lib/lead-scoring.server";
-import { getE2EBusiness, isE2EEnabled, recordWhatsAppLead } from "@/lib/e2e-store.server";
+import { getE2EBusiness, isE2EEnabled, recordWhatsAppLead, recordE2EOwnerCommand } from "@/lib/e2e-store.server";
+import { handleE2EOwnerCommand } from "@/lib/e2e-zero-ui.server";
 
 type OperatorPayload = {
   schemaVersion: number;
@@ -45,6 +46,11 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
           const business = getE2EBusiness();
           const phone = String(String(e2eData.chatId ?? "").split("@")[0] ?? "").replace(/\D/g, "");
           const text = String(e2eData.text ?? "");
+          if (phone === business.ownerPhone && text.trim()) {
+            const owner = handleE2EOwnerCommand(text);
+            recordE2EOwnerCommand(owner.intent, owner.reply);
+            return Response.json({ ok: true, zeroUi: true, intent: owner.intent, reply: owner.reply, e2e: true });
+          }
           const scored = await scoreInboundLead({
             businessName: business.businessName,
             industry: business.industry,
