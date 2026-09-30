@@ -171,7 +171,7 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload) {
   for (const body of replies) {
     let status = "sent";
     let extId: string | null = null;
-    if (process.env.SIMULATE_WHATSAPP !== "true") {
+    if (process.env["SIMULATE_WHATSAPP"] !== "true") {
       try {
         const r = await sendText(tenantId, profile.wa_account_id, phone, body);
         extId = r.message?.key?.id ?? null;
