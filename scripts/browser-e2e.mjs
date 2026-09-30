@@ -139,6 +139,9 @@ try {
   }
 
   await desktop.goto(base + "/", { waitUntil: "domcontentloaded" });
+  await desktop.getByRole("heading", { name: "Someone just asked for your service. LeadMachine found the post." }).waitFor();
+  await desktop.getByText("Live social signal", { exact: true }).waitFor();
+  await desktop.getByText("LeadMachine alerted you", { exact: true }).waitFor();
   await desktop.getByRole("button", { name: "Switch to dark theme" }).click();
   await desktop.waitForTimeout(100);
   await desktop.getByRole("button", { name: "Switch to light theme" }).click();
