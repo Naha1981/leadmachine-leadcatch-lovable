@@ -49,7 +49,7 @@ function LeadIntentPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-5 md:p-8">
+    <div className="mx-auto max-w-5xl space-y-6 p-5 md:p-8"><AgentWorkforcePanel /><div className="border-t border-border pt-6">
       <PageHeader title="Lead Intent" subtitle="Paste a WhatsApp conversation to score how ready the customer is to buy, or draft a personal reply." />
       <Card className="space-y-3">
         <Textarea
@@ -104,6 +104,6 @@ function LeadIntentPage() {
           )}
         </Card>
       )}
-    </div>
+    </div></div>
   );
 }
