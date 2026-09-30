@@ -50,7 +50,7 @@ export async function scoreInboundLead(input: ScoreInput) {
   const fallback = fallbackLeadScore({
     industry: input.industry,
     message: input.message,
-    phone: input.phone,
+    phone: input.phone ?? null,
     service: input.services,
   });
   const pack = getVerticalPack(input.industry);
