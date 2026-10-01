@@ -67,8 +67,8 @@ export async function operatorRequest<T = any>(
 ): Promise<T> {
   const baseUrl = process.env["OPERATOR_URL"] || "https://my-own-whatsapp-2z5h.onrender.com";
   const apiKey = process.env["OPERATOR_API_KEY"];
-  if (!baseUrl || !apiKey) {
-    throw new Error("WhatsApp service is not configured yet (OPERATOR_URL / OPERATOR_API_KEY).");
+  if (!baseUrl) {
+    throw new Error("WhatsApp service is not configured yet (OPERATOR_URL).");
   }
 
   const headers = new Headers(init.headers);
@@ -77,12 +77,18 @@ export async function operatorRequest<T = any>(
 
   const authMode = options.auth ?? "tenant";
   if (authMode === "platform") {
+    if (!apiKey) {
+      throw new Error("WhatsApp provisioning is not configured yet (OPERATOR_API_KEY).");
+    }
     headers.set("X-API-Key", apiKey);
   } else {
     const stored = await getStoredTenantCredential(tenantId);
     if (stored?.tenantToken) {
       headers.set("X-NahaLabs-Tenant-Token", stored.tenantToken);
     } else {
+      if (!apiKey) {
+        throw new Error("WhatsApp tenant credential is missing and OPERATOR_API_KEY is not configured.");
+      }
       headers.set("X-API-Key", apiKey);
     }
   }
