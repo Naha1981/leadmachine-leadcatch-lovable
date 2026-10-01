@@ -1209,6 +1209,375 @@ export type Database = {
           },
         ]
       }
+      zero_ui_agent_actions: {
+        Row: {
+          action: string
+          action_class: string
+          agent_run_id: string | null
+          completed_at: string | null
+          created_at: string
+          error: string | null
+          id: string
+          idempotency_key: string
+          input: Json
+          result: Json
+          status: string
+          target_id: string | null
+          target_type: string | null
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          action_class: string
+          agent_run_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          idempotency_key: string
+          input?: Json
+          result?: Json
+          status?: string
+          target_id?: string | null
+          target_type?: string | null
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          action_class?: string
+          agent_run_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          idempotency_key?: string
+          input?: Json
+          result?: Json
+          status?: string
+          target_id?: string | null
+          target_type?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_agent_actions_agent_run_id_fkey"
+            columns: ["agent_run_id"]
+            isOneToOne: false
+            referencedRelation: "zero_ui_agent_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zero_ui_agent_actions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zero_ui_agent_runs: {
+        Row: {
+          completed_at: string | null
+          correlation_id: string | null
+          error: string | null
+          id: string
+          input_summary: Json
+          intent: string | null
+          model: string | null
+          output_summary: Json
+          provider: string | null
+          started_at: string
+          status: string
+          tenant_id: string
+          trigger: string
+        }
+        Insert: {
+          completed_at?: string | null
+          correlation_id?: string | null
+          error?: string | null
+          id?: string
+          input_summary?: Json
+          intent?: string | null
+          model?: string | null
+          output_summary?: Json
+          provider?: string | null
+          started_at?: string
+          status?: string
+          tenant_id: string
+          trigger: string
+        }
+        Update: {
+          completed_at?: string | null
+          correlation_id?: string | null
+          error?: string | null
+          id?: string
+          input_summary?: Json
+          intent?: string | null
+          model?: string | null
+          output_summary?: Json
+          provider?: string | null
+          started_at?: string
+          status?: string
+          tenant_id?: string
+          trigger?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_agent_runs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zero_ui_approvals: {
+        Row: {
+          agent_action_id: string
+          id: string
+          note: string | null
+          requested_at: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          agent_action_id: string
+          id?: string
+          note?: string | null
+          requested_at?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          agent_action_id?: string
+          id?: string
+          note?: string | null
+          requested_at?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_approvals_agent_action_id_fkey"
+            columns: ["agent_action_id"]
+            isOneToOne: true
+            referencedRelation: "zero_ui_agent_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zero_ui_approvals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zero_ui_audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_type: string
+          created_at: string
+          id: string
+          metadata: Json
+          result: string
+          target_id: string | null
+          target_type: string | null
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          result?: string
+          target_id?: string | null
+          target_type?: string | null
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          result?: string
+          target_id?: string | null
+          target_type?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zero_ui_configs: {
+        Row: {
+          auto_followups_enabled: boolean
+          automation_enabled: boolean
+          created_at: string
+          enabled: boolean
+          id: string
+          owner_alerts_enabled: boolean
+          require_followup_approval: boolean
+          tenant_id: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          auto_followups_enabled?: boolean
+          automation_enabled?: boolean
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          owner_alerts_enabled?: boolean
+          require_followup_approval?: boolean
+          tenant_id: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_followups_enabled?: boolean
+          automation_enabled?: boolean
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          owner_alerts_enabled?: boolean
+          require_followup_approval?: boolean
+          tenant_id?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_configs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zero_ui_followups: {
+        Row: {
+          agent_action_id: string | null
+          attempt_count: number
+          created_at: string
+          error: string | null
+          id: string
+          lead_id: string
+          message: string
+          reason: string
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          agent_action_id?: string | null
+          attempt_count?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          lead_id: string
+          message: string
+          reason?: string
+          scheduled_at: string
+          sent_at?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          agent_action_id?: string | null
+          attempt_count?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          lead_id?: string
+          message?: string
+          reason?: string
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_followups_agent_action_id_fkey"
+            columns: ["agent_action_id"]
+            isOneToOne: false
+            referencedRelation: "zero_ui_agent_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zero_ui_followups_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zero_ui_followups_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zero_ui_usage_events: {
+        Row: {
+          event_type: string
+          id: string
+          idempotency_key: string | null
+          metadata: Json
+          occurred_at: string
+          quantity: number
+          tenant_id: string
+        }
+        Insert: {
+          event_type: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          occurred_at?: string
+          quantity?: number
+          tenant_id: string
+        }
+        Update: {
+          event_type?: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          occurred_at?: string
+          quantity?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_usage_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

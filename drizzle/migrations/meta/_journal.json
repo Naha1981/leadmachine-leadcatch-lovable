@@ -15,6 +15,13 @@
       "when": 1790485868465,
       "tag": "0001_leadcatch_pro_merge",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790816399081,
+      "tag": "0002_zero_ui",
+      "breakpoints": true
     }
   ]
 }
