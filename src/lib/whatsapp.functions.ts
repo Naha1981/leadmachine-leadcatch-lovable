@@ -2,7 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { operatorRequest, sendText } from "./operator.server";
+import {
+  ensureOperatorTenantCredential,
+  operatorRequest,
+  sendText,
+} from "./operator.server";
 
 async function loadTenant(supabase: any, userId: string) {
   const { data: tenant, error } = await supabase.from("tenants").select("id").eq("owner_id", userId).single();
@@ -23,14 +27,23 @@ export const connectWhatsApp = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { tenantId } = await loadTenant(context.supabase, context.userId);
     const origin = new URL(getRequest().url).origin;
-    const webhookUrl = `${origin}/api/public/whatsapp/webhook`;
-    const boot = await operatorRequest<{ waAccountId: string; status: string }>(tenantId, "/accounts/bootstrap", {
-      method: "POST",
-      body: JSON.stringify({ label: "LeadMachine", appId: "leadcatch-sa", tenantId, webhookUrl }),
-    });
+    const webhookUrl = origin + "/api/public/whatsapp/webhook";
+    const boot = await operatorRequest<{ waAccountId: string; status: string; tenantToken?: string }>(
+      tenantId,
+      "/accounts/bootstrap",
+      {
+        method: "POST",
+        body: JSON.stringify({ label: "LeadMachine", appId: "leadcatch-sa", tenantId, webhookUrl }),
+      },
+      { auth: "platform" },
+    );
+
+    await ensureOperatorTenantCredential(tenantId, boot.waAccountId, boot.tenantToken);
+
     if (boot.status !== "connected") {
-      await operatorRequest(tenantId, `/accounts/${encodeURIComponent(boot.waAccountId)}/connect`, { method: "POST" }).catch(() => null);
+      await operatorRequest(tenantId, "/accounts/" + encodeURIComponent(boot.waAccountId) + "/connect", { method: "POST" }).catch(() => null);
     }
+
     await context.supabase
       .from("business_profiles")
       .update({ wa_account_id: boot.waAccountId, whatsapp_status: mapStatus(boot.status), updated_at: new Date().toISOString() })
@@ -45,11 +58,11 @@ export const getWhatsAppStatus = createServerFn({ method: "POST" })
     const { tenantId, profile } = await loadTenant(context.supabase, context.userId);
     const id = profile?.wa_account_id;
     if (!id) return { status: "disconnected", qrCode: null as string | null, phone: null as string | null };
-    const st = await operatorRequest<any>(tenantId, `/accounts/${encodeURIComponent(id)}/status`);
+    const st = await operatorRequest<any>(tenantId, "/accounts/" + encodeURIComponent(id) + "/status");
     let qrCode: string | null = null;
     const status = mapStatus(st.status ?? (st.isConnected ? "connected" : undefined));
     if (status !== "connected") {
-      const qr = await operatorRequest<any>(tenantId, `/accounts/${encodeURIComponent(id)}/qr`).catch(() => null);
+      const qr = await operatorRequest<any>(tenantId, "/accounts/" + encodeURIComponent(id) + "/qr").catch(() => null);
       qrCode = qr?.qrCode ?? null;
     }
     const phone = st.phoneNumber ?? st.phone ?? profile?.whatsapp_number ?? null;
@@ -70,7 +83,7 @@ export const requestPairingCode = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { tenantId, profile } = await loadTenant(context.supabase, context.userId);
     if (!profile?.wa_account_id) throw new Error("Start the connection first");
-    const r = await operatorRequest<any>(tenantId, `/accounts/${encodeURIComponent(profile.wa_account_id)}/pairing-code`, {
+    const r = await operatorRequest<any>(tenantId, "/accounts/" + encodeURIComponent(profile.wa_account_id) + "/pairing-code", {
       method: "POST",
       body: JSON.stringify({ phoneNumber: data.phoneNumber.replace(/\D/g, "") }),
     });
@@ -82,7 +95,7 @@ export const disconnectWhatsApp = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { tenantId, profile } = await loadTenant(context.supabase, context.userId);
     if (profile?.wa_account_id) {
-      await operatorRequest(tenantId, `/accounts/${encodeURIComponent(profile.wa_account_id)}/disconnect`, { method: "POST" }).catch(() => null);
+      await operatorRequest(tenantId, "/accounts/" + encodeURIComponent(profile.wa_account_id) + "/disconnect", { method: "POST" }).catch(() => null);
     }
     await context.supabase.from("business_profiles").update({ whatsapp_status: "disconnected" }).eq("tenant_id", tenantId);
     return { ok: true };
