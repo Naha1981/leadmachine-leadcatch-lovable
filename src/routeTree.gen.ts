@@ -21,13 +21,13 @@ import { Route as AuthenticatedShellInboxRouteImport } from './routes/_authentic
 import { Route as AuthenticatedShellLeadIntentRouteImport } from './routes/_authenticated/_shell/lead-intent'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authenticated/_shell/website'
-import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
-import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
-import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
-import { Route as ApiCronZeroUIRouteImport } from './routes/api/cron/zero-ui'
 import { Route as ApiCronDemandRadarRouteImport } from './routes/api/cron/demand-radar'
+import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
+import { Route as ApiCronZeroUiRouteImport } from './routes/api/cron/zero-ui'
 import { Route as ApiDemandRadarLatestRouteImport } from './routes/api/demand-radar/latest'
+import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
 import { Route as ApiTestAcceptanceRouteImport } from './routes/api/test/acceptance'
+import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -92,9 +92,34 @@ const AuthenticatedShellWebsiteRoute =
     path: '/website',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
+const ApiCronDemandRadarRoute = ApiCronDemandRadarRouteImport.update({
+  id: '/api/cron/demand-radar',
+  path: '/api/cron/demand-radar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronLeadLeakageRoute = ApiCronLeadLeakageRouteImport.update({
+  id: '/api/cron/lead-leakage',
+  path: '/api/cron/lead-leakage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronZeroUiRoute = ApiCronZeroUiRouteImport.update({
+  id: '/api/cron/zero-ui',
+  path: '/api/cron/zero-ui',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDemandRadarLatestRoute = ApiDemandRadarLatestRouteImport.update({
+  id: '/api/demand-radar/latest',
+  path: '/api/demand-radar/latest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSiteLeadRoute = ApiPublicSiteLeadRouteImport.update({
   id: '/api/public/site-lead',
   path: '/api/public/site-lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestAcceptanceRoute = ApiTestAcceptanceRouteImport.update({
+  id: '/api/test/acceptance',
+  path: '/api/test/acceptance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWhatsappWebhookRoute =
@@ -103,31 +128,6 @@ const ApiPublicWhatsappWebhookRoute =
     path: '/api/public/whatsapp/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiCronLeadLeakageRoute = ApiCronLeadLeakageRouteImport.update({
-  id: '/api/cron/lead-leakage',
-  path: '/api/cron/lead-leakage',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronDemandRadarRoute = ApiCronDemandRadarRouteImport.update({
-  id: '/api/cron/demand-radar',
-  path: '/api/cron/demand-radar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiDemandRadarLatestRoute = ApiDemandRadarLatestRouteImport.update({
-  id: '/api/demand-radar/latest',
-  path: '/api/demand-radar/latest',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronZeroUIRoute = ApiCronZeroUIRouteImport.update({
-  id: '/api/cron/zero-ui',
-  path: '/api/cron/zero-ui',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiTestAcceptanceRoute = ApiTestAcceptanceRouteImport.update({
-  id: '/api/test/acceptance',
-  path: '/api/test/acceptance',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -140,14 +140,13 @@ export interface FileRoutesByFullPath {
   '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
-  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
-  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
-  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
+  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/cron/zero-ui': typeof ApiCronZeroUiRoute
   '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
-  '/api/cron/zero-ui': typeof ApiCronZeroUIRoute
-  '/api/cron/zero-ui': typeof ApiCronZeroUIRoute
+  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -160,12 +159,13 @@ export interface FileRoutesByTo {
   '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
-  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
-  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
-  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
+  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/cron/zero-ui': typeof ApiCronZeroUiRoute
   '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
+  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -181,12 +181,13 @@ export interface FileRoutesById {
   '/_authenticated/_shell/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/website': typeof AuthenticatedShellWebsiteRoute
-  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
-  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
-  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
+  '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
+  '/api/cron/zero-ui': typeof ApiCronZeroUiRoute
   '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
+  '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,13 +202,13 @@ export interface FileRouteTypes {
     | '/lead-intent'
     | '/settings'
     | '/website'
-    | '/api/public/site-lead'
-    | '/api/public/whatsapp/webhook'
-    | '/api/cron/lead-leakage'
     | '/api/cron/demand-radar'
-    | '/api/demand-radar/latest'
+    | '/api/cron/lead-leakage'
     | '/api/cron/zero-ui'
+    | '/api/demand-radar/latest'
+    | '/api/public/site-lead'
     | '/api/test/acceptance'
+    | '/api/public/whatsapp/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -220,13 +221,13 @@ export interface FileRouteTypes {
     | '/lead-intent'
     | '/settings'
     | '/website'
-    | '/api/public/site-lead'
-    | '/api/public/whatsapp/webhook'
-    | '/api/cron/lead-leakage'
     | '/api/cron/demand-radar'
-    | '/api/demand-radar/latest'
+    | '/api/cron/lead-leakage'
     | '/api/cron/zero-ui'
+    | '/api/demand-radar/latest'
+    | '/api/public/site-lead'
     | '/api/test/acceptance'
+    | '/api/public/whatsapp/webhook'
   id:
     | '__root__'
     | '/'
@@ -241,13 +242,13 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/lead-intent'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/website'
-    | '/api/public/site-lead'
-    | '/api/public/whatsapp/webhook'
-    | '/api/cron/lead-leakage'
     | '/api/cron/demand-radar'
-    | '/api/demand-radar/latest'
+    | '/api/cron/lead-leakage'
     | '/api/cron/zero-ui'
+    | '/api/demand-radar/latest'
+    | '/api/public/site-lead'
     | '/api/test/acceptance'
+    | '/api/public/whatsapp/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -255,13 +256,13 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SSlugRoute: typeof SSlugRoute
-  ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
-  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
-  ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
   ApiCronDemandRadarRoute: typeof ApiCronDemandRadarRoute
+  ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
+  ApiCronZeroUiRoute: typeof ApiCronZeroUiRoute
   ApiDemandRadarLatestRoute: typeof ApiDemandRadarLatestRoute
-  ApiCronZeroUIRoute: typeof ApiCronZeroUIRoute
+  ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
   ApiTestAcceptanceRoute: typeof ApiTestAcceptanceRoute
+  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -350,18 +351,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellWebsiteRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
-    '/api/public/site-lead': {
-      id: '/api/public/site-lead'
-      path: '/api/public/site-lead'
-      fullPath: '/api/public/site-lead'
-      preLoaderRoute: typeof ApiPublicSiteLeadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/whatsapp/webhook': {
-      id: '/api/public/whatsapp/webhook'
-      path: '/api/public/whatsapp/webhook'
-      fullPath: '/api/public/whatsapp/webhook'
-      preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
+    '/api/cron/demand-radar': {
+      id: '/api/cron/demand-radar'
+      path: '/api/cron/demand-radar'
+      fullPath: '/api/cron/demand-radar'
+      preLoaderRoute: typeof ApiCronDemandRadarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/lead-leakage': {
@@ -371,11 +365,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronLeadLeakageRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/cron/demand-radar': {
-      id: '/api/cron/demand-radar'
-      path: '/api/cron/demand-radar'
-      fullPath: '/api/cron/demand-radar'
-      preLoaderRoute: typeof ApiCronDemandRadarRouteImport
+    '/api/cron/zero-ui': {
+      id: '/api/cron/zero-ui'
+      path: '/api/cron/zero-ui'
+      fullPath: '/api/cron/zero-ui'
+      preLoaderRoute: typeof ApiCronZeroUiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/demand-radar/latest': {
@@ -385,11 +379,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDemandRadarLatestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/cron/zero-ui': {
-      id: '/api/cron/zero-ui'
-      path: '/api/cron/zero-ui'
-      fullPath: '/api/cron/zero-ui'
-      preLoaderRoute: typeof ApiCronZeroUIRouteImport
+    '/api/public/site-lead': {
+      id: '/api/public/site-lead'
+      path: '/api/public/site-lead'
+      fullPath: '/api/public/site-lead'
+      preLoaderRoute: typeof ApiPublicSiteLeadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/test/acceptance': {
@@ -397,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/api/test/acceptance'
       fullPath: '/api/test/acceptance'
       preLoaderRoute: typeof ApiTestAcceptanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/whatsapp/webhook': {
+      id: '/api/public/whatsapp/webhook'
+      path: '/api/public/whatsapp/webhook'
+      fullPath: '/api/public/whatsapp/webhook'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -444,13 +445,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SSlugRoute: SSlugRoute,
-  ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
-  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
-  ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
   ApiCronDemandRadarRoute: ApiCronDemandRadarRoute,
+  ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
+  ApiCronZeroUiRoute: ApiCronZeroUiRoute,
   ApiDemandRadarLatestRoute: ApiDemandRadarLatestRoute,
-  ApiCronZeroUIRoute: ApiCronZeroUIRoute,
+  ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
   ApiTestAcceptanceRoute: ApiTestAcceptanceRoute,
+  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
