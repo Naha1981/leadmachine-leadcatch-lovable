@@ -15,7 +15,8 @@ type OperatorTenantCredential = {
 
 async function getStoredTenantCredential(tenantId: string): Promise<OperatorTenantCredential | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
+  const db = supabaseAdmin as any;
+  const { data, error } = await db
     .from("whatsapp_operator_credentials")
     .select("tenant_token, wa_account_id")
     .eq("app_id", APP_ID)
@@ -37,7 +38,8 @@ export async function saveOperatorTenantCredential(
   tenantToken: string,
 ): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { error } = await supabaseAdmin
+  const db = supabaseAdmin as any;
+  const { error } = await db
     .from("whatsapp_operator_credentials")
     .upsert(
       {
