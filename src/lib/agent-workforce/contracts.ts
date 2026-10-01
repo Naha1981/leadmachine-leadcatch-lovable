@@ -58,8 +58,8 @@ export type SalesWorkerResult = {
     approvalRequired: boolean;
   }>;
   approvalRequired: boolean;
-  approvalActionId?: string;
-  approvalId?: string;
+  approvalActionId?: string | undefined;
+  approvalId?: string | undefined;
 };
 
 export type SalesExecutionStatus = {
