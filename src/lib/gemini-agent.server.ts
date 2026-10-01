@@ -444,6 +444,21 @@ export async function runLeadMachineGeminiAgent(
   if (!envBool("GEMINI_AGENT_ENABLED", true)) throw new Error("Gemini Operator is currently disabled.");
   const model = process.env["GEMINI_AGENT_MODEL"]?.trim() || DEFAULT_MODEL;
   const store = envBool("GEMINI_AGENT_STORE", true);
+
+  if (previousInteractionId) {
+    const { data: previousRun, error: previousRunError } = await deps.adminDb
+      .from("zero_ui_agent_runs")
+      .select("tenant_id,input_summary,correlation_id")
+      .eq("tenant_id", deps.tenantId)
+      .eq("correlation_id", previousInteractionId)
+      .maybeSingle();
+    if (previousRunError) throw previousRunError;
+    const ownerId = (previousRun?.input_summary as any)?.userId;
+    if (!previousRun || ownerId !== deps.userId) {
+      throw new Error("Invalid Gemini conversation context.");
+    }
+  }
+
   const profile = await tenantProfile(deps);
 
   const prompt = `Business context: ${profile?.business_name || "Unknown business"}; industry: ${profile?.industry || profile?.trade || "service business"}; services: ${profile?.services || "not specified"}; suburb: ${profile?.suburb || "South Africa"}.
@@ -470,7 +485,7 @@ ${input}`;
       provider: "google-gemini",
       model,
       correlation_id: interaction?.id || null,
-      input_summary: { prompt: input.slice(0, 1200) },
+      input_summary: { prompt: input.slice(0, 1200), userId: deps.userId },
     })
     .select("id")
     .single();
