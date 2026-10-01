@@ -7,11 +7,11 @@ import { runOpenBotAgUi } from "./agent-workforce/openbot-agui.server";
 export type SalesExecutionInput = {
   runId: string;
   businessName: string;
-  contactName?: string;
-  prospectPhone?: string;
+  contactName?: string | undefined;
+  prospectPhone?: string | undefined;
   websiteUrl: string;
-  location?: string;
-  category?: string;
+  location?: string | undefined;
+  category?: string | undefined;
   evidence: Array<Record<string, unknown>>;
   findings: Array<Record<string, unknown>>;
 };

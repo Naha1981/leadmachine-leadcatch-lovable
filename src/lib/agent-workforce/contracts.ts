@@ -44,10 +44,10 @@ export type SalesWorkerResult = {
   target: {
     businessName: string;
     websiteUrl: string;
-    location?: string;
-    category?: string;
-    contactName?: string;
-    prospectPhone?: string;
+    location?: string | undefined;
+    category?: string | undefined;
+    contactName?: string | undefined;
+    prospectPhone?: string | undefined;
   };
   runtimes: RuntimeStatus[];
   evidence: EvidenceItem[];
