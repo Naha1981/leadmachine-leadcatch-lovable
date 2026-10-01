@@ -1,17 +1,16 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Inbox, MessageSquareReply, Settings, Menu, Globe, Sparkles } from "lucide-react";
+import { LayoutDashboard, Inbox, MessageSquareReply, Settings, Menu, Globe, Sparkles, Bot } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
-export const Route = createFileRoute("/_authenticated/_shell")({
-  component: Shell,
-});
+export const Route = createFileRoute("/_authenticated/_shell")({ component: Shell });
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/operator", label: "Gemini Operator", icon: Bot },
   { to: "/lead-intent", label: "Lead Intent", icon: Sparkles },
   { to: "/auto-reply", label: "Auto-Reply", icon: MessageSquareReply },
   { to: "/website", label: "Business Page", icon: Globe },
@@ -65,6 +64,7 @@ function Shell() {
           <Menu className="h-5 w-5" />
         </button>
       </header>
+
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="w-64 border-sidebar-border bg-sidebar px-3 py-5">
           <SheetTitle className="px-3"><Logo /></SheetTitle>
