@@ -19,6 +19,7 @@ import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authe
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellInboxRouteImport } from './routes/_authenticated/_shell/inbox'
 import { Route as AuthenticatedShellLeadIntentRouteImport } from './routes/_authenticated/_shell/lead-intent'
+import { Route as AuthenticatedShellOperatorRouteImport } from './routes/_authenticated/_shell/operator'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authenticated/_shell/website'
 import { Route as ApiCronDemandRadarRouteImport } from './routes/api/cron/demand-radar'
@@ -80,6 +81,11 @@ const AuthenticatedShellLeadIntentRoute =
     path: '/lead-intent',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
+const AuthenticatedShellOperatorRoute = AuthenticatedShellOperatorRouteImport.update({
+  id: '/operator',
+  path: '/operator',
+  getParentRoute: () => AuthenticatedShellRouteRoute,
+} as any)
 const AuthenticatedShellSettingsRoute =
   AuthenticatedShellSettingsRouteImport.update({
     id: '/settings',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
   '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
+  '/operator': typeof AuthenticatedShellOperatorRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
   '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
+  '/operator': typeof AuthenticatedShellOperatorRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/inbox': typeof AuthenticatedShellInboxRoute
   '/_authenticated/_shell/lead-intent': typeof AuthenticatedShellLeadIntentRoute
+  '/_authenticated/_shell/operator': typeof AuthenticatedShellOperatorRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/website': typeof AuthenticatedShellWebsiteRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inbox'
     | '/lead-intent'
+    | '/operator'
     | '/settings'
     | '/website'
     | '/api/cron/demand-radar'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inbox'
     | '/lead-intent'
+    | '/operator'
     | '/settings'
     | '/website'
     | '/api/cron/demand-radar'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/inbox'
     | '/_authenticated/_shell/lead-intent'
+    | '/_authenticated/_shell/operator'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/website'
     | '/api/cron/demand-radar'
@@ -335,6 +347,13 @@ declare module '@tanstack/react-router' {
       path: '/lead-intent'
       fullPath: '/lead-intent'
       preLoaderRoute: typeof AuthenticatedShellLeadIntentRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
+    '/_authenticated/_shell/operator': {
+      id: '/_authenticated/_shell/operator'
+      path: '/operator'
+      fullPath: '/operator'
+      preLoaderRoute: typeof AuthenticatedShellOperatorRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
     '/_authenticated/_shell/settings': {
