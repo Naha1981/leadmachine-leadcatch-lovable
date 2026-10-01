@@ -23,9 +23,9 @@ function assertPublicResearchUrl(input: string) {
     throw new Error("Private or internal destinations are not allowed.");
   }
 
-  const ipv4 = host.match(/^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$/);
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (ipv4) {
-    const octets = ipv4.slice(1).map(Number);
+    const octets = ipv4.slice(1).map(Number) as [number, number, number, number];
     if (
       octets.some((n) => n > 255) ||
       octets[0] === 10 ||
@@ -155,7 +155,7 @@ async function inspectWebsite(input: z.infer<typeof Input>) {
     html.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi),
   )
     .slice(0, 80)
-    .map((m) => ({ href: absoluteUrl(finalUrl, m[1]), label: stripHtml(m[2]).slice(0, 120) }))
+    .map((m) => ({ href: absoluteUrl(finalUrl, m[1] ?? ""), label: stripHtml(m[2] ?? "").slice(0, 120) }))
     .filter((x) => x.href.startsWith("http"));
 
   const lower = (html + " " + text).toLowerCase();
