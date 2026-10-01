@@ -131,9 +131,9 @@ async function renderProspectVideo(actionId: string, input: SalesExecutionInput)
       website: input.websiteUrl,
       currentCta: "LeadMachine research scan",
       currentEnquiryFlow: "Public website research",
-      digitalPresenceGap: String(input.findings[0]?.detail ?? "Evidence-led conversion opportunity identified."),
-      observedEnquiryFriction: String(input.findings[0]?.detail ?? "Public enquiry journey requires a closer look."),
-      potentialLeakageRisk: String(input.findings[1]?.detail ?? "Research signal; commercial impact still requires validation."),
+      digitalPresenceGap: String(input.findings[0]?.["detail"] ?? "Evidence-led conversion opportunity identified."),
+      observedEnquiryFriction: String(input.findings[0]?.["detail"] ?? "Public enquiry journey requires a closer look."),
+      potentialLeakageRisk: String(input.findings[1]?.["detail"] ?? "Research signal; commercial impact still requires validation."),
       leadMachineConcept: "LeadMachine turns enquiries into evidence, priority, next action and approved follow-up.",
       conversionEvent: "Qualified opportunity / booked job",
       followUpSequence: "Evidence → diagnosis → approved action → follow-up",
@@ -176,12 +176,12 @@ async function executeSalesActionRow(action: any) {
         context: [{ type: "tenant", tenantId }, { type: "prospect", businessName: input.businessName, websiteUrl: input.websiteUrl, location: input.location ?? null }],
         forwardedProps: { openbotRun: { tenantId, actionId, runId, approved: true } },
       });
-      results.openbot = result;
+      results["openbot"] = result;
       await receipt(tenantId, actionId, "openbot.prepare", "openbot-ag-ui", result.status === "completed" ? "completed" : "failed", { outputText: result.outputText.slice(0, 4000), eventCount: result.eventCount }, result.runId);
     } catch (error) {
       const message = error instanceof Error ? error.message : "OpenBot preparation failed";
       const outcomeUnknown = /outcome is unknown/i.test(message);
-      results.openbot = { status: outcomeUnknown ? "outcome_unknown" : "failed", error: message };
+      results["openbot"] = { status: outcomeUnknown ? "outcome_unknown" : "failed", error: message };
       await receipt(tenantId, actionId, "openbot.prepare", "openbot-ag-ui", outcomeUnknown ? "outcome_unknown" : "failed", { error: message });
     }
   } else {
@@ -197,13 +197,13 @@ async function executeSalesActionRow(action: any) {
     } else {
       successfulSteps += 1;
       videoUrl = rendered.videoUrl;
-      results.video = rendered;
+      results["video"] = rendered;
       await receipt(tenantId, actionId, "video.render", "remotion", "completed", { videoUrl: rendered.videoUrl, jobId: rendered.jobId }, rendered.jobId);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Video render failed";
     const outcomeUnknown = /outcome is unknown/i.test(message);
-    results.video = { status: outcomeUnknown ? "outcome_unknown" : "failed", error: message };
+    results["video"] = { status: outcomeUnknown ? "outcome_unknown" : "failed", error: message };
     await receipt(tenantId, actionId, "video.render", "remotion", outcomeUnknown ? "outcome_unknown" : "failed", { error: message });
   }
 
@@ -215,18 +215,18 @@ async function executeSalesActionRow(action: any) {
       await receipt(tenantId, actionId, "whatsapp.send", "nahalabs-operator", "started", { prospectPhone });
       const { data: profile } = await database.from("business_profiles").select("wa_account_id,whatsapp_status").eq("tenant_id", tenantId).maybeSingle();
       if (!profile?.wa_account_id || profile.whatsapp_status !== "connected") throw new Error("Business WhatsApp is not connected.");
-      const evidenceTitles = input.findings.slice(0, 2).map((item) => String(item.title ?? "observed opportunity")).join("; ");
+      const evidenceTitles = input.findings.slice(0, 2).map((item) => String(item["title"] ?? "observed opportunity")).join("; ");
       const contact = input.contactName ? " " + input.contactName : "";
       const message = "Hi" + contact + ", I’m Thabiso from NahaLabs. We looked at " + input.businessName + "’s public enquiry journey and found a specific opportunity: " + evidenceTitles + ". I put together a short LeadMachine walkthrough using the same evidence. " + (videoUrl ? videoUrl + " " : "") + "No assumptions about lost revenue — just the observed signal and the proposed fix. Worth a 10-minute look?";
       const sent = await sendText(tenantId, profile.wa_account_id, prospectPhone, message);
       const externalId = sent.message?.key?.id ?? null;
       successfulSteps += 1;
-      results.whatsapp = { status: "completed", externalId };
+      results["whatsapp"] = { status: "completed", externalId };
       await receipt(tenantId, actionId, "whatsapp.send", "nahalabs-operator", "completed", { prospectPhone, message: message.slice(0, 1200) }, externalId);
     } catch (error) {
       const message = error instanceof Error ? error.message : "WhatsApp send failed";
       const outcomeUnknown = /outcome is unknown|network|timeout|timed out/i.test(message);
-      results.whatsapp = { status: outcomeUnknown ? "outcome_unknown" : "failed", error: message };
+      results["whatsapp"] = { status: outcomeUnknown ? "outcome_unknown" : "failed", error: message };
       await receipt(tenantId, actionId, "whatsapp.send", "nahalabs-operator", outcomeUnknown ? "outcome_unknown" : "failed", { error: message });
     }
   }

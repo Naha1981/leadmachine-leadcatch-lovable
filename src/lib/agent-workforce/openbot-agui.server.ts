@@ -51,13 +51,13 @@ function parseJsonLine(payload: string): Record<string, unknown> | null {
 }
 
 function textFromEvent(event: Record<string, unknown>) {
-  const type = String(event.type ?? "");
+  const type = String(event["type"] ?? "");
   if (!/TEXT_MESSAGE_CONTENT|MESSAGE_CONTENT|TEXT_MESSAGE/i.test(type)) return "";
   const candidates = [
-    event.delta,
-    event.content,
-    event.text,
-    (event.message as Record<string, unknown> | undefined)?.content,
+    event["delta"],
+    event["content"],
+    event["text"],
+    (event["message"] as Record<string, unknown> | undefined)?.["content"],
   ];
   for (const value of candidates) if (typeof value === "string" && value) return value;
   return "";
@@ -80,9 +80,9 @@ async function consumeSse(response: Response) {
       const event = parseJsonLine(data);
       if (!event) continue;
       eventCount += 1;
-      lastEventType = String(event.type ?? "unknown");
+      lastEventType = String(event["type"] ?? "unknown");
       outputText += textFromEvent(event);
-      const type = String(event.type ?? "");
+      const type = String(event["type"] ?? "");
       if (/RUN_ERROR|RUN_FAILED|ERROR/i.test(type)) status = "failed";
       if (/RUN_FINISHED|RUN_COMPLETED|RUN_SUCCESS/i.test(type) && status !== "failed") status = "completed";
     }
