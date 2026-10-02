@@ -10,6 +10,11 @@ const browser = await chromium.launch({ headless: true });
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
+desktop.on("console", (msg) => console.log("MI E2E console:", msg.type(), msg.text()));
+desktop.on("pageerror", (error) => console.log("MI E2E pageerror:", error.stack || error.message));
+desktop.on("requestfailed", (request) => console.log("MI E2E requestfailed:", request.url(), request.failure()?.errorText || "unknown"));
+
+
 async function json(res) {
   const body = await res.json();
   if (!res.ok()) throw new Error("HTTP " + res.status() + ": " + JSON.stringify(body));
