@@ -45,8 +45,6 @@ jobs:
         run: bunx tsc --noEmit
       - name: Quote security tests
         run: bun run test:quote-security
-      - name: Quote security tests
-        run: bun run test:quote-security
       - name: Market Intelligence tests
         run: bun run test:market-intelligence
       - name: Production build
