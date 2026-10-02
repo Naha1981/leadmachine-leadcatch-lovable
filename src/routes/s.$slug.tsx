@@ -95,13 +95,13 @@ function PublicSitePage() {
       )}
 
       <section id="quote" className="mx-auto max-w-xl px-5 py-14">
-        <LeadForm slug={site.slug} cta={site.cta_text} />
+        <LeadForm slug={site.slug} cta={site.cta_text} quoteFormToken={site.quote_form_token} />
       </section>
     </div>
   );
 }
 
-function LeadForm({ slug, cta }: { slug: string; cta: string }) {
+function LeadForm({ slug, cta, quoteFormToken }: { slug: string; cta: string; quoteFormToken: string }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
@@ -109,7 +109,6 @@ function LeadForm({ slug, cta }: { slug: string; cta: string }) {
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
   const [website, setWebsite] = useState("");
-  const [startedAt] = useState(() => Date.now());
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,7 +119,7 @@ function LeadForm({ slug, cta }: { slug: string; cta: string }) {
       const res = await fetch("/api/public/site-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, name, phone, message, consent: true, website, elapsedMs: Date.now() - startedAt }),
+        body: JSON.stringify({ slug, name, phone, message, consent: true, website, quoteFormToken }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j.ok) throw new Error(j.error ?? "Something went wrong.");
