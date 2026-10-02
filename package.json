@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "db:apply-hardening": "bun scripts/apply-production-hardening-migrations.ts",
     "test:operator-isolation": "bun scripts/verify-operator-isolation.ts",
-    "test:quote-security": "bun test tests/quote-form-security.test.ts"
+    "test:quote-security": "bun test tests/quote-form-security.test.ts tests/quote-rate-limit.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
