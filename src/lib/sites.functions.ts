@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { getE2EBusiness, isE2EEnabled } from "@/lib/e2e-store.server";
+import { createQuoteFormToken } from "@/lib/quote-form-token.server";
 
 export type PublicSite = {
   slug: string;
@@ -14,6 +15,7 @@ export type PublicSite = {
   cta_text: string;
   accent: string;
   whatsapp_number: string | null;
+  quote_form_token: string;
 };
 
 /** Public read of a published business page (anon RLS: published = true). */
@@ -35,6 +37,7 @@ export const getPublicSite = createServerFn({ method: "GET" })
         cta_text: "Get a free quote on WhatsApp",
         accent: "emerald",
         whatsapp_number: "27825550111",
+        quote_form_token: createQuoteFormToken(business.slug),
       };
     }
 
@@ -60,6 +63,7 @@ export const getPublicSite = createServerFn({ method: "GET" })
     if (!s) return null;
     return {
       ...s,
+      quote_form_token: createQuoteFormToken(s.slug),
       services: Array.isArray(s.services) ? (s.services as PublicSite["services"]) : [],
       faqs: Array.isArray(s.faqs) ? (s.faqs as PublicSite["faqs"]) : [],
     };
