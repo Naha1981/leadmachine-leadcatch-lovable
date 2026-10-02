@@ -518,10 +518,13 @@ ${input}`;
             .eq("id", agentRunId);
         }
 
+        // Keep the server-function response strictly serializable.
+        // Tool outputs can contain provider-specific unknown values and are
+        // intentionally kept server-side for audit purposes only.
         return {
-          interactionId: interaction.id as string | null,
+          interactionId: typeof interaction.id === "string" ? interaction.id : null,
           outputText,
-          toolEvents,
+          toolEvents: toolEvents.map(({ name, status }) => ({ name, status })),
         };
       }
 
