@@ -5,7 +5,7 @@ description: Use the Instagram Agent skills as NahaLabs Content Intelligence cap
 
 # NahaLabs Content Agent
 
-Use the installed `ig-*` skills as channel capabilities.
+Use the project-local `ig-*` skills as channel capabilities.
 
 Always apply:
 - Research → Evidence → Opportunity → Content → QA → Human approval → Distribution → Intent → Lead Machine → Revenue → Learning.
@@ -22,6 +22,10 @@ For NahaLabs work, prefer:
 - `/ig-reel`, `/ig-caption`, `/ig-carousel`, `/ig-story` for production
 - `/ig-repurpose` for multi-channel reuse
 - `/ig-human` and `/ig-audit` for QA
+
+Helper assets:
+- The core skill definitions are vendored in this repo.
+- When a skill explicitly requires one of the upstream Python/JSON helper assets and it is not present locally, run `scripts/install-nahalabs-content-agent.ps1` through the coding agent to refresh the project-local tree. Do not install to the user-global Claude skills directory.
 
 Commercial handoff:
 approved content → CTA/intent signal → Lead Machine → qualification → follow-up → measurable outcome.
