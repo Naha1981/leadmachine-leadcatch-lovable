@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - "src/**"
+      - "tests/**"
       - "drizzle/**"
       - "supabase/**"
       - "package.json"
@@ -41,5 +42,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Type check
         run: bunx tsc --noEmit
+      - name: Quote security tests
+        run: bun run test:quote-security
       - name: Production build
         run: bun run build
