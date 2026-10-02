@@ -35,19 +35,24 @@ export const getMarketIntelligence = createServerFn({ method: "GET" })
     if (signalError) throw signalError;
     const enabled = platform?.enabled !== false && profile?.market_intelligence_enabled !== false;
     const ranked = rankSignals(signals ?? []);
-    const categories = {} as MarketIntelligenceCategories;
+    const rawCategories: Record<string, any[]> = {};
     for (const category of MARKET_INTELLIGENCE_CATEGORIES) {
-      categories[category] = ranked.filter((signal) => signal.category === category).slice(0, MARKET_INTELLIGENCE_LIMITS[category]);
+      rawCategories[category] = ranked.filter((signal) => signal.category === category).slice(0, MARKET_INTELLIGENCE_LIMITS[category]);
     }
-    if (!enabled) return { enabled: false, updatedAt: latestRun?.completed_at ?? null, categories, stats: { totalActive: 0, evidenceCount: 0, lastRunAt: latestRun?.completed_at ?? null } };
+    if (!enabled) {
+      const emptyCategories = {} as MarketIntelligenceCategories;
+      for (const category of MARKET_INTELLIGENCE_CATEGORIES) emptyCategories[category] = [];
+      return { enabled: false, updatedAt: latestRun?.completed_at ?? null, categories: emptyCategories, stats: { totalActive: 0, evidenceCount: 0, lastRunAt: latestRun?.completed_at ?? null } };
+    }
     const signalIds = ranked.slice(0, 60).map((signal) => signal.id);
     let evidence: any[] = [];
     if (signalIds.length) {
       const { data } = await context.supabase.from("market_intelligence_evidence").select("*").in("signal_id", signalIds).order("discovered_at", { ascending: false }).limit(300);
       evidence = data ?? [];
     }
+    const categories = {} as MarketIntelligenceCategories;
     for (const category of MARKET_INTELLIGENCE_CATEGORIES) {
-      const categorySignals = categories[category] ?? [];
+      const categorySignals = rawCategories[category] ?? [];
       categories[category] = categorySignals.map((signal) => ({
         id: signal.id,
         category: signal.category,
