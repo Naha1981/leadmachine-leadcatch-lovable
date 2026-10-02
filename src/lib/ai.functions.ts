@@ -239,3 +239,47 @@ export const draftReply = createServerFn({ method: "POST" })
     if (!reply) throw new Error("The AI returned no reply. Please try again.");
     return { score: n.score, temperature: n.temperature, reasoning: String(j.reasoning ?? "").slice(0, 300), reply };
   });
+
+const FOLLOWUP_SYSTEM =
+  "You write WhatsApp follow-up messages for a South African service business owner to send to a lead. " +
+  "Use the lead's details, the conversation context and the business's services. Be warm, specific and short (2-5 sentences), " +
+  "reference what the customer asked about, and end with one clear, easy next step. South African English, no emojis, no markdown. " +
+  'Reply with JSON only: {"temperature": "hot"|"warm"|"cold", "reasoning": "one short sentence on the approach", "message": "the WhatsApp message"}.';
+
+/** Draft a personalised WhatsApp follow-up from a lead's details and context. */
+export const draftFollowUp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        leadName: z.string().trim().min(1).max(80),
+        service: z.string().trim().max(200).optional().default(""),
+        lastContact: z.string().trim().max(80).optional().default(""),
+        goal: z.string().trim().max(200).optional().default(""),
+        context: z.string().trim().min(5).max(6000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    const sb = context.supabase;
+    const { data: t } = await sb.from("tenants").select("id").eq("owner_id", context.userId).maybeSingle();
+    const { data: p } = t?.id
+      ? await sb.from("business_profiles").select("business_name, industry, trade, services, pricing_notes, suburb").eq("tenant_id", t.id).maybeSingle()
+      : { data: null };
+    const raw = await chat([
+      { role: "system", content: FOLLOWUP_SYSTEM },
+      {
+        role: "user",
+        content:
+          `Business: ${p?.business_name || "our business"} (${p?.industry || p?.trade || "services"}), area: ${p?.suburb || "South Africa"}. ` +
+          `Services: ${p?.services || "n/a"}. Pricing notes: ${p?.pricing_notes || "none"}.\n` +
+          `Lead: ${data.leadName}. Interested in: ${data.service || "not stated"}. Last contact: ${data.lastContact || "unknown"}. ` +
+          `Owner's goal for this message: ${data.goal || "move them to the next step"}.\n\nContext:\n${data.context}`,
+      },
+    ]);
+    const j = extractJson(raw);
+    const message = String(j.message ?? "").trim().slice(0, 1000);
+    if (!message) throw new Error("The AI returned no message. Please try again.");
+    const temperature: "hot" | "warm" | "cold" = ["hot", "warm", "cold"].includes(j.temperature) ? j.temperature : "warm";
+    return { message, temperature, reasoning: String(j.reasoning ?? "").slice(0, 300) };
+  });
