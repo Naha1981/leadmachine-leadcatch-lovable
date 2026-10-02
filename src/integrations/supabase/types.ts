@@ -940,6 +940,21 @@ export type Database = {
           },
         ]
       }
+      platform_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       policies: {
         Row: {
           contact_id: string | null
@@ -1037,6 +1052,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      quote_submissions: {
+        Row: {
+          created_at: string
+          id: string
+          ip_hash: string
+          phone: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_hash: string
+          phone?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_hash?: string
+          phone?: string | null
+          slug?: string
+        }
+        Relationships: []
       }
       tenants: {
         Row: {
@@ -1168,6 +1207,44 @@ export type Database = {
           },
         ]
       }
+      whatsapp_operator_credentials: {
+        Row: {
+          app_id: string
+          created_at: string
+          id: string
+          tenant_id: string
+          tenant_token: string
+          updated_at: string
+          wa_account_id: string | null
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          id?: string
+          tenant_id: string
+          tenant_token: string
+          updated_at?: string
+          wa_account_id?: string | null
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string
+          tenant_token?: string
+          updated_at?: string
+          wa_account_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_operator_credentials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_webhook_events: {
         Row: {
           event: string
@@ -1202,6 +1279,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "whatsapp_webhook_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zero_ui_action_receipts: {
+        Row: {
+          agent_action_id: string
+          created_at: string
+          external_id: string | null
+          id: string
+          output_summary: Json
+          provider: string
+          status: string
+          step: string
+          tenant_id: string
+        }
+        Insert: {
+          agent_action_id: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          output_summary?: Json
+          provider: string
+          status: string
+          step: string
+          tenant_id: string
+        }
+        Update: {
+          agent_action_id?: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          output_summary?: Json
+          provider?: string
+          status?: string
+          step?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zero_ui_action_receipts_agent_action_id_fkey"
+            columns: ["agent_action_id"]
+            isOneToOne: false
+            referencedRelation: "zero_ui_agent_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zero_ui_action_receipts_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1431,6 +1559,7 @@ export type Database = {
           auto_followups_enabled: boolean
           automation_enabled: boolean
           created_at: string
+          daily_summary_enabled: boolean
           enabled: boolean
           id: string
           owner_alerts_enabled: boolean
@@ -1443,6 +1572,7 @@ export type Database = {
           auto_followups_enabled?: boolean
           automation_enabled?: boolean
           created_at?: string
+          daily_summary_enabled?: boolean
           enabled?: boolean
           id?: string
           owner_alerts_enabled?: boolean
@@ -1455,6 +1585,7 @@ export type Database = {
           auto_followups_enabled?: boolean
           automation_enabled?: boolean
           created_at?: string
+          daily_summary_enabled?: boolean
           enabled?: boolean
           id?: string
           owner_alerts_enabled?: boolean
@@ -1539,6 +1670,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      zero_ui_platform_settings: {
+        Row: {
+          enabled: boolean
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       zero_ui_usage_events: {
         Row: {
