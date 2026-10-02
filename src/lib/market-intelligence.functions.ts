@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_LIMITS } from "@/lib/market-intelligence.constants";
 import type { MarketIntelligenceSnapshot, MarketIntelligenceActionKind } from "@/lib/market-intelligence.types";
+import type { MarketIntelligenceCategories } from "@/lib/market-intelligence.types";
 
 function rankSignals(signals: any[]) {
   return signals
@@ -34,7 +35,7 @@ export const getMarketIntelligence = createServerFn({ method: "GET" })
     if (signalError) throw signalError;
     const enabled = platform?.enabled !== false && profile?.market_intelligence_enabled !== false;
     const ranked = rankSignals(signals ?? []);
-    const categories: Record<string, any[]> = Object.fromEntries(MARKET_INTELLIGENCE_CATEGORIES.map((category) => [category, []]));
+    const categories = {} as MarketIntelligenceCategories;
     for (const category of MARKET_INTELLIGENCE_CATEGORIES) {
       categories[category] = ranked.filter((signal) => signal.category === category).slice(0, MARKET_INTELLIGENCE_LIMITS[category]);
     }
@@ -46,7 +47,8 @@ export const getMarketIntelligence = createServerFn({ method: "GET" })
       evidence = data ?? [];
     }
     for (const category of MARKET_INTELLIGENCE_CATEGORIES) {
-      categories[category] = categories[category].map((signal) => ({
+      const categorySignals = categories[category] ?? [];
+      categories[category] = categorySignals.map((signal) => ({
         id: signal.id,
         category: signal.category,
         title: signal.title,
