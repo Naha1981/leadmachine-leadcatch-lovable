@@ -1,8 +1,8 @@
 import { execFileSync } from "node:child_process";
 
 const base = process.env["LEAD_MACHINE_APP_URL"];
-const cronSecret = process.env["LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET"];
-if (!base || !cronSecret) throw new Error("LEAD_MACHINE_APP_URL and LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET are required.");
+const cronSecret = process.env["LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET"];\nconst enabled = process.env["AGENT_REACH_ENABLED"] === "true";
+if (!base || !cronSecret) throw new Error("LEAD_MACHINE_APP_URL and LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET are required.");\nif (!enabled) { console.log("Agent Reach ingestion disabled; core Market Intelligence sources remain active."); process.exit(0); }
 
 function run(command, args) {
   return execFileSync(command, args, { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 }).trim();
@@ -46,7 +46,7 @@ try {
           externalId: details.id || entry.id || videoUrl,
           title: String(details.title || entry.title || "YouTube source").slice(0, 500),
           author: details.channel || details.uploader || null,
-          publishedAt: details.upload_date ? new Date(String(details.upload_date)).toISOString() : null,
+          publishedAt: details.upload_date && String(details.upload_date).length === 8 ? new Date(`${String(details.upload_date).slice(0, 4)}-${String(details.upload_date).slice(4, 6)}-${String(details.upload_date).slice(6, 8)}T00:00:00Z`).toISOString() : null,
           content,
           metadata: { query, collector: "agent-reach", backend: "yt-dlp", duration: details.duration ?? null },
         });
