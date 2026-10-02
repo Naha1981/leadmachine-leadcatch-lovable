@@ -40,7 +40,8 @@ export async function getProductionReadiness(): Promise<ProductionReadiness> {
   const results = await Promise.all(
     REQUIRED_PRODUCTION_TABLES.map(async (table) => {
       try {
-        const { error } = await db.from(table).select("id", { head: true }).limit(1);
+        // A real row read (not HEAD) so a missing table surfaces as PGRST205 instead of an empty 204.
+        const { error } = await db.from(table).select("*").limit(1);
         return { table, ready: !error };
       } catch {
         return { table, ready: false };

@@ -9,7 +9,46 @@ const Body = z.object({
   phone: z.string().trim().min(9).max(20),
   message: z.string().trim().max(1000).optional().default(""),
   consent: z.literal(true),
+  website: z.string().max(200).optional().default(""),
+  elapsedMs: z.number().optional(),
 });
+
+const MIN_FILL_MS = 2500;
+const IP_LIMIT = 5; // per 10 minutes, across all pages
+const PHONE_LIMIT = 3; // per hour, across all pages
+
+async function hashIp(ip: string): Promise<string> {
+  const salt = process.env["WEBHOOK_SECRET"] ?? "leadmachine";
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + ":" + ip));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function looksLikeSpam(name: string, message: string): boolean {
+  const links = (message.match(/https?:\/\/|www\./gi) ?? []).length;
+  if (links > 1) return true;
+  if (/https?:\/\/|www\./i.test(name)) return true;
+  if (/\b(viagra|casino|crypto|bitcoin|forex|seo services|backlinks|loan offer)\b/i.test(message + " " + name)) return true;
+  if (/(.)\1{9,}/.test(message)) return true;
+  return false;
+}
+
+/** Durable per-sender limits backed by the database (works across server instances). */
+async function checkDurableLimits(db: any, slug: string, ipHash: string, phone: string): Promise<string | null> {
+  const tenMin = new Date(Date.now() - 10 * 60_000).toISOString();
+  const hour = new Date(Date.now() - 60 * 60_000).toISOString();
+  const [ipRes, phoneRes] = await Promise.all([
+    db.from("quote_submissions").select("id", { count: "exact", head: true }).eq("ip_hash", ipHash).gte("created_at", tenMin),
+    db.from("quote_submissions").select("id", { count: "exact", head: true }).eq("phone", phone).gte("created_at", hour),
+  ]);
+  if (ipRes.error || phoneRes.error) {
+    console.error("rate limit lookup failed", ipRes.error ?? phoneRes.error);
+    return null; // fail open on lookup errors; in-memory limiter still applies
+  }
+  if ((ipRes.count ?? 0) >= IP_LIMIT) return "Too many enquiries from this connection. Please try again shortly.";
+  if ((phoneRes.count ?? 0) >= PHONE_LIMIT) return "We've already received your enquiry. The business will be in touch soon.";
+  await db.from("quote_submissions").insert({ slug, ip_hash: ipHash, phone });
+  return null;
+}
 
 type RateBucket = { count: number; resetAt: number };
 
@@ -76,8 +115,22 @@ export const Route = createFileRoute("/api/public/site-lead")({
           );
         }
 
+        // Honeypot or too-fast submissions: pretend success so bots learn nothing.
+        if (parsed.website.trim() || (parsed.elapsedMs !== undefined && parsed.elapsedMs < MIN_FILL_MS)) {
+          return Response.json({ ok: true, leadId: null });
+        }
+        if (looksLikeSpam(parsed.name, parsed.message || "")) {
+          return Response.json({ ok: false, error: "Your message looks like spam. Please remove links and try again." }, { status: 400 });
+        }
+
         const phone = normalisePhone(parsed.phone);
         if (!phone) return Response.json({ ok: false, error: "That phone number doesn't look right." }, { status: 400 });
+
+        if (!(isE2EEnabled() && parsed.slug.toLowerCase() === "e2e-leadmachine")) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const limited = await checkDurableLimits(supabaseAdmin, parsed.slug, await hashIp(requestClientKey(request)), phone);
+          if (limited) return Response.json({ ok: false, error: limited }, { status: 429, headers: { "Retry-After": "600" } });
+        }
 
         if (isE2EEnabled() && parsed.slug.toLowerCase() === "e2e-leadmachine") {
           const business = getE2EBusiness();
