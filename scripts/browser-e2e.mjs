@@ -22,6 +22,24 @@ try {
   }));
   if (!seed.ok || !seed.siteUrl) throw new Error("Acceptance fixture did not seed");
 
+  await desktop.goto(base + "/dashboard", { waitUntil: "domcontentloaded" });
+  await desktop.getByText("LeadMachine is watching the market", { exact: true }).waitFor({ timeout: 10000 });
+  for (const label of ["Customer Problems", "Competitor Opportunities", "Unanswered Questions", "Content Opportunities", "Lead Opportunities"]) {
+    await desktop.getByText(label, { exact: true }).waitFor({ timeout: 5000 });
+  }
+  for (const count of ["3/3", "5/5", "7/7", "4/4", "2/2"]) {
+    await desktop.getByText(count, { exact: true }).waitFor({ timeout: 5000 });
+  }
+  await desktop.getByRole("button", { name: /E2E customer problems 1/i }).click();
+  await desktop.getByText("Observed:", { exact: false }).waitFor({ timeout: 5000 });
+  await desktop.getByText("E2E public evidence", { exact: true }).waitFor({ timeout: 5000 });
+  await desktop.getByRole("button", { name: "Create FAQ" }).click();
+  await desktop.getByText("FAQ draft", { exact: true }).waitFor({ timeout: 5000 });
+  if (!(await desktop.getByText(/E2E owner-reviewable draft for FAQ/).isVisible())) {
+    throw new Error("Market Intelligence quick action did not return the E2E draft");
+  }
+  await desktop.goto(base + "/", { waitUntil: "domcontentloaded" });
+
   const publicPage = await desktop.request.get(base + seed.siteUrl);
   if (publicPage.status() !== 200) throw new Error("Published business page returned HTTP " + publicPage.status());
 
