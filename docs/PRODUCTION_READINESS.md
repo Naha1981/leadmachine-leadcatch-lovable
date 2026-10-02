@@ -49,3 +49,15 @@ bun run test:operator-isolation
 ```
 
 It verifies that two tenant credentials cannot see each other's account and that a cross-tenant account-status request is rejected.
+
+
+## Quote form protection
+
+The public quote form uses two server-side controls:
+
+- A signed form token issued when the public page is rendered. The server, not the browser, determines when the form session started.
+- Durable IP and phone limits stored in `quote_submissions`.
+
+Configure `QUOTE_FORM_TOKEN_SECRET` in production. The existing `WEBHOOK_SECRET` is accepted as a fallback for deployments that already use it.
+
+Database lookup or recording failures fail closed with HTTP 503 rather than allowing the enquiry through.
