@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_LIMITS, type MarketIntelligenceCategory } from "@/lib/market-intelligence.constants";
+import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_LIMITS } from "@/lib/market-intelligence.constants";
 import type { MarketIntelligenceSnapshot, MarketIntelligenceActionKind } from "@/lib/market-intelligence.types";
 
 function rankSignals(signals: any[]) {
@@ -75,7 +75,7 @@ export const getMarketIntelligence = createServerFn({ method: "GET" })
 
 export const createMarketIntelligenceAction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-    .inputValidator((input) => z.object({ signalId: z.string().uuid(), kind: z.enum(["FAQ","OFFER","WHATSAPP_RESPONSE","COMPETITOR_ANALYSIS","COUNTER_OFFER","LANDING_PAGE_BRIEF","ARTICLE","AUTO_REPLY_SNIPPET","CONTENT_POST","CAMPAIGN_BRIEF","LEAD_FORM","WHATSAPP_CAMPAIGN"]) }).parse(input))
+  .inputValidator((input) => z.object({ signalId: z.string().uuid(), kind: z.enum(["FAQ","OFFER","WHATSAPP_RESPONSE","COMPETITOR_ANALYSIS","COUNTER_OFFER","LANDING_PAGE_BRIEF","ARTICLE","AUTO_REPLY_SNIPPET","CONTENT_POST","CAMPAIGN_BRIEF","LEAD_FORM","WHATSAPP_CAMPAIGN"]) }).parse(input))
   .handler(async ({ context, data }) => {
     const tenantId = await tenantForUser(context.userId, context.supabase);
     const kind = data.kind as MarketIntelligenceActionKind;
