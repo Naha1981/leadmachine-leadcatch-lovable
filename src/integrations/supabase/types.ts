@@ -80,6 +80,10 @@ export type Database = {
         Row: {
           brand_voice: string
           business_name: string
+          market_intelligence_enabled: boolean
+          market_intelligence_keywords: Json
+          market_intelligence_source_preferences: Json
+          market_intelligence_website: string | null
           contact_phone: string | null
           created_at: string
           id: string
@@ -101,6 +105,14 @@ export type Database = {
         Insert: {
           brand_voice?: string
           business_name?: string
+          market_intelligence_enabled?: boolean
+          market_intelligence_keywords?: Json
+          market_intelligence_source_preferences?: Json
+          market_intelligence_website?: string | null
+          market_intelligence_enabled?: boolean
+          market_intelligence_keywords?: Json
+          market_intelligence_source_preferences?: Json
+          market_intelligence_website?: string | null
           contact_phone?: string | null
           created_at?: string
           id?: string
@@ -1720,6 +1732,276 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "zero_ui_usage_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_intelligence_competitors: {
+        Row: {
+          created_at: string
+          discovered_at: string
+          id: string
+          last_checked_at: string | null
+          name: string
+          source: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          website_url: string
+        }
+        Insert: {
+          created_at?: string
+          discovered_at?: string
+          id?: string
+          last_checked_at?: string | null
+          name: string
+          source?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          website_url: string
+        }
+        Update: {
+          created_at?: string
+          discovered_at?: string
+          id?: string
+          last_checked_at?: string | null
+          name?: string
+          source?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          website_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_intelligence_competitors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_intelligence_evidence: {
+        Row: {
+          author: string | null
+          created_at: string
+          discovered_at: string
+          evidence_hash: string
+          evidence_text: string
+          external_id: string | null
+          id: string
+          published_at: string | null
+          signal_id: string
+          source: string
+          source_metadata: Json
+          source_type: string
+          source_url: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          discovered_at?: string
+          evidence_hash: string
+          evidence_text: string
+          external_id?: string | null
+          id?: string
+          published_at?: string | null
+          signal_id: string
+          source: string
+          source_metadata?: Json
+          source_type: string
+          source_url: string
+          tenant_id?: string
+          title?: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          discovered_at?: string
+          evidence_hash?: string
+          evidence_text?: string
+          external_id?: string | null
+          id?: string
+          published_at?: string | null
+          signal_id?: string
+          source?: string
+          source_metadata?: Json
+          source_type?: string
+          source_url?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_intelligence_evidence_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "market_intelligence_signals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_intelligence_evidence_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_intelligence_platform_settings: {
+        Row: {
+          enabled: boolean
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      market_intelligence_runs: {
+        Row: {
+          accepted_signals: number
+          candidate_signals: number
+          completed_at: string | null
+          documents_collected: number
+          duplicates_removed: number
+          error: string | null
+          failures: number
+          id: string
+          metrics: Json
+          mode: string
+          started_at: string
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          accepted_signals?: number
+          candidate_signals?: number
+          completed_at?: string | null
+          documents_collected?: number
+          duplicates_removed?: number
+          error?: string | null
+          failures?: number
+          id?: string
+          metrics?: Json
+          mode?: string
+          started_at?: string
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          accepted_signals?: number
+          candidate_signals?: number
+          completed_at?: string | null
+          documents_collected?: number
+          duplicates_removed?: number
+          error?: string | null
+          failures?: number
+          id?: string
+          metrics?: Json
+          mode?: string
+          started_at?: string
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_intelligence_runs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_intelligence_signals: {
+        Row: {
+          category: string
+          cluster_key: string
+          confidence: number
+          created_at: string
+          expires_at: string | null
+          evidence_strength: string
+          first_observed_at: string
+          freshness_score: number
+          id: string
+          inference: string
+          last_observed_at: string
+          recommended_action: string
+          recurrence_count: number
+          relevance_score: number
+          source_diversity: number
+          status: string
+          summary: string
+          tenant_id: string
+          title: string
+          updated_at: string
+          observed_claim: string
+        }
+        Insert: {
+          category: string
+          cluster_key: string
+          confidence?: number
+          created_at?: string
+          expires_at?: string | null
+          evidence_strength?: string
+          first_observed_at?: string
+          freshness_score?: number
+          id?: string
+          inference: string
+          last_observed_at?: string
+          recommended_action: string
+          recurrence_count?: number
+          relevance_score?: number
+          source_diversity?: number
+          status?: string
+          summary: string
+          tenant_id?: string
+          title: string
+          updated_at?: string
+          observed_claim: string
+        }
+        Update: {
+          category?: string
+          cluster_key?: string
+          confidence?: number
+          created_at?: string
+          expires_at?: string | null
+          evidence_strength?: string
+          first_observed_at?: string
+          freshness_score?: number
+          id?: string
+          inference?: string
+          last_observed_at?: string
+          recommended_action?: string
+          recurrence_count?: number
+          relevance_score?: number
+          source_diversity?: number
+          status?: string
+          summary?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          observed_claim?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_intelligence_signals_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
