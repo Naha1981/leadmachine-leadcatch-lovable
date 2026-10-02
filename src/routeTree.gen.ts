@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authenticated/_shell/route'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authenticated/_shell/auto-reply'
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
@@ -53,6 +54,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SSlugRoute = SSlugRouteImport.update({
   id: '/s/$slug',
   path: '/s/$slug',
@@ -81,11 +87,12 @@ const AuthenticatedShellLeadIntentRoute =
     path: '/lead-intent',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
-const AuthenticatedShellOperatorRoute = AuthenticatedShellOperatorRouteImport.update({
-  id: '/operator',
-  path: '/operator',
-  getParentRoute: () => AuthenticatedShellRouteRoute,
-} as any)
+const AuthenticatedShellOperatorRoute =
+  AuthenticatedShellOperatorRouteImport.update({
+    id: '/operator',
+    path: '/operator',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
 const AuthenticatedShellSettingsRoute =
   AuthenticatedShellSettingsRouteImport.update({
     id: '/settings',
@@ -139,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/health': typeof ApiHealthRoute
   '/s/$slug': typeof SSlugRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -159,6 +167,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/health': typeof ApiHealthRoute
   '/s/$slug': typeof SSlugRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -182,6 +191,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/health': typeof ApiHealthRoute
   '/s/$slug': typeof SSlugRoute
   '/_authenticated/_shell/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/api/health'
     | '/s/$slug'
     | '/auto-reply'
     | '/dashboard'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/api/health'
     | '/s/$slug'
     | '/auto-reply'
     | '/dashboard'
@@ -246,6 +258,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
+    | '/api/health'
     | '/s/$slug'
     | '/_authenticated/_shell/auto-reply'
     | '/_authenticated/_shell/dashboard'
@@ -267,6 +280,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   SSlugRoute: typeof SSlugRoute
   ApiCronDemandRadarRoute: typeof ApiCronDemandRadarRoute
   ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
@@ -313,6 +327,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/onboarding'
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/s/$slug': {
       id: '/s/$slug'
@@ -427,6 +448,7 @@ interface AuthenticatedShellRouteRouteChildren {
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellInboxRoute: typeof AuthenticatedShellInboxRoute
   AuthenticatedShellLeadIntentRoute: typeof AuthenticatedShellLeadIntentRoute
+  AuthenticatedShellOperatorRoute: typeof AuthenticatedShellOperatorRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
   AuthenticatedShellWebsiteRoute: typeof AuthenticatedShellWebsiteRoute
 }
@@ -437,6 +459,7 @@ const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren
     AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
     AuthenticatedShellInboxRoute: AuthenticatedShellInboxRoute,
     AuthenticatedShellLeadIntentRoute: AuthenticatedShellLeadIntentRoute,
+    AuthenticatedShellOperatorRoute: AuthenticatedShellOperatorRoute,
     AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
     AuthenticatedShellWebsiteRoute: AuthenticatedShellWebsiteRoute,
   }
@@ -463,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiHealthRoute: ApiHealthRoute,
   SSlugRoute: SSlugRoute,
   ApiCronDemandRadarRoute: ApiCronDemandRadarRoute,
   ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
