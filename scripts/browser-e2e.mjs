@@ -33,7 +33,7 @@ try {
   await desktop.getByRole("button", { name: /E2E customer problems 1/i }).click();
   await desktop.getByText("Observed:", { exact: false }).waitFor({ timeout: 5000 });
   await desktop.getByText("E2E public evidence", { exact: true }).waitFor({ timeout: 5000 });
-  await desktop.getByRole("button", { name: "Create FAQ" }).click();
+  await desktop.getByRole("button", { name: "Create FAQ" }).first().click();
   await desktop.getByText("FAQ draft", { exact: true }).waitFor({ timeout: 5000 });
   if (!(await desktop.getByText(/E2E owner-reviewable draft for FAQ/).isVisible())) {
     throw new Error("Market Intelligence quick action did not return the E2E draft");
