@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_LIMITS } from "@/lib/market-intelligence.constants";
 
 export const Route = createFileRoute("/api/market-intelligence")({
   server: {
@@ -26,9 +27,8 @@ export const Route = createFileRoute("/api/market-intelligence")({
         const enabled = platform?.enabled !== false && business?.market_intelligence_enabled !== false;
         const active = enabled ? (signals ?? []).filter((signal: any) => !signal.expires_at || new Date(signal.expires_at).getTime() > Date.now()) : [];
         active.sort((a: any, b: any) => (Number(b.freshness_score) * .35 + Number(b.confidence) * .35 + Number(b.relevance_score) * .3) - (Number(a.freshness_score) * .35 + Number(a.confidence) * .35 + Number(a.relevance_score) * .3));
-        const limits: Record<string, number> = { CUSTOMER_PROBLEMS: 3, COMPETITOR_OPPORTUNITIES: 5, UNANSWERED_QUESTIONS: 7, CONTENT_OPPORTUNITIES: 4, LEAD_GENERATION_OPPORTUNITIES: 2 };
-        const categories: Record<string, any[]> = {};
-        for (const [category, limit] of Object.entries(limits)) categories[category] = active.filter((signal: any) => signal.category === category).slice(0, limit);
+        const categories: Record<string, any[]> = Object.fromEntries(MARKET_INTELLIGENCE_CATEGORIES.map((category) => [category, []]));
+        for (const category of MARKET_INTELLIGENCE_CATEGORIES) categories[category] = active.filter((signal: any) => signal.category === category).slice(0, MARKET_INTELLIGENCE_LIMITS[category]);
         const ids = active.slice(0, 60).map((signal: any) => signal.id);
         let evidence: any[] = [];
         if (ids.length) {
