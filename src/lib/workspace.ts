@@ -23,6 +23,8 @@ export async function loadWorkspace(): Promise<Workspace> {
         services: "Emergency plumbing\\nLeak detection and repairs\\nBlocked drains\\nGeyser repairs",
         suburb: "Sandton",
         market_intelligence_enabled: true,
+        onboarded: true,
+        whatsapp_status: "connected",
       } as unknown as Tables<"business_profiles">,
       config: { tenant_id: "00000000-0000-0000-0000-00000000e2e1", enabled: true } as unknown as Tables<"auto_reply_configs">,
     };
