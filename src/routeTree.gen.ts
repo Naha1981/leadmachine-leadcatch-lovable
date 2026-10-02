@@ -26,6 +26,10 @@ import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authent
 import { Route as ApiCronDemandRadarRouteImport } from './routes/api/cron/demand-radar'
 import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
 import { Route as ApiCronZeroUiRouteImport } from './routes/api/cron/zero-ui'
+import { Route as ApiCronMarketIntelligenceRouteImport } from './routes/api/cron/market-intelligence'
+import { Route as ApiCronMarketIntelligenceJobsRouteImport } from './routes/api/cron/market-intelligence/jobs'
+import { Route as ApiCronMarketIntelligenceIngestRouteImport } from './routes/api/cron/market-intelligence/ingest'
+import { Route as ApiMarketIntelligenceRouteImport } from './routes/api/market-intelligence'
 import { Route as ApiDemandRadarLatestRouteImport } from './routes/api/demand-radar/latest'
 import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-lead'
 import { Route as ApiTestAcceptanceRouteImport } from './routes/api/test/acceptance'
@@ -120,6 +124,26 @@ const ApiCronZeroUiRoute = ApiCronZeroUiRouteImport.update({
   path: '/api/cron/zero-ui',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronMarketIntelligenceRoute = ApiCronMarketIntelligenceRouteImport.update({
+  id: '/api/cron/market-intelligence',
+  path: '/api/cron/market-intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronMarketIntelligenceJobsRoute = ApiCronMarketIntelligenceJobsRouteImport.update({
+  id: '/api/cron/market-intelligence/jobs',
+  path: '/api/cron/market-intelligence/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronMarketIntelligenceIngestRoute = ApiCronMarketIntelligenceIngestRouteImport.update({
+  id: '/api/cron/market-intelligence/ingest',
+  path: '/api/cron/market-intelligence/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMarketIntelligenceRoute = ApiMarketIntelligenceRouteImport.update({
+  id: '/api/market-intelligence',
+  path: '/api/market-intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDemandRadarLatestRoute = ApiDemandRadarLatestRouteImport.update({
   id: '/api/demand-radar/latest',
   path: '/api/demand-radar/latest',
@@ -158,10 +182,14 @@ export interface FileRoutesByFullPath {
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/zero-ui': typeof ApiCronZeroUiRoute
+  '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRoute
+  '/api/cron/market-intelligence/jobs': typeof ApiCronMarketIntelligenceJobsRoute
+  '/api/cron/market-intelligence/ingest': typeof ApiCronMarketIntelligenceIngestRoute
   '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -179,10 +207,14 @@ export interface FileRoutesByTo {
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/zero-ui': typeof ApiCronZeroUiRoute
+  '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRoute
+  '/api/cron/market-intelligence/jobs': typeof ApiCronMarketIntelligenceJobsRoute
+  '/api/cron/market-intelligence/ingest': typeof ApiCronMarketIntelligenceIngestRoute
   '/api/demand-radar/latest': typeof ApiDemandRadarLatestRoute
   '/api/public/site-lead': typeof ApiPublicSiteLeadRoute
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -226,10 +258,14 @@ export interface FileRouteTypes {
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/zero-ui'
+    | '/api/cron/market-intelligence'
+    | '/api/cron/market-intelligence/jobs'
+    | '/api/cron/market-intelligence/ingest'
     | '/api/demand-radar/latest'
     | '/api/public/site-lead'
     | '/api/test/acceptance'
     | '/api/public/whatsapp/webhook'
+    | '/api/market-intelligence'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -247,10 +283,14 @@ export interface FileRouteTypes {
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/zero-ui'
+    | '/api/cron/market-intelligence'
+    | '/api/cron/market-intelligence/jobs'
+    | '/api/cron/market-intelligence/ingest'
     | '/api/demand-radar/latest'
     | '/api/public/site-lead'
     | '/api/test/acceptance'
     | '/api/public/whatsapp/webhook'
+    | '/api/market-intelligence'
   id:
     | '__root__'
     | '/'
@@ -270,10 +310,14 @@ export interface FileRouteTypes {
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/zero-ui'
+    | '/api/cron/market-intelligence'
+    | '/api/cron/market-intelligence/jobs'
+    | '/api/cron/market-intelligence/ingest'
     | '/api/demand-radar/latest'
     | '/api/public/site-lead'
     | '/api/test/acceptance'
     | '/api/public/whatsapp/webhook'
+    | '/api/market-intelligence'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -285,10 +329,14 @@ export interface RootRouteChildren {
   ApiCronDemandRadarRoute: typeof ApiCronDemandRadarRoute
   ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
   ApiCronZeroUiRoute: typeof ApiCronZeroUiRoute
+  ApiCronMarketIntelligenceRoute: typeof ApiCronMarketIntelligenceRoute
+  ApiCronMarketIntelligenceJobsRoute: typeof ApiCronMarketIntelligenceJobsRoute
+  ApiCronMarketIntelligenceIngestRoute: typeof ApiCronMarketIntelligenceIngestRoute
   ApiDemandRadarLatestRoute: typeof ApiDemandRadarLatestRoute
   ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
   ApiTestAcceptanceRoute: typeof ApiTestAcceptanceRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
+  ApiMarketIntelligenceRoute: typeof ApiMarketIntelligenceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,6 +460,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronZeroUiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/market-intelligence': {
+      id: '/api/cron/market-intelligence'
+      path: '/api/cron/market-intelligence'
+      fullPath: '/api/cron/market-intelligence'
+      preLoaderRoute: typeof ApiCronMarketIntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/market-intelligence/jobs': {
+      id: '/api/cron/market-intelligence/jobs'
+      path: '/api/cron/market-intelligence/jobs'
+      fullPath: '/api/cron/market-intelligence/jobs'
+      preLoaderRoute: typeof ApiCronMarketIntelligenceJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/market-intelligence/ingest': {
+      id: '/api/cron/market-intelligence/ingest'
+      path: '/api/cron/market-intelligence/ingest'
+      fullPath: '/api/cron/market-intelligence/ingest'
+      preLoaderRoute: typeof ApiCronMarketIntelligenceIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/demand-radar/latest': {
       id: '/api/demand-radar/latest'
       path: '/api/demand-radar/latest'
@@ -438,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/whatsapp/webhook'
       fullPath: '/api/public/whatsapp/webhook'
       preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/market-intelligence': {
+      id: '/api/market-intelligence'
+      path: '/api/market-intelligence'
+      fullPath: '/api/market-intelligence'
+      preLoaderRoute: typeof ApiMarketIntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -491,10 +567,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronDemandRadarRoute: ApiCronDemandRadarRoute,
   ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
   ApiCronZeroUiRoute: ApiCronZeroUiRoute,
+  ApiCronMarketIntelligenceRoute: ApiCronMarketIntelligenceRoute,
+  ApiCronMarketIntelligenceJobsRoute: ApiCronMarketIntelligenceJobsRoute,
+  ApiCronMarketIntelligenceIngestRoute: ApiCronMarketIntelligenceIngestRoute,
   ApiDemandRadarLatestRoute: ApiDemandRadarLatestRoute,
   ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
   ApiTestAcceptanceRoute: ApiTestAcceptanceRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
+  ApiMarketIntelligenceRoute: ApiMarketIntelligenceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -11,6 +11,24 @@ export type Workspace = {
 
 /** Load (and on first sign-in, create) the user's tenant, profile and auto-reply config. */
 export async function loadWorkspace(): Promise<Workspace> {
+  if (import.meta.env["VITE_E2E_MODE"] === "true") {
+    return {
+      tenantId: "00000000-0000-0000-0000-00000000e2e1",
+      userEmail: "e2e@example.com",
+      profile: {
+        tenant_id: "00000000-0000-0000-0000-00000000e2e1",
+        business_name: "E2E Test Plumbing",
+        industry: "Plumber",
+        trade: "Plumber",
+        services: "Emergency plumbing\\nLeak detection and repairs\\nBlocked drains\\nGeyser repairs",
+        suburb: "Sandton",
+        market_intelligence_enabled: true,
+        onboarded: true,
+        whatsapp_status: "connected",
+      } as unknown as Tables<"business_profiles">,
+      config: { tenant_id: "00000000-0000-0000-0000-00000000e2e1", enabled: true } as unknown as Tables<"auto_reply_configs">,
+    };
+  }
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("Not signed in");
   let { data: tenant } = await supabase.from("tenants").select("id").eq("owner_id", u.user.id).maybeSingle();

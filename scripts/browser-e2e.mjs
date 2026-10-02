@@ -10,6 +10,7 @@ const browser = await chromium.launch({ headless: true });
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
+
 async function json(res) {
   const body = await res.json();
   if (!res.ok()) throw new Error("HTTP " + res.status() + ": " + JSON.stringify(body));
@@ -21,6 +22,24 @@ try {
     headers: { "x-e2e-secret": e2eSecret },
   }));
   if (!seed.ok || !seed.siteUrl) throw new Error("Acceptance fixture did not seed");
+
+  await desktop.goto(base + "/dashboard", { waitUntil: "domcontentloaded" });
+  await desktop.getByText("LeadMachine is watching the market", { exact: true }).waitFor({ timeout: 10000 });
+  for (const label of ["Customer Problems", "Competitor Opportunities", "Unanswered Questions", "Content Opportunities", "Lead Opportunities"]) {
+    await desktop.getByText(label, { exact: true }).waitFor({ timeout: 5000 });
+  }
+  for (const count of ["3/3", "5/5", "7/7", "4/4", "2/2"]) {
+    await desktop.getByText(count, { exact: true }).waitFor({ timeout: 5000 });
+  }
+  await desktop.getByRole("button", { name: /E2E customer problems 1/i }).click();
+  await desktop.getByText("Observed:", { exact: false }).waitFor({ timeout: 5000 });
+  await desktop.getByText("E2E public evidence", { exact: true }).waitFor({ timeout: 5000 });
+  await desktop.getByRole("button", { name: "Create FAQ" }).first().click();
+  await desktop.getByText("FAQ draft", { exact: true }).waitFor({ timeout: 5000 });
+  if (!(await desktop.getByText(/E2E owner-reviewable draft for FAQ/).isVisible())) {
+    throw new Error("Market Intelligence quick action did not return the E2E draft");
+  }
+  await desktop.goto(base + "/", { waitUntil: "domcontentloaded" });
 
   const publicPage = await desktop.request.get(base + seed.siteUrl);
   if (publicPage.status() !== 200) throw new Error("Published business page returned HTTP " + publicPage.status());
@@ -58,6 +77,7 @@ try {
   await desktop.getByPlaceholder("WhatsApp number e.g. 082 123 4567").fill(phone);
   await desktop.getByPlaceholder("What do you need help with?").fill("Urgent geyser burst in Sandton. I need someone today.");
   await desktop.getByRole("checkbox").check();
+  await desktop.waitForTimeout(2700);
   const quoteResponsePromise = desktop.waitForResponse(
     (response) => response.url().includes("/api/public/site-lead") && response.request().method() === "POST",
     { timeout: 15000 }

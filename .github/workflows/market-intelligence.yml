@@ -1,0 +1,49 @@
+name: LeadMachine Market Intelligence
+
+on:
+  schedule:
+    - cron: "15 */3 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "regular"
+        required: false
+        default: "regular"
+
+permissions:
+  contents: read
+
+jobs:
+  agent-reach-ingest:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Agent Reach from official upstream
+        run: python -m pip install --upgrade "git+https://github.com/Panniantong/Agent-Reach.git"
+      - name: Validate Agent Reach environment
+        run: agent-reach doctor
+      - name: Collect public evidence through Agent Reach backends
+        env:
+          LEAD_MACHINE_APP_URL: ${{ secrets.LEAD_MACHINE_APP_URL }}
+          LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET: ${{ secrets.LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET }}
+          AGENT_REACH_ENABLED: ${{ secrets.LEAD_MACHINE_AGENT_REACH_ENABLED }}
+        run: node scripts/market-intelligence-agent-reach.mjs
+
+  market-intelligence:
+    needs: agent-reach-ingest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Market Intelligence worker
+        env:
+          APP_URL: ${{ secrets.LEAD_MACHINE_APP_URL }}
+          CRON_SECRET: ${{ secrets.LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET }}
+        run: |
+          test -n "$APP_URL"
+          test -n "$CRON_SECRET"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/market-intelligence?mode=regular"

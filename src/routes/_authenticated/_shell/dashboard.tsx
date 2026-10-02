@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/lib/workspace";
 import { Button } from "@/components/ui/button";
+import { MarketIntelligencePanel } from "@/components/MarketIntelligencePanel";
 import { Card, PageHeader, timeAgo } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/_shell/dashboard")({
@@ -90,6 +91,8 @@ function Dashboard() {
         <Button asChild className="h-11 rounded-xl font-semibold"><Link to="/inbox">View Inbox <ArrowRight className="h-4 w-4" /></Link></Button>
         <Button asChild variant="secondary" className="h-11 rounded-xl"><Link to="/auto-reply">Edit Auto-Reply</Link></Button>
       </div>
+
+      <MarketIntelligencePanel />
 
       <section>
         <h2 className="mb-3 text-sm font-medium text-muted-foreground">Today's activity</h2>
