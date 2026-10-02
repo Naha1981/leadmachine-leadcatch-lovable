@@ -56,7 +56,7 @@ export function deterministicCategory(document: MarketSourceDocument): MarketInt
 export function scoreEvidence(input: { recurrenceCount: number; sourceDiversity: number; relevance: number; freshness: number; }): { confidence: number; evidenceStrength: "insufficient" | "weak" | "medium" | "high" } {
   const recurrence = Math.min(1, input.recurrenceCount / 5);
   const diversity = Math.min(1, input.sourceDiversity / 3);
-  const confidence = Number(Math.min(0.98, 0.25 * recurrence + 0.25 * diversity + 0.3 * input.relevance + 0.2 * input.freshness).toFixed(4));
+  const rawConfidence = Math.min(0.98, 0.25 * recurrence + 0.25 * diversity + 0.3 * input.relevance + 0.2 * input.freshness);\n  const confidence = Number((input.recurrenceCount < 2 ? Math.min(0.35, rawConfidence) : rawConfidence).toFixed(4));
   let evidenceStrength: "insufficient" | "weak" | "medium" | "high" = "weak";
   if (input.recurrenceCount < 2) evidenceStrength = "insufficient";
   else if (input.recurrenceCount >= 4 && input.sourceDiversity >= 3 && confidence >= 0.72) evidenceStrength = "high";
