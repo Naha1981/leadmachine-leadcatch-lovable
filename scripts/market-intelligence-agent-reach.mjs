@@ -1,8 +1,10 @@
 import { execFileSync } from "node:child_process";
 
 const base = process.env["LEAD_MACHINE_APP_URL"];
-const cronSecret = process.env["LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET"];\nconst enabled = process.env["AGENT_REACH_ENABLED"] === "true";
-if (!base || !cronSecret) throw new Error("LEAD_MACHINE_APP_URL and LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET are required.");\nif (!enabled) { console.log("Agent Reach ingestion disabled; core Market Intelligence sources remain active."); process.exit(0); }
+const cronSecret = process.env["LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET"];
+const enabled = process.env["AGENT_REACH_ENABLED"] === "true";
+if (!base || !cronSecret) throw new Error("LEAD_MACHINE_APP_URL and LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET are required.");
+if (!enabled) { console.log("Agent Reach ingestion disabled; core Market Intelligence sources remain active."); process.exit(0); }
 
 function run(command, args) {
   return execFileSync(command, args, { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 }).trim();
