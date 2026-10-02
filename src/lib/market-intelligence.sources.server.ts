@@ -70,8 +70,10 @@ export async function searchPublicWeb(query: string, limit = 8): Promise<MarketS
     let match: RegExpExecArray | null;
     while ((match = re.exec(html)) && docs.length < limit) {
       const url = match[1];
+      const rawTitle = match[2];
+      if (!url || !rawTitle) continue;
       if (/bing\.com|google\.com|microsoft\.com|googleusercontent\.com/i.test(url)) continue;
-      const title = decodeHtml(match[2].replace(/<[^>]+>/g, "")).trim();
+      const title = decodeHtml(rawTitle.replace(/<[^>]+>/g, "")).trim();
       if (!title || title.length < 5) continue;
       docs.push({ source: "Web search", sourceType: "web", sourceUrl: url, title: title.slice(0, 240), evidenceText: title, metadata: { query } });
     }
