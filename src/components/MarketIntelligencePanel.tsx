@@ -3,13 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ExternalLink, Sparkles } from "lucide-react";
 import { getMarketIntelligence, createMarketIntelligenceAction } from "@/lib/market-intelligence.functions";
 import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_CATEGORY_LABELS, MARKET_INTELLIGENCE_LIMITS, type MarketIntelligenceCategory } from "@/lib/market-intelligence.constants";
-import type { MarketIntelligenceSignal } from "@/lib/market-intelligence.types";
+import type { MarketIntelligenceActionKind, MarketIntelligenceSignal } from "@/lib/market-intelligence.types";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui-bits";
 import { timeAgo } from "@/components/ui-bits";
 
-const ACTIONS: Record<MarketIntelligenceCategory, Array<{ kind: string; label: string }>> = {
+const ACTIONS: Record<MarketIntelligenceCategory, Array<{ kind: MarketIntelligenceActionKind; label: string }>> = {
   CUSTOMER_PROBLEMS: [{ kind: "FAQ", label: "Create FAQ" }, { kind: "OFFER", label: "Create offer" }, { kind: "WHATSAPP_RESPONSE", label: "Draft WhatsApp response" }],
   COMPETITOR_OPPORTUNITIES: [{ kind: "COMPETITOR_ANALYSIS", label: "Analyse competitor" }, { kind: "COUNTER_OFFER", label: "Draft counter-offer" }, { kind: "LANDING_PAGE_BRIEF", label: "Draft landing-page brief" }],
   UNANSWERED_QUESTIONS: [{ kind: "FAQ", label: "Create FAQ" }, { kind: "ARTICLE", label: "Draft article" }, { kind: "AUTO_REPLY_SNIPPET", label: "Draft auto-reply" }],
