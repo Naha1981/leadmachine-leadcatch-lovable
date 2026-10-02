@@ -4,6 +4,8 @@ import { ChevronDown, ExternalLink, Sparkles } from "lucide-react";
 import { getMarketIntelligence, createMarketIntelligenceAction } from "@/lib/market-intelligence.functions";
 import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_CATEGORY_LABELS, MARKET_INTELLIGENCE_LIMITS, type MarketIntelligenceCategory } from "@/lib/market-intelligence.constants";
 import type { MarketIntelligenceActionKind, MarketIntelligenceSignal } from "@/lib/market-intelligence.types";
+import type { MarketIntelligenceSnapshot } from "@/lib/market-intelligence.types";
+import { buildE2EMarketIntelligence } from "@/lib/e2e-market-intelligence";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui-bits";
@@ -18,7 +20,12 @@ const ACTIONS: Record<MarketIntelligenceCategory, Array<{ kind: MarketIntelligen
 };
 
 export function MarketIntelligencePanel() {
-  const intelligence = useQuery({ queryKey: ["market-intelligence"], queryFn: () => getMarketIntelligence({}), refetchInterval: 300_000 });
+  const isE2E = import.meta.env["VITE_E2E_MODE"] === "true";
+  const intelligence = useQuery<MarketIntelligenceSnapshot>({
+    queryKey: ["market-intelligence"],
+    queryFn: () => isE2E ? Promise.resolve(buildE2EMarketIntelligence()) : getMarketIntelligence({}),
+    refetchInterval: 300_000,
+  });
   const action = useServerFn(createMarketIntelligenceAction);
   const [openSignal, setOpenSignal] = useState<string | null>(null);
   const [drafting, setDrafting] = useState<string | null>(null);
@@ -30,10 +37,17 @@ export function MarketIntelligencePanel() {
   if (intelligence.isLoading) return <Card className="p-5"><p className="text-sm text-muted-foreground">Market Intelligence is loading…</p></Card>;
   if (!intelligence.data?.enabled) return null;
 
-  async function createDraft(signal: MarketIntelligenceSignal, kind: string) {
+  async function createDraft(signal: MarketIntelligenceSignal, kind: MarketIntelligenceActionKind) {
     setDrafting(signal.id + ":" + kind);
-    try { setDraft({ kind, text: (await action({ data: { signalId: signal.id, kind } })).draft }); setOpenSignal(signal.id); }
-    finally { setDrafting(null); }
+    try {
+      const result = isE2E
+        ? { draft: "E2E owner-reviewable draft for " + kind + ". No external action was executed." }
+        : await action({ data: { signalId: signal.id, kind } });
+      setDraft({ kind, text: result.draft });
+      setOpenSignal(signal.id);
+    } finally {
+      setDrafting(null);
+    }
   }
 
   return (
