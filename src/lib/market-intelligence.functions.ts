@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireMarketIntelligenceAuth } from "@/lib/market-intelligence.auth.server";
 import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_LIMITS } from "@/lib/market-intelligence.constants";
 import type { MarketIntelligenceSnapshot, MarketIntelligenceActionKind } from "@/lib/market-intelligence.types";
 
@@ -21,7 +21,7 @@ async function tenantForUser(userId: string, db: any) {
 }
 
 export const getMarketIntelligence = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireMarketIntelligenceAuth])
   .handler(async ({ context }): Promise<MarketIntelligenceSnapshot> => {
     if (process.env["E2E_MODE"] === "true") {
       const { buildE2EMarketIntelligence } = await import("@/lib/e2e-market-intelligence");
