@@ -9,7 +9,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:apply-hardening": "bun scripts/apply-production-hardening-migrations.ts",
+    "test:operator-isolation": "bun scripts/verify-operator-isolation.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

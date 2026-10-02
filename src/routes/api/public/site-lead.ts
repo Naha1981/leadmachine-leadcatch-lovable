@@ -107,21 +107,39 @@ export const Route = createFileRoute("/api/public/site-lead")({
 
         const { supabaseAdmin: rawDb } = await import("@/integrations/supabase/client.server");
         const db = rawDb as any;
-        const { data: site } = await db
+        const { data: site, error: siteError } = await db
           .from("websites")
           .select("tenant_id")
           .eq("slug", parsed.slug)
           .eq("published", true)
           .maybeSingle();
+        if (siteError) {
+          console.error("site lookup failed", siteError);
+          return Response.json({ ok: false, error: "We couldn't process this enquiry right now." }, { status: 503 });
+        }
         if (!site) return Response.json({ ok: false, error: "This page is not available." }, { status: 404 });
 
         const tenantId = site.tenant_id;
-        const { data: profile } = await db
+        const { data: profile, error: profileError } = await db
           .from("business_profiles")
           .select("business_name, industry, services")
           .eq("tenant_id", tenantId)
           .maybeSingle();
-        const { data: existing } = await db.from("leads").select("id").eq("tenant_id", tenantId).eq("phone", phone).maybeSingle();
+        if (profileError) {
+          console.error("business profile lookup failed", profileError);
+          return Response.json({ ok: false, error: "We couldn't process this enquiry right now." }, { status: 503 });
+        }
+
+        const { data: existing, error: existingError } = await db
+          .from("leads")
+          .select("id")
+          .eq("tenant_id", tenantId)
+          .eq("phone", phone)
+          .maybeSingle();
+        if (existingError) {
+          console.error("existing lead lookup failed", existingError);
+          return Response.json({ ok: false, error: "We couldn't process this enquiry right now." }, { status: 503 });
+        }
 
         const scored = await scoreInboundLead({
           businessName: profile?.business_name || "Your business",
@@ -155,7 +173,7 @@ export const Route = createFileRoute("/api/public/site-lead")({
           }
           leadId = r.data.id;
         } else {
-          await db.from("leads").update({
+          const updateResult = await db.from("leads").update({
             name: parsed.name,
             status: "new",
             ai_score: scored.score,
@@ -164,10 +182,15 @@ export const Route = createFileRoute("/api/public/site-lead")({
             ai_scored_at: new Date().toISOString(),
             ai_last_scored_message_at: new Date().toISOString(),
           }).eq("id", leadId);
+
+          if (updateResult.error) {
+            console.error("existing lead update failed", updateResult.error);
+            return Response.json({ ok: false, error: "We couldn't save your details. Please try again." }, { status: 500 });
+          }
         }
 
         if (parsed.message) {
-          await db.from("conversation_messages").insert({
+          const messageResult = await db.from("conversation_messages").insert({
             tenant_id: tenantId,
             lead_id: leadId,
             direction: "inbound",
@@ -175,19 +198,30 @@ export const Route = createFileRoute("/api/public/site-lead")({
             sender: "customer",
             delivery_status: "received",
           });
+          if (messageResult.error) {
+            console.error("conversation message insert failed", messageResult.error);
+          }
         }
-        await db.from("lead_events").insert({
+
+        const createdEvent = await db.from("lead_events").insert({
           tenant_id: tenantId,
           lead_id: leadId,
           type: "lead_created",
           payload: { source: "website", slug: parsed.slug, consent: true },
         });
-        await db.from("lead_events").insert({
+        if (createdEvent.error) {
+          console.error("lead_created event insert failed", createdEvent.error);
+        }
+
+        const scoredEvent = await db.from("lead_events").insert({
           tenant_id: tenantId,
           lead_id: leadId,
           type: "lead_scored",
           payload: { score: scored.score, temperature: scored.temperature, summary: scored.summary },
         });
+        if (scoredEvent.error) {
+          console.error("lead_scored event insert failed", scoredEvent.error);
+        }
 
         return Response.json({
           ok: true,
