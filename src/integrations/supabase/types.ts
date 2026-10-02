@@ -1786,6 +1786,74 @@ export type Database = {
           },
         ]
       }
+      market_intelligence_documents: {
+        Row: {
+          author: string | null
+          content: string
+          content_hash: string
+          created_at: string
+          discovered_at: string
+          external_id: string | null
+          id: string
+          metadata: Json
+          processed_at: string | null
+          processing_error: string | null
+          published_at: string | null
+          source: string
+          source_type: string
+          source_url: string
+          status: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          author?: string | null
+          content: string
+          content_hash: string
+          created_at?: string
+          discovered_at?: string
+          external_id?: string | null
+          id?: string
+          metadata?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          published_at?: string | null
+          source: string
+          source_type: string
+          source_url: string
+          status?: string
+          tenant_id?: string
+          title?: string
+        }
+        Update: {
+          author?: string | null
+          content?: string
+          content_hash?: string
+          created_at?: string
+          discovered_at?: string
+          external_id?: string | null
+          id?: string
+          metadata?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          published_at?: string | null
+          source?: string
+          source_type?: string
+          source_url?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_intelligence_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_intelligence_evidence: {
         Row: {
           author: string | null
