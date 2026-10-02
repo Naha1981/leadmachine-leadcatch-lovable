@@ -10,10 +10,6 @@ const browser = await chromium.launch({ headless: true });
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
-desktop.on("console", (msg) => console.log("MI E2E console:", msg.type(), msg.text()));
-desktop.on("pageerror", (error) => console.log("MI E2E pageerror:", error.stack || error.message));
-desktop.on("requestfailed", (request) => console.log("MI E2E requestfailed:", request.url(), request.failure()?.errorText || "unknown"));
-
 
 async function json(res) {
   const body = await res.json();
@@ -28,10 +24,6 @@ try {
   if (!seed.ok || !seed.siteUrl) throw new Error("Acceptance fixture did not seed");
 
   await desktop.goto(base + "/dashboard", { waitUntil: "domcontentloaded" });
-  await desktop.waitForTimeout(1500);
-  console.log("MI E2E dashboard URL:", desktop.url());
-  console.log("MI E2E dashboard title:", await desktop.title());
-  console.log("MI E2E dashboard body:", (await desktop.locator("body").innerText()).slice(0, 5000));
   await desktop.getByText("LeadMachine is watching the market", { exact: true }).waitFor({ timeout: 10000 });
   for (const label of ["Customer Problems", "Competitor Opportunities", "Unanswered Questions", "Content Opportunities", "Lead Opportunities"]) {
     await desktop.getByText(label, { exact: true }).waitFor({ timeout: 5000 });
