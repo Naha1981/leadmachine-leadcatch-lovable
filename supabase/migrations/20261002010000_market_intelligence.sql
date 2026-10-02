@@ -3,22 +3,22 @@
 
 CREATE TABLE IF NOT EXISTS public.market_intelligence_platform_settings (
   id boolean PRIMARY KEY DEFAULT true CHECK (id = true),
-  enabled boolean NOT NULL DEFAULT true,
+  enabled boolean NOT NULL DEFAULT false,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 INSERT INTO public.market_intelligence_platform_settings (id, enabled)
-VALUES (true, true)
+VALUES (true, false)
 ON CONFLICT (id) DO NOTHING;
 
 ALTER TABLE public.business_profiles
-  ADD COLUMN IF NOT EXISTS market_intelligence_enabled boolean NOT NULL DEFAULT true;
+  ADD COLUMN IF NOT EXISTS market_intelligence_enabled boolean NOT NULL DEFAULT false;
 ALTER TABLE public.business_profiles
   ADD COLUMN IF NOT EXISTS market_intelligence_website text;
 ALTER TABLE public.business_profiles
   ADD COLUMN IF NOT EXISTS market_intelligence_keywords jsonb NOT NULL DEFAULT '[]'::jsonb;
 ALTER TABLE public.business_profiles
-  ADD COLUMN IF NOT EXISTS market_intelligence_source_preferences jsonb NOT NULL DEFAULT '{"reddit":true,"web":true,"youtube":true,"x":true}'::jsonb;
+  ADD COLUMN IF NOT EXISTS market_intelligence_source_preferences jsonb NOT NULL DEFAULT '{"reddit":true,"web":true,"youtube":true,"x":false}'::jsonb;
 
 CREATE TABLE IF NOT EXISTS public.market_intelligence_competitors (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -182,8 +182,4 @@ CREATE TRIGGER trg_market_intelligence_signals_updated
   BEFORE UPDATE ON public.market_intelligence_signals
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- Keep the dashboard useful immediately after deployment: existing tenants are opted in,
--- while the platform switch remains available for a controlled rollback.
-UPDATE public.business_profiles
-SET market_intelligence_enabled = COALESCE(market_intelligence_enabled, true)
-WHERE market_intelligence_enabled IS NULL;
+-- Rollout is intentionally disabled by default. Enable platform + tenant flags after validation.
