@@ -32,15 +32,6 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
-    if (process.env["E2E_MODE"] === "true") {
-      return next({
-        context: {
-          supabase: {} as any,
-          userId: "00000000-0000-0000-0000-00000000e2e1",
-          claims: { sub: "00000000-0000-0000-0000-00000000e2e1" },
-        },
-      });
-    }
     
     const SUPABASE_URL = process.env['SUPABASE_URL'];
     const SUPABASE_PUBLISHABLE_KEY = process.env['SUPABASE_PUBLISHABLE_KEY'];
