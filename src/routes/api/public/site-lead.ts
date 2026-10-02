@@ -16,7 +16,8 @@ const Body = z.object({
 });
 
 async function hashIp(ip: string): Promise<string> {
-  const salt = process.env["WEBHOOK_SECRET"] ?? "leadmachine";
+  const salt = process.env["QUOTE_FORM_TOKEN_SECRET"] || process.env["WEBHOOK_SECRET"];
+  if (!salt) throw new Error("QUOTE_FORM_TOKEN_SECRET or WEBHOOK_SECRET is required.");
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + ":" + ip));
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
