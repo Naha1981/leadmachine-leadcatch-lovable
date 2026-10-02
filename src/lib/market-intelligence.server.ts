@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_EXPIRY_DAYS, MARKET_INTELLIGENCE_LIMITS, type MarketIntelligenceCategory } from "@/lib/market-intelligence.constants";
-import { collectAgentReachEvidence, collectDemandRadarEvidence, discoverCompetitors, evidenceHash, readPublicWebPage, type MarketSourceDocument } from "@/lib/market-intelligence.sources.server";
+import { collectAgentReachEvidence, collectDemandRadarEvidence, discoverCompetitors, evidenceHash, readPublicWebPage, collectInternalLeadEvidence, type MarketSourceDocument } from "@/lib/market-intelligence.sources.server";
 import { synthesizeFindings } from "@/lib/market-intelligence.llm.server";
 
 type TenantContext = {
@@ -133,6 +133,7 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
       const rawDocumentIds = (rawDocuments ?? []).map((row: any) => row.id);
       docs.push(...(rawDocuments ?? []).map((row: any) => ({ source: row.source, sourceType: row.source_type, sourceUrl: row.source_url, externalId: row.external_id, title: row.title, author: row.author, publishedAt: row.published_at || row.discovered_at, evidenceText: row.content, metadata: row.metadata || {} })));
       docs.push(...await collectDemandRadarEvidence(db, tenant.tenantId, since));
+      docs.push(...await collectInternalLeadEvidence(db, tenant.tenantId, since));
       if (tenant.website) { const websiteDoc = await readPublicWebPage(tenant.website, "website"); if (websiteDoc) docs.push(websiteDoc); }
 
       const existingCompetitors = await db.from("market_intelligence_competitors").select("name,website_url").eq("tenant_id", tenant.tenantId).eq("status","active").limit(10);
@@ -169,6 +170,8 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
       const draftsByKey = new Map(llmDrafts.map((draft) => [draft.clusterKey, draft]));
 
       for (const group of groups) {
+        const hasExternalEvidence = group.evidence.some((item) => item.document.sourceType !== "internal");
+        if (!hasExternalEvidence) continue;
         const now = new Date();
         const latest = group.evidence.map((item) => item.document.publishedAt || null).filter(Boolean).map((value) => new Date(value as string)).sort((a,b) => b.getTime()-a.getTime())[0] ?? now;
         const recurrence = new Set(group.evidence.map((item) => item.document.externalId || item.document.sourceUrl)).size;
