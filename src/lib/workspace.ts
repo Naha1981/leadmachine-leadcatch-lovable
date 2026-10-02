@@ -1,7 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { buildE2EMarketIntelligence } from "@/lib/e2e-market-intelligence";
 
 export type Workspace = {
   tenantId: string;
