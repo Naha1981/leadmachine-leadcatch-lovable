@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { MARKET_INTELLIGENCE_CATEGORIES, MARKET_INTELLIGENCE_LIMITS } from "../src/lib/market-intelligence.constants";
 import { clusterKey, deterministicCategory, freshnessScore, scoreEvidence, selectTopSignals } from "../src/lib/market-intelligence.server";
-import { evidenceHash } from "../src/lib/market-intelligence.sources.server";
+import { collectAgentReachEvidence, evidenceHash } from "../src/lib/market-intelligence.sources.server";
 
 describe("market intelligence contracts", () => {
   test("uses only the five product categories", () => {
@@ -45,6 +45,37 @@ describe("market intelligence contracts", () => {
 
   test("cluster keys are stable", () => {
     expect(clusterKey("CUSTOMER_PROBLEMS", "Roof repair pricing is too confusing", "roof repair, waterproofing")).toBe(clusterKey("CUSTOMER_PROBLEMS", "Roof repair pricing is too confusing", "roof repair, waterproofing"));
+  });
+
+
+  test("top-n limits match the five product contracts", () => {
+    const now = new Date().toISOString();
+    const signals = MARKET_INTELLIGENCE_CATEGORIES.flatMap((category) =>
+      Array.from({ length: 10 }, (_, index) => ({
+        category,
+        lastObservedAt: now,
+        freshnessScore: 0.9,
+        confidence: 0.8,
+        relevanceScore: 0.8,
+        id: category + "-" + index,
+      })),
+    );
+    const result = selectTopSignals(signals);
+    for (const category of MARKET_INTELLIGENCE_CATEGORIES) {
+      expect(result[category].length).toBe(MARKET_INTELLIGENCE_LIMITS[category]);
+    }
+  });
+
+  test("Agent Reach source failure is isolated", async () => {
+    const originalEnabled = process.env.AGENT_REACH_ENABLED;
+    const originalUrl = process.env.AGENT_REACH_API_URL;
+    process.env.AGENT_REACH_ENABLED = "false";
+    delete process.env.AGENT_REACH_API_URL;
+    await expect(collectAgentReachEvidence({ tenantId: "00000000-0000-0000-0000-000000000001", queries: ["test"], competitorUrls: [] })).resolves.toEqual([]);
+    if (originalEnabled === undefined) delete process.env.AGENT_REACH_ENABLED;
+    else process.env.AGENT_REACH_ENABLED = originalEnabled;
+    if (originalUrl === undefined) delete process.env.AGENT_REACH_API_URL;
+    else process.env.AGENT_REACH_API_URL = originalUrl;
   });
 
   test("freshness reaches zero at expiry", () => {
