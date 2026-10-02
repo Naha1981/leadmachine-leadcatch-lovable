@@ -1,0 +1,38 @@
+name: LeadMachine Market Intelligence
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "regular or daily"
+        required: false
+        default: "regular"
+
+permissions:
+  contents: read
+
+jobs:
+  market-intelligence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine run mode
+        id: mode
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          if [ -z "$MODE" ]; then MODE="regular"; fi
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Market Intelligence worker
+        env:
+          APP_URL: ${{ secrets.LEAD_MACHINE_APP_URL }}
+          CRON_SECRET: ${{ secrets.LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET }}
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: |
+          test -n "$APP_URL"
+          test -n "$CRON_SECRET"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/market-intelligence?mode=$MODE"
