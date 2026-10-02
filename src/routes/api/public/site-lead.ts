@@ -11,6 +11,45 @@ const Body = z.object({
   consent: z.literal(true),
 });
 
+type RateBucket = { count: number; resetAt: number };
+
+const leadRateBuckets = new Map<string, RateBucket>();
+const LEAD_RATE_WINDOW_MS = 60_000;
+const LEAD_RATE_LIMIT = 12;
+
+function requestClientKey(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  return forwarded || realIp || "unknown";
+}
+
+function allowLeadSubmission(request: Request, slug: string): boolean {
+  const key = `site-lead:${slug}:${requestClientKey(request)}`;
+  const now = Date.now();
+  const current = leadRateBuckets.get(key);
+
+  if (!current || current.resetAt <= now) {
+    leadRateBuckets.set(key, { count: 1, resetAt: now + LEAD_RATE_WINDOW_MS });
+    return true;
+  }
+
+  if (current.count >= LEAD_RATE_LIMIT) return false;
+  current.count += 1;
+  return true;
+}
+
+function pruneLeadRateBuckets(now = Date.now()): void {
+  for (const [key, bucket] of leadRateBuckets) {
+    if (bucket.resetAt <= now) leadRateBuckets.delete(key);
+  }
+  if (leadRateBuckets.size > 5000) {
+    const oldest = [...leadRateBuckets.entries()]
+      .sort((a, b) => a[1].resetAt - b[1].resetAt)
+      .slice(0, 1000);
+    for (const [key] of oldest) leadRateBuckets.delete(key);
+  }
+}
+
 function normalisePhone(input: string): string | null {
   const digits = input.replace(/\D/g, "");
   if (digits.startsWith("27") && digits.length === 11) return digits;
@@ -29,6 +68,14 @@ export const Route = createFileRoute("/api/public/site-lead")({
         } catch {
           return Response.json({ ok: false, error: "Please check the form and try again." }, { status: 400 });
         }
+        pruneLeadRateBuckets();
+        if (!allowLeadSubmission(request, parsed.slug)) {
+          return Response.json(
+            { ok: false, error: "Too many enquiries from this connection. Please try again shortly." },
+            { status: 429, headers: { "Retry-After": "60" } },
+          );
+        }
+
         const phone = normalisePhone(parsed.phone);
         if (!phone) return Response.json({ ok: false, error: "That phone number doesn't look right." }, { status: 400 });
 
