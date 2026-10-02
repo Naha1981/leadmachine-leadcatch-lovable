@@ -1,12 +1,11 @@
 # NahaLabs Content Agent Skills
 
-This setup installs the upstream Instagram Agent Skill as a reusable local Claude Code capability and adds a NahaLabs wrapper to the current Lovable-backed LeadMachine repository.
+The NahaLabs Content Agent is now project-local. No machine-global Claude skill installation is required.
 
 ## Canonical LeadMachine repository
 
 - Repository: https://github.com/Naha1981/leadmachine-leadcatch-lovable
-- Built with Lovable and synced from Lovable.
-- Lovable project editor: https://lovable.dev/projects/779ab8a2-3a42-4b06-8078-9ad14667c2f3
+- Lovable project: 779ab8a2-3a42-4b06-8078-9ad14667c2f3
 - Live app: https://second-life-ai.lovable.app
 
 ## Upstream capability
@@ -14,50 +13,53 @@ This setup installs the upstream Instagram Agent Skill as a reusable local Claud
 - Repository: https://github.com/Jakeschincariol/instagram-agent-skill
 - License: MIT
 - Verified upstream scope: 13 Instagram skills as of 2026-10-02.
-- NahaLabs does not copy or modify the upstream repository in this first step; the installer pins the source by repository URL and copies the skill folders locally.
+- Upstream commit pinned in the repository attribution file.
+- The upstream skill definitions are vendored under `.claude/skills/ig-*`.
 
-## Windows setup
+## What is already installed in this repo
 
-Run PowerShell from the repository root:
+The branch contains these project-local skills:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install-nahalabs-content-agent.ps1
-```
+`ig-reel`, `ig-viral`, `ig-caption`, `ig-carousel`, `ig-story`, `ig-profile`, `ig-plan`, `ig-human`, `ig-comment`, `ig-reply`, `ig-dm`, `ig-repurpose`, `ig-audit`.
 
-The installer:
-1. Checks Git and Python.
-2. Clones/refreshes the upstream repository under `.claude\vendor\instagram-agent-skill`.
-3. Copies `skills\ig-*` into the user Claude skills directory.
-4. Creates `~\.claude\instagram\voice.md` from the upstream template when it does not exist.
-5. Creates `~\.claude\nahalabs\content-agent.md` with NahaLabs operating rules.
-6. Does not add API keys or enable autonomous publishing.
+Claude Code can discover the skills from the repository itself when opened at the project root.
 
-## First verification
+## No PowerShell requirement
 
-Open Claude Code in this repository and run:
+PowerShell is not part of the required runtime.
+
+The optional Windows script exists only as a refresh/bootstrap mechanism for an AI coding agent. It syncs the upstream repository into the project-local `.claude/skills/` tree; it does not install anything into `%USERPROFILE%\.claude\skills`.
+
+An AI coding agent can perform the same job with its own terminal/filesystem tooling.
+
+## Verification
+
+From Claude Code in this repository, test:
 
 ```text
 /ig-reel
-```
-
-Then test:
-
-```text
-/ig-human
 /ig-plan
+/ig-human
 /ig-repurpose
 ```
 
-The upstream README explicitly states that nothing is posted until approval; the skills are designed to write and prepare assets rather than silently publish.
+Expected behavior is draft/research output, not autonomous publishing.
 
 ## NahaLabs operating mode
 
-Use the wrapper instructions at `~\.claude\nahalabs\content-agent.md` for all NahaLabs work:
-
 Research → Evidence → Opportunity → Content → QA → Human approval → Distribution → Intent → Lead Machine → Revenue → Learning.
 
-Instagram is a channel, not the product.
+Rules:
 
-## Important
+- Facts ≠ AI guesses.
+- Preserve provenance for factual claims.
+- Never invent statistics, customers, results or partnerships.
+- Extract patterns from high-performing content; do not copy it.
+- Treat Instagram as a distribution adapter, not the product.
+- Human approval is required before public publishing.
+- Use public prospect research before requesting confidential customer data.
+- Connect commercial intent to Lead Machine rather than optimizing vanity metrics.
 
-Do not configure BLOTATO, APIFY or any other publishing/research credentials during this first setup. We first dogfood the local writing/research skills and validate value. Publishing/API integrations are a separate Council-gated step.
+## Initial safety boundary
+
+Do not configure BLOTATO, APIFY, Meta publishing credentials or other autonomous distribution credentials during dogfooding. Publishing/API integrations remain a separate Council-gated step.
