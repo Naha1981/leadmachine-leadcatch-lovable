@@ -126,6 +126,7 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
     };
     const run = await db.from("market_intelligence_runs").insert({ tenant_id: tenant.tenantId, mode, status: "processing" }).select("id").maybeSingle();
     const runId = run.data?.id;
+    let acceptedForTenant = 0;
     try {
       const nowIso = new Date().toISOString();
       await db.from("market_intelligence_signals").update({ status: "archived", updated_at: nowIso }).eq("tenant_id", tenant.tenantId).eq("status", "active").lt("expires_at", nowIso);
@@ -192,6 +193,7 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
         }, { onConflict: "tenant_id,category,cluster_key" }).select("id").maybeSingle();
         if (upserted.error || !upserted.data?.id) { failures += 1; console.error("[MarketIntelligence] signal upsert failed", upserted.error); continue; }
         signalsCount += 1;
+        acceptedForTenant += 1;
         for (const item of group.evidence) {
           const inserted = await db.from("market_intelligence_evidence").insert({ tenant_id: tenant.tenantId, signal_id: upserted.data.id, source: item.document.source, source_type: item.document.sourceType, source_url: item.document.sourceUrl, external_id: item.document.externalId ?? null, title: item.document.title, author: item.document.author ?? null, published_at: item.document.publishedAt ?? null, evidence_text: item.document.evidenceText.slice(0, 5000), source_metadata: item.document.metadata ?? {}, evidence_hash: evidenceHash(item.document, group.category) });
           if (inserted.error?.code === "23505") { duplicates += 1; continue; }
@@ -216,7 +218,7 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
         }).eq("id", upserted.data.id).eq("tenant_id", tenant.tenantId);
       }
       if (rawDocumentIds.length) await db.from("market_intelligence_documents").update({ status: "processed", processed_at: new Date().toISOString() }).eq("tenant_id", tenant.tenantId).in("id", rawDocumentIds);
-      if (runId) await db.from("market_intelligence_runs").update({ status: "completed", completed_at: new Date().toISOString(), documents_collected: docs.length, candidate_signals: groups.length, accepted_signals: groups.length, duplicates_removed: duplicates, failures }).eq("id", runId).eq("tenant_id", tenant.tenantId);
+      if (runId) await db.from("market_intelligence_runs").update({ status: "completed", completed_at: new Date().toISOString(), documents_collected: docs.length, candidate_signals: groups.length, accepted_signals: acceptedForTenant, duplicates_removed: duplicates, failures }).eq("id", runId).eq("tenant_id", tenant.tenantId);
     } catch (error) {
       failures += 1;
       if (runId) await db.from("market_intelligence_runs").update({ status: "failed", completed_at: new Date().toISOString(), failures: 1, error: error instanceof Error ? error.message : "Market Intelligence tenant run failed" }).eq("id", runId).eq("tenant_id", tenant.tenantId);
