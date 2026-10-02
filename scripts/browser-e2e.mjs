@@ -85,6 +85,7 @@ try {
   await desktop.getByPlaceholder("WhatsApp number e.g. 082 123 4567").fill(phone);
   await desktop.getByPlaceholder("What do you need help with?").fill("Urgent geyser burst in Sandton. I need someone today.");
   await desktop.getByRole("checkbox").check();
+  await desktop.waitForTimeout(2700);
   const quoteResponsePromise = desktop.waitForResponse(
     (response) => response.url().includes("/api/public/site-lead") && response.request().method() === "POST",
     { timeout: 15000 }
