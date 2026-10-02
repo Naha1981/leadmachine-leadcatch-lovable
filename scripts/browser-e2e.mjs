@@ -23,6 +23,10 @@ try {
   if (!seed.ok || !seed.siteUrl) throw new Error("Acceptance fixture did not seed");
 
   await desktop.goto(base + "/dashboard", { waitUntil: "domcontentloaded" });
+  await desktop.waitForTimeout(1500);
+  console.log("MI E2E dashboard URL:", desktop.url());
+  console.log("MI E2E dashboard title:", await desktop.title());
+  console.log("MI E2E dashboard body:", (await desktop.locator("body").innerText()).slice(0, 5000));
   await desktop.getByText("LeadMachine is watching the market", { exact: true }).waitFor({ timeout: 10000 });
   for (const label of ["Customer Problems", "Competitor Opportunities", "Unanswered Questions", "Content Opportunities", "Lead Opportunities"]) {
     await desktop.getByText(label, { exact: true }).waitFor({ timeout: 5000 });
