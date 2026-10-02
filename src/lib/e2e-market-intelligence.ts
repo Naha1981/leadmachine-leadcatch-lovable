@@ -4,9 +4,9 @@ import { MARKET_INTELLIGENCE_CATEGORIES } from "@/lib/market-intelligence.consta
 const counts: Record<string, number> = { CUSTOMER_PROBLEMS: 3, COMPETITOR_OPPORTUNITIES: 5, UNANSWERED_QUESTIONS: 7, CONTENT_OPPORTUNITIES: 4, LEAD_GENERATION_OPPORTUNITIES: 2 };
 
 export function buildE2EMarketIntelligence(): MarketIntelligenceSnapshot {
-  const categories: Record<string, MarketIntelligenceSignal[]> = {};
+  const categories: MarketIntelligenceSnapshot["categories"] = {} as MarketIntelligenceSnapshot["categories"];
   for (const category of MARKET_INTELLIGENCE_CATEGORIES) {
-    const total = counts[category];
+    const total = counts[category] ?? 0;
     categories[category] = Array.from({ length: total }, (_, index) => {
       const id = "e2e-mi-" + category.toLowerCase() + "-" + (index + 1);
       return {
