@@ -3,7 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { getE2EBusiness, isE2EEnabled } from "@/lib/e2e-store.server";
-import { createQuoteFormToken } from "@/lib/quote-form-token.server";
 
 export type PublicSite = {
   slug: string;
@@ -22,6 +21,7 @@ export type PublicSite = {
 export const getPublicSite = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ slug: z.string().trim().min(1).max(80) }).parse(d))
   .handler(async ({ data }): Promise<PublicSite | null> => {
+    const { createQuoteFormToken } = await import("@/lib/quote-form-token.server");
     if (isE2EEnabled() && data.slug.toLowerCase() === "e2e-leadmachine") {
       const business = getE2EBusiness();
       return {
