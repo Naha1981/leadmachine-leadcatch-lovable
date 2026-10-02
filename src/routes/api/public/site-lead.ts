@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { scoreInboundLead } from "@/lib/lead-scoring.server";
 import { getE2EBusiness, isE2EEnabled, recordQuoteLead } from "@/lib/e2e-store.server";
+import { validateQuoteFormToken } from "@/lib/quote-form-token.server";
+import { checkDurableQuoteLimits } from "@/lib/quote-rate-limit.server";
 
 const Body = z.object({
   slug: z.string().trim().min(1).max(80),
@@ -10,12 +12,8 @@ const Body = z.object({
   message: z.string().trim().max(1000).optional().default(""),
   consent: z.literal(true),
   website: z.string().max(200).optional().default(""),
-  elapsedMs: z.number().optional(),
+  quoteFormToken: z.string().min(20).max(1000),
 });
-
-const MIN_FILL_MS = 2500;
-const IP_LIMIT = 5; // per 10 minutes, across all pages
-const PHONE_LIMIT = 3; // per hour, across all pages
 
 async function hashIp(ip: string): Promise<string> {
   const salt = process.env["WEBHOOK_SECRET"] ?? "leadmachine";
@@ -33,23 +31,6 @@ function looksLikeSpam(name: string, message: string): boolean {
 }
 
 /** Durable per-sender limits backed by the database (works across server instances). */
-async function checkDurableLimits(db: any, slug: string, ipHash: string, phone: string): Promise<string | null> {
-  const tenMin = new Date(Date.now() - 10 * 60_000).toISOString();
-  const hour = new Date(Date.now() - 60 * 60_000).toISOString();
-  const [ipRes, phoneRes] = await Promise.all([
-    db.from("quote_submissions").select("id", { count: "exact", head: true }).eq("ip_hash", ipHash).gte("created_at", tenMin),
-    db.from("quote_submissions").select("id", { count: "exact", head: true }).eq("phone", phone).gte("created_at", hour),
-  ]);
-  if (ipRes.error || phoneRes.error) {
-    console.error("rate limit lookup failed", ipRes.error ?? phoneRes.error);
-    return null; // fail open on lookup errors; in-memory limiter still applies
-  }
-  if ((ipRes.count ?? 0) >= IP_LIMIT) return "Too many enquiries from this connection. Please try again shortly.";
-  if ((phoneRes.count ?? 0) >= PHONE_LIMIT) return "We've already received your enquiry. The business will be in touch soon.";
-  await db.from("quote_submissions").insert({ slug, ip_hash: ipHash, phone });
-  return null;
-}
-
 type RateBucket = { count: number; resetAt: number };
 
 const leadRateBuckets = new Map<string, RateBucket>();
@@ -115,10 +96,20 @@ export const Route = createFileRoute("/api/public/site-lead")({
           );
         }
 
-        // Honeypot or too-fast submissions: pretend success so bots learn nothing.
-        if (parsed.website.trim() || (parsed.elapsedMs !== undefined && parsed.elapsedMs < MIN_FILL_MS)) {
+        // Honeypot submissions are deliberately acknowledged so bots do not learn they were caught.
+        if (parsed.website.trim()) {
           return Response.json({ ok: true, leadId: null });
         }
+
+        const formTiming = validateQuoteFormToken(parsed.quoteFormToken, parsed.slug);
+        if (!formTiming.ok) {
+          const message =
+            formTiming.reason === "too_fast"
+              ? "Please take a moment to complete the form and try again."
+              : "This form session has expired. Please refresh the page and try again.";
+          return Response.json({ ok: false, error: message }, { status: 400 });
+        }
+
         if (looksLikeSpam(parsed.name, parsed.message || "")) {
           return Response.json({ ok: false, error: "Your message looks like spam. Please remove links and try again." }, { status: 400 });
         }
@@ -128,7 +119,21 @@ export const Route = createFileRoute("/api/public/site-lead")({
 
         if (!(isE2EEnabled() && parsed.slug.toLowerCase() === "e2e-leadmachine")) {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const limited = await checkDurableLimits(supabaseAdmin, parsed.slug, await hashIp(requestClientKey(request)), phone);
+          let limited: string | null;
+          try {
+            limited = await checkDurableQuoteLimits(
+              supabaseAdmin,
+              parsed.slug,
+              await hashIp(requestClientKey(request)),
+              phone,
+            );
+          } catch (error) {
+            console.error("durable quote rate limiter unavailable", error);
+            return Response.json(
+              { ok: false, error: "We couldn't process this enquiry right now. Please try again shortly." },
+              { status: 503, headers: { "Retry-After": "60" } },
+            );
+          }
           if (limited) return Response.json({ ok: false, error: limited }, { status: 429, headers: { "Retry-After": "600" } });
         }
 
