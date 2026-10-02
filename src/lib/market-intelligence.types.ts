@@ -1,3 +1,5 @@
+import type { Json } from "@/integrations/supabase/types";
+import type { MarketIntelligenceCategory } from "@/lib/market-intelligence.constants";
 export type MarketIntelligenceEvidence = {
   id: string;
   source: string;
@@ -9,7 +11,7 @@ export type MarketIntelligenceEvidence = {
   publishedAt: string | null;
   discoveredAt: string;
   evidenceText: string;
-  sourceMetadata: Record<string, unknown>;
+  sourceMetadata: Json;
 };
 
 export type MarketIntelligenceSignal = {
@@ -33,10 +35,12 @@ export type MarketIntelligenceSignal = {
   evidence: MarketIntelligenceEvidence[];
 };
 
+export type MarketIntelligenceCategories = { [K in MarketIntelligenceCategory]: MarketIntelligenceSignal[] };
+
 export type MarketIntelligenceSnapshot = {
   enabled: boolean;
   updatedAt: string | null;
-  categories: Record<string, MarketIntelligenceSignal[]>;
+  categories: MarketIntelligenceCategories;
   stats: {
     totalActive: number;
     evidenceCount: number;
