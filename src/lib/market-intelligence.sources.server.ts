@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import type { Json } from "@/integrations/supabase/types";
 import type { MarketIntelligenceSourceType } from "@/lib/market-intelligence.constants";
 
 export type MarketSourceDocument = {
@@ -10,7 +11,7 @@ export type MarketSourceDocument = {
   author?: string | null;
   publishedAt?: string | null;
   evidenceText: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Json;
 };
 
 function clean(value: unknown): string {
