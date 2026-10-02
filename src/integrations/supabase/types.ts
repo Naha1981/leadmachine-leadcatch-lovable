@@ -109,10 +109,6 @@ export type Database = {
           market_intelligence_keywords?: Json
           market_intelligence_source_preferences?: Json
           market_intelligence_website?: string | null
-          market_intelligence_enabled?: boolean
-          market_intelligence_keywords?: Json
-          market_intelligence_source_preferences?: Json
-          market_intelligence_website?: string | null
           contact_phone?: string | null
           created_at?: string
           id?: string
