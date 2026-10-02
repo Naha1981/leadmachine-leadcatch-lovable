@@ -30,6 +30,7 @@ jobs:
         env:
           LEAD_MACHINE_APP_URL: ${{ secrets.LEAD_MACHINE_APP_URL }}
           LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET: ${{ secrets.LEAD_MACHINE_MARKET_INTELLIGENCE_CRON_SECRET }}
+          AGENT_REACH_ENABLED: ${{ secrets.LEAD_MACHINE_AGENT_REACH_ENABLED }}
         run: node scripts/market-intelligence-agent-reach.mjs
 
   market-intelligence:
