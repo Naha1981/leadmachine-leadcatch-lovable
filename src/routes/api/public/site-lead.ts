@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { scoreInboundLead } from "@/lib/lead-scoring.server";
 import { getE2EBusiness, isE2EEnabled, recordQuoteLead } from "@/lib/e2e-store.server";
-import { validateQuoteFormToken } from "@/lib/quote-form-token.server";
 import { checkDurableQuoteLimits } from "@/lib/quote-rate-limit.server";
 
 const Body = z.object({
@@ -102,6 +101,7 @@ export const Route = createFileRoute("/api/public/site-lead")({
           return Response.json({ ok: true, leadId: null });
         }
 
+        const { validateQuoteFormToken } = await import("@/lib/quote-form-token.server");
         const formTiming = validateQuoteFormToken(parsed.quoteFormToken, parsed.slug);
         if (!formTiming.ok) {
           const message =
