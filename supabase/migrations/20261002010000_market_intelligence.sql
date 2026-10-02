@@ -154,6 +154,25 @@ CREATE POLICY "tenant read market intelligence competitors"
   FOR SELECT TO authenticated
   USING (public.is_tenant_member(tenant_id));
 
+DROP POLICY IF EXISTS "tenant insert market intelligence competitors" ON public.market_intelligence_competitors;
+CREATE POLICY "tenant insert market intelligence competitors"
+  ON public.market_intelligence_competitors
+  FOR INSERT TO authenticated
+  WITH CHECK (public.is_tenant_member(tenant_id));
+
+DROP POLICY IF EXISTS "tenant update market intelligence competitors" ON public.market_intelligence_competitors;
+CREATE POLICY "tenant update market intelligence competitors"
+  ON public.market_intelligence_competitors
+  FOR UPDATE TO authenticated
+  USING (public.is_tenant_member(tenant_id))
+  WITH CHECK (public.is_tenant_member(tenant_id));
+
+DROP POLICY IF EXISTS "tenant delete market intelligence competitors" ON public.market_intelligence_competitors;
+CREATE POLICY "tenant delete market intelligence competitors"
+  ON public.market_intelligence_competitors
+  FOR DELETE TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
 DROP POLICY IF EXISTS "tenant read market intelligence signals" ON public.market_intelligence_signals;
 CREATE POLICY "tenant read market intelligence signals"
   ON public.market_intelligence_signals
