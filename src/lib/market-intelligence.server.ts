@@ -127,6 +127,8 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
     const run = await db.from("market_intelligence_runs").insert({ tenant_id: tenant.tenantId, mode, status: "processing" }).select("id").maybeSingle();
     const runId = run.data?.id;
     try {
+      const nowIso = new Date().toISOString();
+      await db.from("market_intelligence_signals").update({ status: "archived", updated_at: nowIso }).eq("tenant_id", tenant.tenantId).eq("status", "active").lt("expires_at", nowIso);
       const since = new Date(Date.now() - (mode === "daily" ? 14 : 4) * 86_400_000).toISOString();
       const docs: MarketSourceDocument[] = [];
       const { data: rawDocuments } = await db.from("market_intelligence_documents").select("id,source,source_type,source_url,external_id,title,author,published_at,discovered_at,content,metadata").eq("tenant_id", tenant.tenantId).eq("status", "new").order("discovered_at", { ascending: false }).limit(80);
@@ -181,8 +183,17 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
         const scored = scoreEvidence({ recurrenceCount: recurrence, sourceDiversity: diversity, relevance, freshness });
         const draft = draftsByKey.get(group.clusterKey) ?? deterministicDraft(group);
         const expiresAt = new Date(now.getTime() + MARKET_INTELLIGENCE_EXPIRY_DAYS[group.category] * 86_400_000).toISOString();
+        const { data: existingSignal } = await db.from("market_intelligence_signals")
+          .select("id,first_observed_at,last_observed_at")
+          .eq("tenant_id", tenant.tenantId)
+          .eq("category", group.category)
+          .eq("cluster_key", group.clusterKey)
+          .maybeSingle();
+        const firstObservedAt = existingSignal?.first_observed_at || latest.toISOString();
+        const previousLast = existingSignal?.last_observed_at ? new Date(existingSignal.last_observed_at).getTime() : 0;
+        const latestObservedAt = new Date(Math.max(previousLast, latest.getTime())).toISOString();
         const upserted = await db.from("market_intelligence_signals").upsert({
-          tenant_id: tenant.tenantId, category: group.category, cluster_key: group.clusterKey, title: draft.title, summary: draft.summary, observed_claim: draft.observedClaim, inference: draft.inference, recommended_action: draft.recommendedAction, confidence: scored.confidence, evidence_strength: scored.evidenceStrength, recurrence_count: recurrence, source_diversity: diversity, relevance_score: relevance, freshness_score: freshness, status: "active", first_observed_at: latest.toISOString(), last_observed_at: latest.toISOString(), expires_at: expiresAt, updated_at: now.toISOString()
+          tenant_id: tenant.tenantId, category: group.category, cluster_key: group.clusterKey, title: draft.title, summary: draft.summary, observed_claim: draft.observedClaim, inference: draft.inference, recommended_action: draft.recommendedAction, confidence: scored.confidence, evidence_strength: scored.evidenceStrength, recurrence_count: recurrence, source_diversity: diversity, relevance_score: relevance, freshness_score: freshness, status: "active", first_observed_at: firstObservedAt, last_observed_at: latestObservedAt, expires_at: expiresAt, updated_at: now.toISOString()
         }, { onConflict: "tenant_id,category,cluster_key" }).select("id").maybeSingle();
         if (upserted.error || !upserted.data?.id) { failures += 1; console.error("[MarketIntelligence] signal upsert failed", upserted.error); continue; }
         signalsCount += 1;
@@ -191,6 +202,23 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
           if (inserted.error?.code === "23505") { duplicates += 1; continue; }
           if (inserted.error) { failures += 1; console.error("[MarketIntelligence] evidence insert failed", inserted.error); }
         }
+        const { data: evidenceTotals } = await db.from("market_intelligence_evidence")
+          .select("source_type")
+          .eq("tenant_id", tenant.tenantId)
+          .eq("signal_id", upserted.data.id);
+        const totalRecurrence = evidenceTotals?.length ?? recurrence;
+        const totalDiversity = new Set((evidenceTotals ?? []).map((item: any) => item.source_type)).size || diversity;
+        const recalculated = scoreEvidence({ recurrenceCount: totalRecurrence, sourceDiversity: totalDiversity, relevance, freshness });
+        await db.from("market_intelligence_signals").update({
+          recurrence_count: totalRecurrence,
+          source_diversity: totalDiversity,
+          confidence: recalculated.confidence,
+          evidence_strength: recalculated.evidenceStrength,
+          freshness_score: freshness,
+          last_observed_at: latestObservedAt,
+          expires_at: expiresAt,
+          updated_at: now.toISOString(),
+        }).eq("id", upserted.data.id).eq("tenant_id", tenant.tenantId);
       }
       if (rawDocumentIds.length) await db.from("market_intelligence_documents").update({ status: "processed", processed_at: new Date().toISOString() }).eq("tenant_id", tenant.tenantId).in("id", rawDocumentIds);
       if (runId) await db.from("market_intelligence_runs").update({ status: "completed", completed_at: new Date().toISOString(), documents_collected: docs.length, candidate_signals: groups.length, accepted_signals: groups.length, duplicates_removed: duplicates, failures }).eq("id", runId).eq("tenant_id", tenant.tenantId);
