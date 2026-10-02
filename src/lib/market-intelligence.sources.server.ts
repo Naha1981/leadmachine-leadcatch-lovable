@@ -155,3 +155,34 @@ export async function discoverCompetitors(input: { businessName: string; industr
   }
   return competitors;
 }
+
+export async function collectInternalLeadEvidence(db: any, tenantId: string, sinceIso: string): Promise<MarketSourceDocument[]> {
+  const { data, error } = await db
+    .from("leads")
+    .select("id,service,suburb,urgency,ai_temperature,created_at")
+    .eq("tenant_id", tenantId)
+    .gte("created_at", sinceIso)
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error || !data?.length) return [];
+  const groups = new Map<string, { count: number; hot: number; urgency: number; latest: string | null; suburb: string | null }>();
+  for (const lead of data as any[]) {
+    const key = clean(lead.service || "General enquiry");
+    const current = groups.get(key) ?? { count: 0, hot: 0, urgency: 0, latest: null, suburb: clean(lead.suburb) || null };
+    current.count += 1;
+    if (lead.ai_temperature === "hot") current.hot += 1;
+    if (lead.urgency) current.urgency += 1;
+    current.latest = current.latest && new Date(current.latest) > new Date(lead.created_at) ? current.latest : lead.created_at;
+    groups.set(key, current);
+  }
+  return [...groups.entries()].sort((a,b) => b[1].count - a[1].count).slice(0, 8).map(([service, stats]) => ({
+    source: "LeadMachine internal signals",
+    sourceType: "internal",
+    sourceUrl: "/inbox",
+    externalId: "lead-summary:" + service.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    title: service + " internal demand pattern",
+    publishedAt: stats.latest,
+    evidenceText: stats.count + " enquiries in the recent period mention " + service + "; " + stats.hot + " are currently hot and " + stats.urgency + " include urgency data." + (stats.suburb ? " Recent activity includes " + stats.suburb + "." : ""),
+    metadata: { internal: true, service, enquiryCount: stats.count, hotCount: stats.hot, urgencyCount: stats.urgency },
+  }));
+}
