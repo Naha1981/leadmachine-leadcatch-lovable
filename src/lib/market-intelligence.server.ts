@@ -129,6 +129,9 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
     try {
       const since = new Date(Date.now() - (mode === "daily" ? 14 : 4) * 86_400_000).toISOString();
       const docs: MarketSourceDocument[] = [];
+      const { data: rawDocuments } = await db.from("market_intelligence_documents").select("id,source,source_type,source_url,external_id,title,author,published_at,discovered_at,content,metadata").eq("tenant_id", tenant.tenantId).eq("status", "new").order("discovered_at", { ascending: false }).limit(80);
+      const rawDocumentIds = (rawDocuments ?? []).map((row: any) => row.id);
+      docs.push(...(rawDocuments ?? []).map((row: any) => ({ source: row.source, sourceType: row.source_type, sourceUrl: row.source_url, externalId: row.external_id, title: row.title, author: row.author, publishedAt: row.published_at || row.discovered_at, evidenceText: row.content, metadata: row.metadata || {} })));
       docs.push(...await collectDemandRadarEvidence(db, tenant.tenantId, since));
       if (tenant.website) { const websiteDoc = await readPublicWebPage(tenant.website, "website"); if (websiteDoc) docs.push(websiteDoc); }
 
@@ -186,6 +189,7 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
           if (inserted.error) { failures += 1; console.error("[MarketIntelligence] evidence insert failed", inserted.error); }
         }
       }
+      if (rawDocumentIds.length) await db.from("market_intelligence_documents").update({ status: "processed", processed_at: new Date().toISOString() }).eq("tenant_id", tenant.tenantId).in("id", rawDocumentIds);
       if (runId) await db.from("market_intelligence_runs").update({ status: "completed", completed_at: new Date().toISOString(), documents_collected: docs.length, candidate_signals: groups.length, accepted_signals: groups.length, duplicates_removed: duplicates, failures }).eq("id", runId).eq("tenant_id", tenant.tenantId);
     } catch (error) {
       failures += 1;
