@@ -108,6 +108,8 @@ function LeadForm({ slug, cta }: { slug: string; cta: string }) {
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [website, setWebsite] = useState("");
+  const [startedAt] = useState(() => Date.now());
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -118,7 +120,7 @@ function LeadForm({ slug, cta }: { slug: string; cta: string }) {
       const res = await fetch("/api/public/site-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, name, phone, message, consent: true }),
+        body: JSON.stringify({ slug, name, phone, message, consent: true, website, elapsedMs: Date.now() - startedAt }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j.ok) throw new Error(j.error ?? "Something went wrong.");
@@ -141,6 +143,9 @@ function LeadForm({ slug, cta }: { slug: string; cta: string }) {
   return (
     <form onSubmit={submit} className="space-y-3 rounded-2xl border border-border bg-card p-6">
       <h2 className="text-xl font-semibold">{cta || "Get a free quote"}</h2>
+      <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+        <label>Website<input type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} /></label>
+      </div>
       <Input required maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="h-11 rounded-xl" />
       <Input required maxLength={20} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="WhatsApp number e.g. 082 123 4567" inputMode="tel" className="h-11 rounded-xl" />
       <Textarea maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="What do you need help with?" className="rounded-xl" />
