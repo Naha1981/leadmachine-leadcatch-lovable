@@ -23,6 +23,10 @@ async function tenantForUser(userId: string, db: any) {
 export const getMarketIntelligence = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<MarketIntelligenceSnapshot> => {
+    if (process.env["E2E_MODE"] === "true") {
+      const { buildE2EMarketIntelligence } = await import("@/lib/e2e-market-intelligence");
+      return buildE2EMarketIntelligence();
+    }
     const tenantId = await tenantForUser(context.userId, context.supabase);
     const [{ data: platform }, { data: profile }, { data: signals, error: signalError }, { data: latestRun }, { count: evidenceCount }] = await Promise.all([
       context.supabase.from("market_intelligence_platform_settings").select("enabled").eq("id", true).maybeSingle(),
@@ -77,6 +81,9 @@ export const createMarketIntelligenceAction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ signalId: z.string().uuid(), kind: z.enum(["FAQ","OFFER","WHATSAPP_RESPONSE","COMPETITOR_ANALYSIS","COUNTER_OFFER","LANDING_PAGE_BRIEF","ARTICLE","AUTO_REPLY_SNIPPET","CONTENT_POST","CAMPAIGN_BRIEF","LEAD_FORM","WHATSAPP_CAMPAIGN"]) }).parse(input))
   .handler(async ({ context, data }) => {
+    if (process.env["E2E_MODE"] === "true") {
+      return { kind: data.kind, draft: "E2E owner-reviewable draft for " + data.kind + ". No external action was executed." };
+    }
     const tenantId = await tenantForUser(context.userId, context.supabase);
     const kind = data.kind as MarketIntelligenceActionKind;
     const { data: signal, error } = await context.supabase.from("market_intelligence_signals").select("id,tenant_id,category,title,observed_claim,inference,recommended_action").eq("id", data.signalId).eq("tenant_id", tenantId).single();
