@@ -149,17 +149,12 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
         if (doc) docs.push({ ...doc, source: competitor.name, sourceType: "competitor", title: competitor.name + " — " + doc.title });
       }
 
-      const searchQueries = [tenant.industry, ...tenant.keywords, ...tenant.services.split(/[,|\n]/).map((v) => v.trim()).filter(Boolean)].filter(Boolean).slice(0, 5);
-      for (const query of searchQueries) docs.push(...(await collectAgentReachEvidence({ tenantId: tenant.tenantId, queries: [query + (tenant.suburb ? " " + tenant.suburb : "")], competitorUrls: competitors.map((x: any) => x.website_url) })));
-
       documentsCount += docs.length;
-      const candidates: Candidate[] = [];
       const grouped = new Map<string, { clusterKey: string; category: MarketIntelligenceCategory; evidence: Candidate[] }>();
       for (const document of docs) {
         for (const category of deterministicCategory(document)) {
           const key = clusterKey(category, document.title + " " + document.evidenceText, tenant.services);
           const candidate: Candidate = { tenantId: tenant.tenantId, category, clusterKey: key, relevance: candidateRelevance(document, tenant), document };
-          candidates.push(candidate);
           const groupKey = category + "|" + key;
           const group = grouped.get(groupKey) ?? { clusterKey: key, category, evidence: [] };
           if (group.evidence.length < 8) group.evidence.push(candidate);
