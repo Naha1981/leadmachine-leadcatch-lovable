@@ -88,17 +88,22 @@ function SettingsPage() {
     if (!ws) return;
     let active = true;
     setMarketLoading(true);
-    supabase
-      .from("market_intelligence_competitors")
-      .select("id,name,website_url,status")
-      .eq("tenant_id", ws.tenantId)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("market_intelligence_competitors")
+          .select("id,name,website_url,status")
+          .eq("tenant_id", ws.tenantId)
+          .order("created_at", { ascending: false });
         if (!active) return;
         if (error) toast.error("Could not load competitors");
         setMarketCompetitors(data ?? []);
-      })
-      .finally(() => { if (active) setMarketLoading(false); });
+      } catch (error) {
+        if (active) toast.error(error instanceof Error ? error.message : "Could not load competitors");
+      } finally {
+        if (active) setMarketLoading(false);
+      }
+    })();
     return () => { active = false; };
   }, [ws?.tenantId]);
 
