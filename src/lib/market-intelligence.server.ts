@@ -144,9 +144,12 @@ export async function processMarketIntelligence(limit = 25, mode: "regular" | "d
       for (const competitor of discovered) {
         await db.from("market_intelligence_competitors").upsert({ tenant_id: tenant.tenantId, name: competitor.name, website_url: competitor.websiteUrl, source: "auto_discovered", last_checked_at: new Date().toISOString() }, { onConflict: "tenant_id,website_url" });
       }
-      const competitors = [...(existingCompetitors.data ?? []), ...discovered].slice(0, 8);
+      const competitors = [
+        ...(existingCompetitors.data ?? []).map((item: any) => ({ name: item.name, websiteUrl: item.website_url })),
+        ...discovered,
+      ].slice(0, 8);
       for (const competitor of competitors) {
-        const doc = await readPublicWebPage(competitor.website_url, "competitor");
+        const doc = await readPublicWebPage(competitor.websiteUrl, "competitor");
         if (doc) docs.push({ ...doc, source: competitor.name, sourceType: "competitor", title: competitor.name + " — " + doc.title });
       }
 
