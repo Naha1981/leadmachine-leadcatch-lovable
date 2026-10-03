@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Search, Send, Bot, Gauge, PenLine, Activity, Clock3, RefreshCw, Radio } from "lucide-react";
@@ -299,7 +299,7 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
         evidence: { firstObservationAt: string | null; lastObservationAt: string | null };
       };
     },
-    enabled: false,
+    enabled: true,
     staleTime: 60_000,
   });
 
@@ -450,7 +450,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ActivityList({ title, icon, items }: { title: string; icon: React.ReactNode; items: string[] }) {
+function ActivityList({ title, icon, items }: { title: string; icon: ReactNode; items: string[] }) {
   return (
     <div className="rounded-xl border border-border px-3 py-2.5">
       <div className="flex items-center gap-1.5 text-xs font-medium">{icon}{title}</div>
