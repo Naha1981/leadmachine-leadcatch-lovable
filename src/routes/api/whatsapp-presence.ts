@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/whatsapp-presence")({
             lead.name ? String(lead.name) : null,
           );
 
-          return Response.json({ ok: true, ...result });
+          return Response.json(result);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unable to start WhatsApp presence monitoring";
           return Response.json({ ok: false, error: message }, { status: 422 });
