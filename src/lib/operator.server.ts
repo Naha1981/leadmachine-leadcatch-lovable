@@ -211,3 +211,92 @@ export function verifyOperatorSignature(rawBody: string, signature: string): boo
   const b = Buffer.from(signature, "utf8");
   return a.length === b.length && timingSafeEqual(a, b);
 }
+export async function monitorWhatsAppPresence(
+  tenantId: string,
+  waAccountId: string,
+  jid: string,
+  label?: string | null,
+) {
+  return operatorRequest<{
+    ok: boolean;
+    target: {
+      id: string;
+      waAccountId: string;
+      appId: string;
+      tenantId: string;
+      jid: string;
+      label: string | null;
+      isActive: boolean;
+    };
+    message: string;
+  }>(
+    tenantId,
+    "/presence/targets",
+    {
+      method: "POST",
+      body: JSON.stringify({ waAccountId, jid, label: label ?? null }),
+    },
+    { waAccountId },
+  );
+}
+
+export async function getWhatsAppPresenceReport(
+  tenantId: string,
+  waAccountId: string,
+  jid: string,
+  days = 30,
+  timezone = "Africa/Johannesburg",
+) {
+  const params = new URLSearchParams({
+    waAccountId,
+    jid,
+    days: String(days),
+    timezone,
+  });
+
+  return operatorRequest<{
+    target: {
+      jid: string;
+      label: string | null;
+      days: number;
+      timezone: string;
+    };
+    summary: {
+      observedDays: number;
+      presenceObservations: number;
+      activeObservations: number;
+      replyMessages: number;
+      measuredReplyPairs: number;
+      medianResponseMinutes: number | null;
+      p90ResponseMinutes: number | null;
+      confidence: "low" | "medium" | "high";
+    };
+    availability: Array<{
+      day: string;
+      hour: number;
+      hourLabel: string;
+      activeObservations: number;
+      observedDays: number;
+      repeatRate: number;
+    }>;
+    replyHours: Array<{
+      day: string;
+      hour: number;
+      hourLabel: string;
+      replies: number;
+    }>;
+    evidence: {
+      firstObservationAt: string | null;
+      lastObservationAt: string | null;
+      firstMessageAt: string | null;
+      lastMessageAt: string | null;
+    };
+    narrative: string;
+    caveats: string[];
+  }>(
+    tenantId,
+    "/presence/report?" + params.toString(),
+    {},
+    { waAccountId },
+  );
+}
