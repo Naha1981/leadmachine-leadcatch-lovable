@@ -16,6 +16,7 @@ import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiMarketIntelligenceRouteImport } from './routes/api/market-intelligence'
+import { Route as ApiWhatsappPresenceRouteImport } from './routes/api/whatsapp-presence'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authenticated/_shell/auto-reply'
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
@@ -66,6 +67,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiMarketIntelligenceRoute = ApiMarketIntelligenceRouteImport.update({
   id: '/api/market-intelligence',
   path: '/api/market-intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWhatsappPresenceRoute = ApiWhatsappPresenceRouteImport.update({
+  id: '/api/whatsapp-presence',
+  path: '/api/whatsapp-presence',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSlugRoute = SSlugRouteImport.update({
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
+  '/api/whatsapp-presence': typeof ApiWhatsappPresenceRoute
   '/s/$slug': typeof SSlugRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
+  '/api/whatsapp-presence': typeof ApiWhatsappPresenceRoute
   '/s/$slug': typeof SSlugRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
+  '/api/whatsapp-presence': typeof ApiWhatsappPresenceRoute
   '/s/$slug': typeof SSlugRoute
   '/_authenticated/_shell/auto-reply': typeof AuthenticatedShellAutoReplyRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -255,6 +264,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
+    | '/api/whatsapp-presence'
     | '/s/$slug'
     | '/auto-reply'
     | '/dashboard'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
+    | '/api/whatsapp-presence'
     | '/s/$slug'
     | '/auto-reply'
     | '/dashboard'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
+    | '/api/whatsapp-presence'
     | '/s/$slug'
     | '/_authenticated/_shell/auto-reply'
     | '/_authenticated/_shell/dashboard'
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMarketIntelligenceRoute: typeof ApiMarketIntelligenceRoute
+  ApiWhatsappPresenceRoute: typeof ApiWhatsappPresenceRoute
   SSlugRoute: typeof SSlugRoute
   ApiCronDemandRadarRoute: typeof ApiCronDemandRadarRoute
   ApiCronLeadLeakageRoute: typeof ApiCronLeadLeakageRoute
@@ -393,6 +406,13 @@ declare module '@tanstack/react-router' {
       path: '/api/market-intelligence'
       fullPath: '/api/market-intelligence'
       preLoaderRoute: typeof ApiMarketIntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/whatsapp-presence': {
+      id: '/api/whatsapp-presence'
+      path: '/api/whatsapp-presence'
+      fullPath: '/api/whatsapp-presence'
+      preLoaderRoute: typeof ApiWhatsappPresenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$slug': {
@@ -585,6 +605,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMarketIntelligenceRoute: ApiMarketIntelligenceRoute,
+  ApiWhatsappPresenceRoute: ApiWhatsappPresenceRoute,
   SSlugRoute: SSlugRoute,
   ApiCronDemandRadarRoute: ApiCronDemandRadarRoute,
   ApiCronLeadLeakageRoute: ApiCronLeadLeakageRoute,
