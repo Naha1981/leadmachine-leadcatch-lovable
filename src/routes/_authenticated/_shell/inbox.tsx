@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Search, Send, Bot, Gauge, PenLine } from "lucide-react";
+import { ArrowLeft, Search, Send, Bot, Gauge, PenLine, Activity, Clock3, RefreshCw, Radio } from "lucide-react";
 import { scoreLead, draftReply } from "@/lib/ai.functions";
 import { TemperatureBadge } from "@/components/TemperatureBadge";
 import { toast } from "sonner";
@@ -175,7 +175,7 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
   const [scoring, setScoring] = useState(false);
   const [drafting, setDrafting] = useState(false);
   const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
+  const [sending, setSending] = useState(false);\n  const [monitoring, setMonitoring] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const lead = convo.leads!;
 
@@ -248,6 +248,61 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
     } finally { setDrafting(false); }
   }
 
+  async function monitorWhatsApp() {
+    setMonitoring(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+      if (!token) throw new Error("Your session has expired. Please sign in again.");
+
+      const response = await fetch("/api/whatsapp-presence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ leadId: lead.id }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error ?? "Could not start WhatsApp monitoring");
+      toast.success("WhatsApp activity monitoring started");
+      qc.invalidateQueries({ queryKey: ["whatsapp-presence", lead.id] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not start WhatsApp monitoring");
+    } finally {
+      setMonitoring(false);
+    }
+  }
+
+  const { data: presence, isLoading: presenceLoading, refetch: refetchPresence } = useQuery({
+    queryKey: ["whatsapp-presence", lead.id],
+    queryFn: async () => {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+      if (!token) throw new Error("Your session has expired. Please sign in again.");
+      const response = await fetch(`/api/whatsapp-presence?leadId=${encodeURIComponent(lead.id)}&days=30&timezone=Africa%2FJohannesburg`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error ?? "Unable to load WhatsApp activity");
+      return result.report as {
+        summary: {
+          observedDays: number;
+          presenceObservations: number;
+          activeObservations: number;
+          replyMessages: number;
+          measuredReplyPairs: number;
+          medianResponseMinutes: number | null;
+          p90ResponseMinutes: number | null;
+          confidence: "low" | "medium" | "high";
+        };
+        availability: Array<{ day: string; hourLabel: string; observedDays: number; repeatRate: number }>;
+        replyHours: Array<{ day: string; hourLabel: string; replies: number }>;
+        narrative: string;
+        evidence: { firstObservationAt: string | null; lastObservationAt: string | null };
+      };
+    },
+    enabled: false,
+    staleTime: 60_000,
+  });
+
   async function setStatus(status: string) {
     const { error } = await supabase.from("leads").update({ status: status as LeadStatus, updated_at: new Date().toISOString() }).eq("id", lead.id);
     if (error) { toast.error("Could not update status"); return; }
@@ -288,6 +343,56 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
           <span className="font-medium text-foreground">AI: </span>{lead.ai_summary}
         </div>
       )}
+      <div className="border-b border-border bg-card px-4 py-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary"><Activity className="h-4 w-4" /></div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">WhatsApp activity fingerprint</p>
+                {presence?.summary.confidence && (
+                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium capitalize text-secondary-foreground">
+                    {presence.summary.confidence} confidence
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Observed behaviour from the connected WhatsApp account — not published business hours.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {presence && (
+              <Button variant="ghost" size="sm" onClick={() => refetchPresence()} disabled={presenceLoading} className="h-8 rounded-lg text-xs">
+                <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${presenceLoading ? "animate-spin" : ""}`} /> Refresh
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={monitorWhatsApp} disabled={monitoring} className="h-8 rounded-lg text-xs">
+              <Radio className="mr-1.5 h-3.5 w-3.5" />{monitoring ? "Starting…" : presence ? "Monitor again" : "Start monitoring"}
+            </Button>
+          </div>
+        </div>
+
+        {presence ? (
+          <>
+            <p className="mt-3 max-w-4xl text-xs leading-5 text-foreground">{presence.narrative}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Metric label="Observed days" value={String(presence.summary.observedDays)} />
+              <Metric label="Active observations" value={String(presence.summary.activeObservations)} />
+              <Metric label="Reply messages" value={String(presence.summary.replyMessages)} />
+              <Metric label="Median reply" value={presence.summary.medianResponseMinutes == null ? "—" : formatMinutes(presence.summary.medianResponseMinutes)} />
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <ActivityList title="Recurring activity" icon={<Activity className="h-3.5 w-3.5" />} items={presence.availability.slice(0, 4).map((item) => `${item.day} ${item.hourLabel}`)} />
+              <ActivityList title="Reply concentration" icon={<Clock3 className="h-3.5 w-3.5" />} items={presence.replyHours.slice(0, 4).map((item) => `${item.day} ${item.hourLabel} · ${item.replies}`)} />
+            </div>
+          </>
+        ) : (
+          <div className="mt-3 rounded-xl border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
+            No activity fingerprint has been collected for this lead yet. Start monitoring and let the evidence accumulate.
+          </div>
+        )}
+      </div>
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-5">
         {msgs.map((m) => (
           <div key={m.id} className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}>
@@ -325,5 +430,37 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
         </div>
       </div>
     </>
+  );
+}
+
+function formatMinutes(minutes: number) {
+  if (minutes < 1) return "<1 min";
+  if (minutes < 60) return `${Math.round(minutes)} min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  return mins ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-background px-3 py-2">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-sm font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function ActivityList({ title, icon, items }: { title: string; icon: React.ReactNode; items: string[] }) {
+  return (
+    <div className="rounded-xl border border-border px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-xs font-medium">{icon}{title}</div>
+      {items.length ? (
+        <ul className="mt-1.5 space-y-1 text-[11px] text-muted-foreground">
+          {items.map((item) => <li key={item}>{item}</li>)}
+        </ul>
+      ) : (
+        <p className="mt-1.5 text-[11px] text-muted-foreground">Not enough repeated evidence yet.</p>
+      )}
+    </div>
   );
 }
