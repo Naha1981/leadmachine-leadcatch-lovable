@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { initTelemetry } from "@/lib/telemetry";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeProvider, useTheme } from "@/lib/theme";
@@ -88,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" },
     ],
   }),
@@ -108,6 +109,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const { initialTheme } = Route.useRouteContext();
   const router = useRouter();
+
+  useEffect(() => {
+    initTelemetry();
+  }, []);
 
   useEffect(() => {
     if (import.meta.env["VITE_E2E_MODE"] === "true") return;
