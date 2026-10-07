@@ -7,6 +7,7 @@ import { useWorkspace } from "@/lib/workspace";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader, timeAgo } from "@/components/ui-bits";
 import { TemperatureBadge } from "@/components/TemperatureBadge";
+import { getIndustryExperience } from "@/lib/industry-experiences";
 
 export const Route = createFileRoute("/_authenticated/_shell/revenue-leaks")({
   head: () => ({
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/_shell/revenue-leaks")({
 function RevenueLeaksPage() {
   const { data: ws } = useWorkspace();
   const tenantId = ws?.tenantId;
+  const experience = getIndustryExperience(ws?.profile.industry);
 
   const { data, isLoading } = useQuery({
     queryKey: ["revenue-leaks", tenantId],
@@ -39,8 +41,8 @@ function RevenueLeaksPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
-        title="Revenue Leaks"
-        subtitle="RevenueDesk shows where customer intent is stalling before it becomes lost work."
+        title={experience ? experience.label + " Revenue Leaks" : "Revenue Leaks"}
+        subtitle={experience ? experience.problem + " " + experience.outcome : "RevenueDesk shows where customer intent is stalling before it becomes lost work."}
         action={<Button asChild className="rounded-xl"><Link to="/inbox">Work the queue <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
       />
 
@@ -56,8 +58,8 @@ function RevenueLeaksPage() {
             <div className="rounded-xl bg-primary/10 p-2 text-primary"><ShieldAlert className="h-5 w-5" /></div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Needs action</p>
-              <h2 className="mt-1 text-xl font-semibold">Hot enquiries sitting in “new”</h2>
-              <p className="mt-1 text-sm text-muted-foreground">These are the customers RevenueDesk believes are most ready to buy and are still waiting for progress.</p>
+              <h2 className="mt-1 text-xl font-semibold">High-intent {experience?.label.toLowerCase() ?? "service"} enquiries sitting in “new”</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{experience?.outcome ?? "These are the customers RevenueDesk believes are most ready to buy and are still waiting for progress."}</p>
             </div>
           </div>
         </div>
@@ -92,10 +94,26 @@ function RevenueLeaksPage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <LeakType icon={Clock3} title="Slow response" text="A customer has shown intent, but nobody has advanced the conversation quickly enough." />
-        <LeakType icon={MessageCircle} title="Unanswered" text="A conversation still has unread customer activity waiting for a human or AI response." />
-        <LeakType icon={AlertTriangle} title="Recovery alert" text="RevenueDesk has already escalated a hot lead because it looked at risk of being forgotten." />
+        {(experience?.leakTypes ?? ["Slow response", "Unanswered conversation", "Recovery alert"]).map((text, index) => (
+          <LeakType
+            key={text}
+            icon={index === 0 ? Clock3 : index === 1 ? MessageCircle : AlertTriangle}
+            title={index === 0 ? "First leak to fix" : index === 1 ? "Conversation at risk" : "Recovery opportunity"}
+            text={text}
+          />
+        ))}
       </section>
+
+      {experience && (
+        <section className="rounded-3xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">What RevenueDesk watches for</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {experience.services.map((service) => (
+              <span key={service} className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground">{service}</span>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
