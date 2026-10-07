@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -273,7 +274,7 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LeakCard({ icon: Icon, title, text }: { icon: React.ComponentType<{ className?: string }>; title: string; text: string }) {
+function LeakCard({ icon: Icon, title, text }: { icon: ComponentType<{ className?: string }>; title: string; text: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <Icon className="h-5 w-5 text-primary" />
