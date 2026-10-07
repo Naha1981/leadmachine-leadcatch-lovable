@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ComponentType } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -14,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { getIndustryExperience, INDUSTRY_EXPERIENCES } from "@/lib/industry-experiences";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +39,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [industryId, setIndustryId] = useState("plumber");
+  const experience = getIndustryExperience(industryId);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur">
@@ -64,14 +69,13 @@ function Landing() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Built for South African service businesses
+              {experience ? "Built specifically for " + experience.label.toLowerCase() : "Built for South African service businesses"}
             </div>
             <h1 className="mt-6 max-w-2xl text-5xl font-semibold leading-[0.98] tracking-[-0.04em] md:text-7xl">
-              The AI Revenue Desk for service businesses.
+              {experience?.headline ?? "The AI Revenue Desk for service businesses."}
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
-              Every enquiry captured. Every lead understood. Every follow-up handled.
-              RevenueDesk gives the front of your business an intelligent system behind it.
+{experience?.subheadline ?? "Every enquiry captured. Every lead understood. Every follow-up handled. RevenueDesk gives the front of your business an intelligent system behind it."}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/auth" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-semibold text-primary-foreground">
@@ -92,7 +96,7 @@ function Landing() {
             <div className="rounded-[1.6rem] border border-border bg-background p-5">
               <div className="flex items-center justify-between border-b border-border pb-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Revenue Desk</p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{experience?.deskName ?? "Revenue Desk"}</p>
                   <p className="mt-1 text-lg font-semibold">What needs attention now</p>
                 </div>
                 <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">Live</span>
@@ -108,9 +112,9 @@ function Landing() {
                 <div className="flex items-start gap-3">
                   <div className="rounded-xl bg-background p-2 text-primary shadow-sm"><DollarSign className="h-4 w-4" /></div>
                   <div>
-                    <p className="text-sm font-semibold">Four hot enquiries need a response</p>
+                    <p className="text-sm font-semibold">{experience?.label ?? "Service"} enquiries need a response</p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      RevenueDesk has already captured the suburb, service and urgency. Work the queue first.
+                      {experience?.outcome ?? "RevenueDesk has already captured the suburb, service and urgency. Work the queue first."}
                     </p>
                   </div>
                 </div>
@@ -136,6 +140,48 @@ function Landing() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="border-y border-border bg-card/40">
+          <div className="mx-auto max-w-6xl px-5 py-14">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Choose your industry</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">RevenueDesk should sound like your business, not a generic CRM.</h2>
+              <p className="mt-3 text-muted-foreground">Pick a business type and see the front desk, questions and revenue leaks RevenueDesk is designed around.</p>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-2">
+              {INDUSTRY_EXPERIENCES.slice(0, 20).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setIndustryId(item.id)}
+                  className={industryId === item.id ? "rounded-full border border-primary bg-primary/10 px-3.5 py-2 text-xs font-semibold" : "rounded-full border border-border bg-background px-3.5 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            {experience && (
+              <div className="mt-7 grid gap-4 md:grid-cols-[1fr_0.8fr]">
+                <div className="rounded-3xl border border-border bg-background p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{experience.label} RevenueDesk</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{experience.headline}</p>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{experience.problem}</p>
+                </div>
+                <div className="rounded-3xl border border-border bg-background p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Built-in qualification</p>
+                  <div className="mt-3 space-y-2">
+                    {experience.qualificationQuestions.slice(0, 3).map((question, index) => (
+                      <div key={question} className="flex items-start gap-2 text-sm">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{index + 1}</span>
+                        <span>{question}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
