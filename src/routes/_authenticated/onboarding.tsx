@@ -16,6 +16,7 @@ import { WhatsAppConnect } from "@/components/WhatsAppConnect";
 import { HoursEditor } from "@/components/HoursEditor";
 import type { WorkingHours } from "@/lib/autoreply";
 import { getVerticalPack } from "@/lib/vertical-packs";
+import { getIndustryExperience, getIndustryOptions } from "@/lib/industry-experiences";
 import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
@@ -28,7 +29,6 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
 });
 
-const INDUSTRIES = ["Plumbing", "Electrical", "Clinic", "Salon", "Building", "Cleaning", "Auto repair", "Other"];
 
 function Onboarding() {
   const { data: ws } = useWorkspace();
@@ -47,6 +47,9 @@ function Onboarding() {
   const [frontDesk, setFrontDesk] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const industryExperience = getIndustryExperience(industry);
+  const industryOptions = getIndustryOptions();
+
   useEffect(() => {
     if (!ws) return;
     setName(ws.profile.business_name);
@@ -59,10 +62,14 @@ function Onboarding() {
   }, [ws]);
 
   useEffect(() => {
+    const experience = getIndustryExperience(industry);
     const pack = getVerticalPack(industry);
-    if (!pack) return;
-    setServices(pack.services.join("\n"));
-    setGreeting((current) => current || `Hi! Thanks for contacting ${name || "us"}. We’ll help you right away.`);
+    if (!experience && !pack) return;
+    setServices((experience?.services ?? pack?.services ?? []).join("\n"));
+    setGreeting((current) =>
+      current ||
+      `Hi! Thanks for contacting ${name || "us"}. We’re ready to help with your ${experience?.label.toLowerCase() ?? "service"} enquiry.`,
+    );
   }, [industry, name]);
 
   async function save(finish: boolean) {
@@ -80,9 +87,10 @@ function Onboarding() {
     }).eq("tenant_id", ws.tenantId);
 
     const pack = getVerticalPack(industry);
+    const questions = industryExperience?.qualificationQuestions ?? (pack?.questions ?? []).map((q) => q.question);
     const configResult = await supabase.from("auto_reply_configs").update({
       greeting,
-      questions: (pack?.questions ?? []).map((q) => q.question),
+      questions,
     }).eq("tenant_id", ws.tenantId);
 
     if (frontDesk && finish) {
@@ -125,34 +133,60 @@ function Onboarding() {
             <div className="space-y-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Start with the business</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Tell RevenueDesk what it is protecting.</h1>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">This becomes the context your AI Front Desk uses when handling customer enquiries.</p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Build your industry-specific RevenueDesk.</h1>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">RevenueDesk changes its questions, examples, front-desk behaviour and recovery rules around the work you actually sell.</p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="bn">Business name</Label>
                 <Input id="bn" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Mokoena Plumbing" className="h-11 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label>Industry</Label>
-                <div className="flex flex-wrap gap-2">
-                  {INDUSTRIES.map((item) => (
-                    <button
-                      key={item}
-                      onClick={() => setIndustry(item)}
-                      className={`rounded-xl border px-3.5 py-2 text-sm ${industry === item ? "border-primary bg-primary/10" : "border-border text-muted-foreground hover:text-foreground"}`}
-                    >
-                      {item}
-                    </button>
-                  ))}
+                <Label>What kind of business is this?</Label>
+                <div className="space-y-4">
+                  {["Home & field services", "Automotive", "Property & high-value sales", "Property & protection", "Health & high-value appointments", "Professional services", "Hospitality & events", "Commercial services"].map((category) => {
+                    const options = industryOptions.filter((item) => item.category === category);
+                    if (!options.length) return null;
+                    return (
+                      <div key={category}>
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{category}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {options.map((item) => (
+                            <button
+                              key={item.value}
+                              type="button"
+                              onClick={() => setIndustry(item.value)}
+                              className={industry === item.value ? "rounded-xl border border-primary bg-primary/10 px-3.5 py-2 text-sm font-medium text-foreground" : "rounded-xl border border-border px-3.5 py-2 text-sm text-muted-foreground hover:text-foreground"}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="suburb">Main service area</Label>
                 <Input id="suburb" value={suburb} onChange={(e) => setSuburb(e.target.value)} placeholder="e.g. Sandton, Randburg, Fourways" className="h-11 rounded-xl" />
               </div>
+              {industryExperience && (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{industryExperience.label} RevenueDesk</p>
+                  <p className="mt-2 text-lg font-semibold">{industryExperience.headline}</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{industryExperience.subheadline}</p>
+                  <p className="mt-3 text-xs font-medium text-foreground">RevenueDesk will watch for:</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {industryExperience.services.map((service) => (
+                      <span key={service} className="rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">{service}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="space-y-1.5">
-                <Label htmlFor="services">Services</Label>
+                <Label htmlFor="services">Services you actually sell</Label>
                 <Textarea id="services" value={services} onChange={(e) => setServices(e.target.value)} rows={5} placeholder="One service per line" className="rounded-xl" />
+                <p className="text-xs text-muted-foreground">These become part of the Front Desk's approved business context.</p>
               </div>
             </div>
           )}
@@ -161,8 +195,8 @@ function Onboarding() {
             <div className="space-y-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Set the boundary</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight">How should your AI Front Desk behave?</h1>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">Start safe. RevenueDesk can handle first response and qualification, while you keep control over what gets sent.</p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight">How should your {industryExperience?.label ?? "business"} Front Desk behave?</h1>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{industryExperience?.problem ?? "Start safe. RevenueDesk can handle first response and qualification, while you keep control over what gets sent."}</p>
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <ModeCard icon={MessageCircle} title="First response" text="Reply immediately to new enquiries." />
@@ -189,8 +223,22 @@ function Onboarding() {
                 <Textarea id="gr" rows={3} value={greeting} onChange={(e) => setGreeting(e.target.value)} className="rounded-xl" />
                 <p className="text-xs text-muted-foreground">Keep it human. The AI will use it as the opening message.</p>
               </div>
+              {industryExperience && (
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Built around your work</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{industryExperience.outcome}</p>
+                  <div className="mt-3 space-y-2">
+                    {industryExperience.qualificationQuestions.slice(0, 3).map((question, index) => (
+                      <div key={question} className="flex items-start gap-2 text-xs">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">{index + 1}</span>
+                        <span>{question}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Bot className="h-4 w-4 text-primary" /> Qualification questions are pre-filled from the selected industry.
+                <Bot className="h-4 w-4 text-primary" /> Qualification questions are pre-filled for {industryExperience?.label.toLowerCase() ?? "your industry"}.
               </div>
             </div>
           )}
@@ -199,13 +247,13 @@ function Onboarding() {
             <div className="space-y-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Connect the channel</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Put RevenueDesk behind the WhatsApp number customers already use.</h1>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">Connect now or do it later. Your Revenue Desk is ready either way.</p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Put your {industryExperience?.label ?? "business"} front desk behind the WhatsApp number customers already use.</h1>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{industryExperience?.subheadline ?? "Connect now or do it later. RevenueDesk is ready either way."}</p>
               </div>
               <WhatsAppConnect />
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl border border-border bg-card p-4"><Clock3 className="h-4 w-4 text-primary" /><p className="mt-3 font-medium">After hours</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Collect the job details even when the team is offline.</p></div>
-                <div className="rounded-2xl border border-border bg-card p-4"><ShieldCheck className="h-4 w-4 text-primary" /><p className="mt-3 font-medium">Human control</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Turn automation down or off from the Front Desk screen.</p></div>
+                <div className="rounded-2xl border border-border bg-card p-4"><Clock3 className="h-4 w-4 text-primary" /><p className="mt-3 font-medium">After hours</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{industryExperience?.leakTypes[0] ?? "Keep the enquiry alive while the team is offline."}</p></div>
+                <div className="rounded-2xl border border-border bg-card p-4"><ShieldCheck className="h-4 w-4 text-primary" /><p className="mt-3 font-medium">Human control</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Escalate {industryExperience?.label.toLowerCase() ?? "high-value"} conversations when judgement is needed.</p></div>
               </div>
             </div>
           )}
