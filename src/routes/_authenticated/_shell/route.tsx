@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 export const Route = createFileRoute("/_authenticated/_shell")({ component: Shell });
 
 const NAV = [
-  { to: "/dashboard", label: "Revenue Desk", icon: LayoutDashboard },
+  { to: "/dashboard", label: "RevenueDesk", icon: LayoutDashboard },
   { to: "/inbox", label: "Conversations", icon: Inbox },
   { to: "/revenue-leaks", label: "Revenue Leaks", icon: ShieldAlert },
   { to: "/ai-front-desk", label: "AI Front Desk", icon: Bot },
@@ -73,7 +73,7 @@ function Shell() {
             <span className={`h-2 w-2 rounded-full ${connected ? "bg-primary" : "bg-muted-foreground/50"}`} />
             {connected ? "WhatsApp connected" : "WhatsApp not connected"}
           </div>
-          <p className="mt-2 leading-5">Lead Machine is watching the front of your business.</p>
+          <p className="mt-2 leading-5">RevenueDesk is watching the front of your business.</p>
         </div>
       </aside>
 
