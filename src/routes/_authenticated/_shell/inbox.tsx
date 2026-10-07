@@ -18,9 +18,9 @@ import { getIndustryExperience } from "@/lib/industry-experiences";
 export const Route = createFileRoute("/_authenticated/_shell/inbox")({
   head: () => ({
     meta: [
-      { title: "Inbox — LeadMachine" },
+      { title: "Inbox — RevenueDesk" },
       { name: "description", content: "Every WhatsApp lead and conversation in one place." },
-      { property: "og:title", content: "Inbox — LeadMachine" },
+      { property: "og:title", content: "Inbox — RevenueDesk" },
       { property: "og:description", content: "Every WhatsApp lead and conversation in one place." },
     ],
   }),
