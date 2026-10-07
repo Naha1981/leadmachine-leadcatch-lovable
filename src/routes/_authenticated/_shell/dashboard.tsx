@@ -11,8 +11,8 @@ import { MarketIntelligencePanel } from "@/components/MarketIntelligencePanel";
 export const Route = createFileRoute("/_authenticated/_shell/dashboard")({
   head: () => ({
     meta: [
-      { title: "Revenue Desk — Lead Machine" },
-      { name: "description", content: "See what needs attention, where enquiries are leaking and what Lead Machine is handling." },
+      { title: "Revenue Desk — RevenueDesk" },
+      { name: "description", content: "See what needs attention, where enquiries are leaking and what RevenueDesk is handling." },
     ],
   }),
   component: Dashboard,
@@ -124,7 +124,7 @@ function Dashboard() {
             {(data?.hotWaiting?.length ?? 0) === 0 && (
               <div className="py-12 text-center">
                 <p className="text-sm font-medium">No hot lead is currently waiting.</p>
-                <p className="mt-1 text-xs text-muted-foreground">Lead Machine will surface one here when it needs you.</p>
+                <p className="mt-1 text-xs text-muted-foreground">RevenueDesk will surface one here when it needs you.</p>
               </div>
             )}
           </div>
@@ -137,7 +137,7 @@ function Dashboard() {
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">AI Front Desk</p>
               <h2 className="mt-1 text-xl font-semibold">Your business keeps replying.</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Lead Machine can handle first response, qualification and eligible follow-up, while your team takes the conversations that need a human.
+                RevenueDesk can handle first response, qualification and eligible follow-up, while your team takes the conversations that need a human.
               </p>
             </div>
           </div>
@@ -180,7 +180,7 @@ function Dashboard() {
                     </span>
                     <div className="min-w-0">
                       <p className="truncate font-medium">{event.type.replaceAll("_", " ")}</p>
-                      <p className="truncate text-xs text-muted-foreground">{event.leads?.name || event.leads?.phone || "Lead Machine"}</p>
+                      <p className="truncate text-xs text-muted-foreground">{event.leads?.name || event.leads?.phone || "RevenueDesk"}</p>
                     </div>
                   </div>
                   <span className="shrink-0 text-xs text-muted-foreground">{timeAgo(event.created_at)}</span>
