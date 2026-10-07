@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, PageHeader } from "@/components/ui-bits";
+import { getIndustryExperience } from "@/lib/industry-experiences";
 
 export const Route = createFileRoute("/_authenticated/_shell/ai-front-desk")({
   head: () => ({
@@ -35,6 +36,7 @@ function AIFontDeskPage() {
   const [saved, setSaved] = useState(false);
   const [testText, setTestText] = useState("");
   const [zero, setZero] = useState({ enabled: false, automationEnabled: true, autoFollowupsEnabled: true, whatsappConnected: false });
+  const experience = getIndustryExperience(ws?.profile.industry);
 
   useEffect(() => {
     if (ws) setCfg({ ...(ws.config as any), questions: (ws.config.questions as string[]) ?? [], keyword_rules: (ws.config.keyword_rules as KeywordRule[]) ?? [] });
@@ -58,13 +60,24 @@ function AIFontDeskPage() {
     if (!cfg || !hours) return [];
     const always: WorkingHours = { days: [0, 1, 2, 3, 4, 5, 6], start: "00:00", end: "24:00" };
     const flow: { from: "lead" | "bot"; text: string }[] = [];
-    const leadLines = ["Hi, I need help with a job", ...cfg.questions.map((_, i) => ["It's a burst pipe", "I'm in Soweto", "Tomorrow morning works", "Yes"][i] ?? "Sure")];
-    leadLines.forEach((line, i) => {
-      flow.push({ from: "lead", text: line });
-      decideReplies({ config: { ...cfg, keyword_rules: [] }, hours: always, inboundIndex: i + 1, text: line }).forEach((reply) => flow.push({ from: "bot", text: reply }));
+    const customerMessage = experience?.customerMessage ?? "Hi, I need help with a job";
+    const replies = [
+      experience?.assistantReply ?? "Yes, we can help. Let me get a few details first.",
+      "Sure, that's fine.",
+      "I can send that through.",
+    ];
+    flow.push({ from: "lead", text: customerMessage });
+    flow.push({ from: "bot", text: cfg.greeting || replies[0] });
+    replies.slice(0, Math.min(2, cfg.questions.length)).forEach((reply) => {
+      flow.push({ from: "lead", text: "Yes, please." });
+      flow.push({ from: "bot", text: reply });
     });
+    if (cfg.questions.length) {
+      const question = cfg.questions[0];
+      flow.push({ from: "bot", text: question });
+    }
     return flow;
-  }, [cfg, hours]);
+  }, [cfg, hours, experience]);
 
   if (!cfg) return null;
 
@@ -111,13 +124,24 @@ function AIFontDeskPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
-        title="AI Front Desk"
-        subtitle="Configure what RevenueDesk can handle before a human needs to step in."
+        title={experience ? experience.deskName : "AI Front Desk"}
+        subtitle={experience ? experience.subheadline : "Configure what RevenueDesk can handle before a human needs to step in."}
       />
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
         <div className="space-y-5">
           <Card className="border-primary/20 bg-primary/5 p-5">
+            {experience && (
+              <div className="mb-5 rounded-2xl border border-border bg-background p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Built for {experience.label.toLowerCase()}</p>
+                <p className="mt-2 text-lg font-semibold">{experience.outcome}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {experience.services.map((service) => (
+                    <span key={service} className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{service}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex items-start gap-3">
               <div className="rounded-xl bg-background p-2.5 text-primary"><Bot className="h-5 w-5" /></div>
               <div className="min-w-0 flex-1">
@@ -138,8 +162,8 @@ function AIFontDeskPage() {
 
           <Card className="space-y-4">
             <div>
-              <p className="text-sm font-semibold">Qualification questions</p>
-              <p className="mt-1 text-xs text-muted-foreground">Asked one at a time as the customer replies.</p>
+              <p className="text-sm font-semibold">Qualification questions for {experience?.label.toLowerCase() ?? "your business"}</p>
+              <p className="mt-1 text-xs text-muted-foreground">RevenueDesk uses the questions that matter to this type of customer, not a generic form.</p>
             </div>
             {cfg.questions.map((q, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -153,8 +177,8 @@ function AIFontDeskPage() {
 
           <Card className="space-y-4">
             <div>
-              <Label htmlFor="greeting">First response</Label>
-              <p className="mt-1 text-xs text-muted-foreground">The customer sees this immediately after the enquiry.</p>
+              <Label htmlFor="greeting">First response for {experience?.label.toLowerCase() ?? "your business"}</Label>
+              <p className="mt-1 text-xs text-muted-foreground">{experience?.assistantRole ? `Your ${experience.assistantRole} should sound like a helpful member of the team, not a generic bot.` : "The customer sees this immediately after the enquiry."}</p>
             </div>
             <Textarea id="greeting" rows={4} value={cfg.greeting} onChange={(e) => set({ greeting: e.target.value })} className="rounded-xl" />
           </Card>
@@ -205,8 +229,8 @@ function AIFontDeskPage() {
         <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <Card className="overflow-hidden p-0">
             <div className="border-b border-border px-5 py-4">
-              <div className="flex items-center gap-2"><MessageCircle className="h-4 w-4 text-primary" /><p className="text-sm font-semibold">Customer preview</p></div>
-              <p className="mt-1 text-xs text-muted-foreground">A realistic preview of the current first-response flow.</p>
+              <div className="flex items-center gap-2"><MessageCircle className="h-4 w-4 text-primary" /><p className="text-sm font-semibold">{experience?.label ?? "Customer"} preview</p></div>
+              <p className="mt-1 text-xs text-muted-foreground">{experience?.customerMessage ?? "A realistic preview of the current first-response flow."}</p>
             </div>
             <div className="space-y-2 p-4">
               {preview.map((m, i) => (
