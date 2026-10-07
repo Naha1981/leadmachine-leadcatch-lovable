@@ -1,3 +1,5 @@
+import { getIndustryExperience } from "@/lib/industry-experiences";
+
 export type QualificationQuestion = {
   id: string;
   question: string;
@@ -75,7 +77,24 @@ export const VERTICAL_PACKS: Record<string, VerticalPack> = {
 
 export function getVerticalPack(industry: string | null | undefined): VerticalPack | null {
   const value = (industry ?? "").trim().toLowerCase();
-  return Object.values(VERTICAL_PACKS).find((pack) => pack.aliases.includes(value)) ?? null;
+  const existing = Object.values(VERTICAL_PACKS).find((pack) => pack.aliases.includes(value));
+  if (existing) return existing;
+
+  const experience = getIndustryExperience(industry);
+  if (!experience) return null;
+
+  return {
+    id: experience.id,
+    label: experience.label,
+    aliases: experience.aliases,
+    services: experience.services,
+    questions: experience.qualificationQuestions.map((question, index) => ({
+      id: `industry-${experience.id}-${index + 1}`,
+      question,
+    })),
+    urgentKeywords: experience.urgentKeywords,
+    fitKeywords: experience.fitKeywords,
+  };
 }
 
 export function fallbackLeadScore(opts: {
