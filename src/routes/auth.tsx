@@ -12,10 +12,10 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Sign in — LeadMachine" },
-      { name: "description", content: "Sign in or create your LeadMachine account." },
-      { property: "og:title", content: "Sign in — LeadMachine" },
-      { property: "og:description", content: "Sign in or create your LeadMachine account." },
+      { title: "Sign in — RevenueDesk" },
+      { name: "description", content: "Sign in or create your RevenueDesk account." },
+      { property: "og:title", content: "Sign in — RevenueDesk" },
+      { property: "og:description", content: "Sign in or create your RevenueDesk account." },
     ],
   }),
   component: AuthPage,

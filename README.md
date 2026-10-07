@@ -1,6 +1,6 @@
-# LeadMachine and leadcatch
+# RevenueDesk
 
-build me this app full stack, as a fully production ready app to service 10000 users from day one, dont build it as an mvp.
+RevenueDesk is the AI front desk and revenue recovery system for service businesses.
 
 This project was built with [Lovable](https://lovable.dev).
 

@@ -11,13 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/components/ui-bits";
+import { getIndustryExperience } from "@/lib/industry-experiences";
 
 export const Route = createFileRoute("/_authenticated/_shell/website")({
   head: () => ({
     meta: [
-      { title: "Business Page — LeadMachine" },
+      { title: "Business Page — RevenueDesk" },
       { name: "description", content: "Edit and publish your public business page with services, FAQs and a lead form." },
-      { property: "og:title", content: "Business Page — LeadMachine" },
+      { property: "og:title", content: "Business Page — RevenueDesk" },
       { property: "og:description", content: "Edit and publish your public business page with services, FAQs and a lead form." },
     ],
   }),
@@ -40,6 +41,7 @@ function WebsitePage() {
   const [f, setF] = useState<Form | null>(null);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const experience = getIndustryExperience(ws?.profile.industry);
 
   const { data: site, isLoading } = useQuery({
     queryKey: ["website", ws?.tenantId],
@@ -112,8 +114,8 @@ function WebsitePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-5 md:p-8">
       <PageHeader
-        title="Business Page"
-        subtitle="Your public page with services, FAQs and a quote form that drops leads into your inbox."
+        title={experience ? experience.label + " Customer Page" : "Business Page"}
+        subtitle={experience ? "A customer-facing page built around " + experience.label.toLowerCase() + " enquiries, services and booking or quote intent." : "Your public page with services, FAQs and a quote form that drops customer enquiries into your inbox."}
         action={site?.published ? (
           <a href={`/s/${site.slug}`} target="_blank" rel="noreferrer">
             <Button variant="outline" className="rounded-xl"><ExternalLink className="mr-2 h-4 w-4" />View page</Button>

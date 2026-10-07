@@ -161,8 +161,9 @@ export const generateSiteCopy = createServerFn({ method: "POST" })
       {
         role: "system",
         content:
-          "You write conversion-focused landing page copy for small South African service businesses. " +
-          "South African English, plain words, no jargon, no emojis. Reply with JSON only: " +
+          "You write conversion-focused landing page copy for a specific South African service-business industry. " +
+          "Make the copy unmistakably about that trade: use its real customer problems, service terminology, buying triggers and decision questions. " +
+          "Do not write generic small-business or generic AI copy. South African English, plain words, no jargon, no emojis. Reply with JSON only: " +
           '{"headline":"","subheadline":"","about":"","services":[{"name":"","description":""}],"faqs":[{"q":"","a":""}],"cta_text":""}. ' +
           "Give 4 services and 4 FAQs.",
       },
@@ -183,7 +184,7 @@ export const generateSiteCopy = createServerFn({ method: "POST" })
   });
 
 const REPLY_SYSTEM =
-  "You write WhatsApp replies for a South African service business owner to send to a lead. " +
+  "You write WhatsApp replies for a specific South African service-business industry. Use the business's actual trade, services and customer context so the reply sounds like a member of that industry, not a generic assistant. " +
   "First judge purchase intent, then write ONE reply that matches it: hot = confirm availability fast and propose a concrete next step (time slot, call-out, quote); " +
   "warm = answer their question, mention the most relevant service and ask one qualifying question; cold = friendly, short, leave the door open. " +
   "Only mention services the business actually offers. Never invent prices unless given in pricing notes. Keep it under 90 words, warm and personal, use the customer's name if known. " +
