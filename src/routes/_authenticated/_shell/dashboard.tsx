@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, PageHeader, timeAgo } from "@/components/ui-bits";
 import { TemperatureBadge } from "@/components/TemperatureBadge";
 import { MarketIntelligencePanel } from "@/components/MarketIntelligencePanel";
+import { getIndustryExperience } from "@/lib/industry-experiences";
 
 export const Route = createFileRoute("/_authenticated/_shell/dashboard")({
   head: () => ({
@@ -33,6 +34,7 @@ function startOfWeek() {
 function Dashboard() {
   const { data: ws } = useWorkspace();
   const tenantId = ws?.tenantId;
+  const experience = getIndustryExperience(ws?.profile.industry);
 
   const { data, isLoading } = useQuery({
     queryKey: ["revenue-desk", tenantId],
@@ -81,8 +83,8 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
-        title={`${hello}${ws?.profile.business_name ? `, ${ws.profile.business_name}` : ""}`}
-        subtitle="This is your Revenue Desk — the few things worth acting on now."
+        title={(experience ? hello + ", " + (ws?.profile.business_name ?? experience.deskName) : hello + (ws?.profile.business_name ? ", " + ws.profile.business_name : ""))}
+        subtitle={experience?.subheadline ?? "This is your Revenue Desk — the few things worth acting on now."}
         action={<Button asChild className="rounded-xl"><Link to="/inbox">Work the queue <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
       />
 
@@ -123,8 +125,8 @@ function Dashboard() {
             ))}
             {(data?.hotWaiting?.length ?? 0) === 0 && (
               <div className="py-12 text-center">
-                <p className="text-sm font-medium">No hot lead is currently waiting.</p>
-                <p className="mt-1 text-xs text-muted-foreground">RevenueDesk will surface one here when it needs you.</p>
+                <p className="text-sm font-medium">No hot {experience?.label.toLowerCase() ?? "service"} enquiry is currently waiting.</p>
+                <p className="mt-1 text-xs text-muted-foreground">RevenueDesk is watching for the next high-intent {experience?.label.toLowerCase() ?? "service"} enquiry.</p>
               </div>
             )}
           </div>
@@ -134,10 +136,10 @@ function Dashboard() {
           <div className="flex items-start gap-3">
             <div className="rounded-xl bg-background p-2 text-primary"><Bot className="h-5 w-5" /></div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">AI Front Desk</p>
-              <h2 className="mt-1 text-xl font-semibold">Your business keeps replying.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{experience?.deskName ?? "AI Front Desk"}</p>
+              <h2 className="mt-1 text-xl font-semibold">{experience?.headline ?? "Your business keeps replying."}</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                RevenueDesk can handle first response, qualification and eligible follow-up, while your team takes the conversations that need a human.
+                {experience?.problem ?? "RevenueDesk can handle first response, qualification and eligible follow-up, while your team takes the conversations that need a human."}
               </p>
             </div>
           </div>
