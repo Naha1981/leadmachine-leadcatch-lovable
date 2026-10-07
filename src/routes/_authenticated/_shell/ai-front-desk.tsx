@@ -18,8 +18,8 @@ import { Card, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/_shell/ai-front-desk")({
   head: () => ({
     meta: [
-      { title: "AI Front Desk — Lead Machine" },
-      { name: "description", content: "Configure how Lead Machine answers, qualifies and follows up with customers." },
+      { title: "AI Front Desk — RevenueDesk" },
+      { name: "description", content: "Configure how RevenueDesk answers, qualifies and follows up with customers." },
     ],
   }),
   component: AIFontDeskPage,
@@ -112,7 +112,7 @@ function AIFontDeskPage() {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
         title="AI Front Desk"
-        subtitle="Configure what Lead Machine can handle before a human needs to step in."
+        subtitle="Configure what RevenueDesk can handle before a human needs to step in."
       />
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
@@ -123,7 +123,7 @@ function AIFontDeskPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">Front Desk mode</p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Lead Machine replies, qualifies and follows up using the rules and services you approve here.
+                  RevenueDesk replies, qualifies and follows up using the rules and services you approve here.
                 </p>
               </div>
               <Switch checked={zero.enabled} disabled={!zero.whatsappConnected} onCheckedChange={(v) => void toggle("enabled", v)} />
