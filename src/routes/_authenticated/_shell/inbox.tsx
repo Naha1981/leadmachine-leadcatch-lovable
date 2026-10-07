@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { LEAD_STATUSES, type LeadStatus, StatusBadge, displayPhone, timeAgo } from "@/components/ui-bits";
+import { getIndustryExperience } from "@/lib/industry-experiences";
 
 export const Route = createFileRoute("/_authenticated/_shell/inbox")({
   head: () => ({
@@ -38,6 +39,7 @@ type Convo = {
 function InboxPage() {
   const { data: ws } = useWorkspace();
   const qc = useQueryClient();
+  const experience = getIndustryExperience(ws?.profile.industry);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [selected, setSelected] = useState<string | null>(null);
@@ -86,7 +88,13 @@ function InboxPage() {
     <div className="flex h-[calc(100dvh-3.5rem)] md:h-dvh">
       <section className={`flex w-full flex-col border-r border-border md:w-[360px] md:shrink-0 ${current ? "hidden md:flex" : "flex"}`}>
         <div className="space-y-3 border-b border-border p-4">
-          <h1 className="text-xl font-semibold tracking-tight">Inbox</h1>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight">{experience ? experience.label + " Conversations" : "Conversations"}</h1>
+              <p className="mt-1 text-xs text-muted-foreground">{experience?.subheadline ?? "Every customer conversation in one place."}</p>
+            </div>
+            {experience && <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary">Industry mode</span>}
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, number, message" className="h-10 rounded-xl pl-9" />
@@ -108,9 +116,9 @@ function InboxPage() {
             <p className="p-5 text-sm text-muted-foreground">Loading…</p>
           ) : list.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="font-medium">{convos.length === 0 ? "No leads yet" : "Nothing matches"}</p>
+              <p className="font-medium">{convos.length === 0 ? "No customer enquiries yet" : "Nothing matches"}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {convos.length === 0 ? "When a customer messages your WhatsApp, they'll appear here instantly." : "Try a different search or filter."}
+                {convos.length === 0 ? (experience ? "When a customer messages about " + experience.label.toLowerCase() + " work, the enquiry will appear here instantly." : "When a customer messages your WhatsApp, they'll appear here instantly.") : "Try a different search or filter."}
               </p>
             </div>
           ) : (
