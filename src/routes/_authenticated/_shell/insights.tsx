@@ -7,7 +7,7 @@ import { Card, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/_shell/insights")({
   head: () => ({
     meta: [
-      { title: "Insights — Lead Machine" },
+      { title: "Insights — RevenueDesk" },
       { name: "description", content: "Turn customer conversations and market signals into evidence-backed actions." },
     ],
   }),
@@ -19,7 +19,7 @@ function InsightsPage() {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
         title="Insights"
-        subtitle="Lead Machine learns from the demand around your business instead of making you search for it manually."
+        subtitle="RevenueDesk learns from the demand around your business instead of making you search for it manually."
         action={<Link to="/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-accent">Back to Revenue Desk <ArrowRight className="h-4 w-4" /></Link>}
       />
 
