@@ -18,13 +18,13 @@ import { Logo } from "@/components/Logo";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lead Machine — The AI Revenue Desk for service businesses" },
+      { title: "RevenueDesk — The AI Revenue Desk for service businesses" },
       {
         name: "description",
         content:
           "Capture enquiries, qualify leads, recover missed opportunities and keep follow-up moving with an AI Revenue Desk built for South African service businesses.",
       },
-      { property: "og:title", content: "Lead Machine — The AI Revenue Desk for service businesses" },
+      { property: "og:title", content: "RevenueDesk — The AI Revenue Desk for service businesses" },
       {
         property: "og:description",
         content:
@@ -71,7 +71,7 @@ function Landing() {
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
               Every enquiry captured. Every lead understood. Every follow-up handled.
-              Lead Machine gives the front of your business an intelligent system behind it.
+              RevenueDesk gives the front of your business an intelligent system behind it.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/auth" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-semibold text-primary-foreground">
@@ -110,7 +110,7 @@ function Landing() {
                   <div>
                     <p className="text-sm font-semibold">Four hot enquiries need a response</p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      Lead Machine has already captured the suburb, service and urgency. Work the queue first.
+                      RevenueDesk has already captured the suburb, service and urgency. Work the queue first.
                     </p>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ function Landing() {
         <section id="how" className="mx-auto max-w-6xl px-5 py-20">
           <div className="grid gap-12 md:grid-cols-[0.7fr_1.3fr] md:items-start">
             <div className="md:sticky md:top-24">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">How Lead Machine works</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">How RevenueDesk works</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
                 Capture → Understand → Act → Recover → Measure → Learn.
               </h2>
@@ -205,7 +205,7 @@ function Landing() {
                 </div>
                 <div className="mt-5 space-y-3">
                   <ChatRow from="Customer" text="Hi, my geyser burst and I'm in Fourways. Can you come today?" />
-                  <ChatRow from="Lead Machine" text="Yes, we can help. Is the water still running, and what time would suit you today?" />
+                  <ChatRow from="RevenueDesk" text="Yes, we can help. Is the water still running, and what time would suit you today?" />
                   <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs">
                     <span className="font-semibold text-primary">Lead signal</span>
                     <div className="mt-2 grid grid-cols-3 gap-2">
@@ -223,7 +223,7 @@ function Landing() {
                 Your business keeps replying while you're doing the actual work.
               </h2>
               <p className="mt-4 leading-7 text-muted-foreground">
-                Lead Machine can handle first response, qualification and eligible follow-up while keeping a human in control of sensitive or high-value conversations.
+                RevenueDesk can handle first response, qualification and eligible follow-up while keeping a human in control of sensitive or high-value conversations.
               </p>
               <div className="mt-7 space-y-3 text-sm">
                 <FeatureLine text="Uses your services and approved business information" />
