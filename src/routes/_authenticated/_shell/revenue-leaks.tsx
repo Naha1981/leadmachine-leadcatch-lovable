@@ -11,7 +11,7 @@ import { TemperatureBadge } from "@/components/TemperatureBadge";
 export const Route = createFileRoute("/_authenticated/_shell/revenue-leaks")({
   head: () => ({
     meta: [
-      { title: "Revenue Leaks — Lead Machine" },
+      { title: "Revenue Leaks — RevenueDesk" },
       { name: "description", content: "Find unanswered, stalled and hot enquiries before they disappear." },
     ],
   }),
@@ -40,7 +40,7 @@ function RevenueLeaksPage() {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
         title="Revenue Leaks"
-        subtitle="Lead Machine shows where customer intent is stalling before it becomes lost work."
+        subtitle="RevenueDesk shows where customer intent is stalling before it becomes lost work."
         action={<Button asChild className="rounded-xl"><Link to="/inbox">Work the queue <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
       />
 
@@ -57,7 +57,7 @@ function RevenueLeaksPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Needs action</p>
               <h2 className="mt-1 text-xl font-semibold">Hot enquiries sitting in “new”</h2>
-              <p className="mt-1 text-sm text-muted-foreground">These are the customers Lead Machine believes are most ready to buy and are still waiting for progress.</p>
+              <p className="mt-1 text-sm text-muted-foreground">These are the customers RevenueDesk believes are most ready to buy and are still waiting for progress.</p>
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@ function RevenueLeaksPage() {
         ) : (data?.hot.length ?? 0) === 0 ? (
           <div className="p-10 text-center">
             <p className="text-sm font-medium">Nothing obvious is leaking right now.</p>
-            <p className="mt-1 text-xs text-muted-foreground">Lead Machine will keep watching.</p>
+            <p className="mt-1 text-xs text-muted-foreground">RevenueDesk will keep watching.</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -94,7 +94,7 @@ function RevenueLeaksPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <LeakType icon={Clock3} title="Slow response" text="A customer has shown intent, but nobody has advanced the conversation quickly enough." />
         <LeakType icon={MessageCircle} title="Unanswered" text="A conversation still has unread customer activity waiting for a human or AI response." />
-        <LeakType icon={AlertTriangle} title="Recovery alert" text="Lead Machine has already escalated a hot lead because it looked at risk of being forgotten." />
+        <LeakType icon={AlertTriangle} title="Recovery alert" text="RevenueDesk has already escalated a hot lead because it looked at risk of being forgotten." />
       </section>
     </div>
   );
