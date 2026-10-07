@@ -15,6 +15,7 @@ import { Card, PageHeader, displayPhone, timeAgo } from "@/components/ui-bits";
 import { HoursEditor } from "@/components/HoursEditor";
 import { Switch } from "@/components/ui/switch";
 import { WhatsAppConnect } from "@/components/WhatsAppConnect";
+import { getIndustryExperience } from "@/lib/industry-experiences";
 
 export const Route = createFileRoute("/_authenticated/_shell/settings")({
   head: () => ({
@@ -54,6 +55,7 @@ function SettingsPage() {
   const [marketSaving, setMarketSaving] = useState(false);
   const [newCompetitorName, setNewCompetitorName] = useState("");
   const [newCompetitorUrl, setNewCompetitorUrl] = useState("");
+  const experience = getIndustryExperience(industry);
 
   useEffect(() => {
     if (!ws) return;
@@ -206,7 +208,10 @@ function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 md:px-8 md:py-10">
-      <PageHeader title="Settings" />
+      <PageHeader
+        title={experience ? experience.label + " RevenueDesk Settings" : "RevenueDesk Settings"}
+        subtitle={experience ? "Control the rules, services and customer-handling behaviour RevenueDesk uses for " + experience.label.toLowerCase() + " enquiries." : "Control your business profile, customer-handling rules and channels."}
+      />
 
       <Card className="space-y-4">
         <h2 className="font-medium">WhatsApp</h2>
