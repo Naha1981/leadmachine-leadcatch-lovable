@@ -21,7 +21,7 @@ import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
-      { title: "Set up your Revenue Desk — Lead Machine" },
+      { title: "Set up your Revenue Desk — RevenueDesk" },
       { name: "description", content: "Set up your business, AI Front Desk and WhatsApp connection." },
     ],
   }),
@@ -125,7 +125,7 @@ function Onboarding() {
             <div className="space-y-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Start with the business</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Tell Lead Machine what it is protecting.</h1>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Tell RevenueDesk what it is protecting.</h1>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">This becomes the context your AI Front Desk uses when handling customer enquiries.</p>
               </div>
               <div className="space-y-1.5">
@@ -162,7 +162,7 @@ function Onboarding() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Set the boundary</p>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">How should your AI Front Desk behave?</h1>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">Start safe. Lead Machine can handle first response and qualification, while you keep control over what gets sent.</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">Start safe. RevenueDesk can handle first response and qualification, while you keep control over what gets sent.</p>
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <ModeCard icon={MessageCircle} title="First response" text="Reply immediately to new enquiries." />
@@ -199,7 +199,7 @@ function Onboarding() {
             <div className="space-y-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Connect the channel</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Put Lead Machine behind the WhatsApp number customers already use.</h1>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Put RevenueDesk behind the WhatsApp number customers already use.</h1>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">Connect now or do it later. Your Revenue Desk is ready either way.</p>
               </div>
               <WhatsAppConnect />
