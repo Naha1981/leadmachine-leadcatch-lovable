@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BarChart3, Search, TrendingUp } from "lucide-react";
 import { MarketIntelligencePanel } from "@/components/MarketIntelligencePanel";
@@ -33,6 +34,6 @@ function InsightsPage() {
   );
 }
 
-function InsightCard({ icon: Icon, title, text }: { icon: React.ComponentType<{ className?: string }>; title: string; text: string }) {
+function InsightCard({ icon: Icon, title, text }: { icon: ComponentType<{ className?: string }>; title: string; text: string }) {
   return <Card className="p-5"><Icon className="h-5 w-5 text-primary" /><p className="mt-4 font-semibold">{title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p></Card>;
 }
