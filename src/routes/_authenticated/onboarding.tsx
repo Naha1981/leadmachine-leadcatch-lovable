@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -237,7 +238,7 @@ function Onboarding() {
   );
 }
 
-function ModeCard({ icon: Icon, title, text }: { icon: React.ComponentType<{ className?: string }>; title: string; text: string }) {
+function ModeCard({ icon: Icon, title, text }: { icon: ComponentType<{ className?: string }>; title: string; text: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <Icon className="h-4 w-4 text-primary" />
