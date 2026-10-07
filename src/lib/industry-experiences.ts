@@ -566,6 +566,8 @@ export function getIndustryExperience(industry: string | null | undefined): Indu
   const value = (industry ?? "").trim().toLowerCase();
   if (!value) return null;
   return INDUSTRY_EXPERIENCES.find((experience) =>
+    value === experience.id ||
+    value === experience.label.toLowerCase() ||
     experience.aliases.some((alias) => value === alias || value.includes(alias)),
   ) ?? null;
 }
