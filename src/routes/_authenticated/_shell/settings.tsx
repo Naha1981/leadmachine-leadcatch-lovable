@@ -20,10 +20,10 @@ import { getIndustryExperience } from "@/lib/industry-experiences";
 export const Route = createFileRoute("/_authenticated/_shell/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — LeadMachine" },
+      { title: "Settings — RevenueDesk" },
       { name: "description", content: "Business profile, working hours, WhatsApp connection and account." },
-      { property: "og:title", content: "Settings — LeadMachine" },
-      { property: "og:description", content: "Manage your LeadMachine settings." },
+      { property: "og:title", content: "Settings — RevenueDesk" },
+      { property: "og:description", content: "Manage your RevenueDesk settings." },
     ],
   }),
   component: SettingsPage,
@@ -240,7 +240,7 @@ function SettingsPage() {
           <div>
             <h2 className="font-medium">Zero UI</h2>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              WhatsApp becomes the day-to-day interface. LeadMachine can monitor leads, answer owner requests, schedule safe follow-ups and send proactive alerts without the dashboard.
+              WhatsApp becomes the day-to-day interface. RevenueDesk can monitor leads, answer owner requests, schedule safe follow-ups and send proactive alerts without the dashboard.
             </p>
           </div>
           <Switch
@@ -324,7 +324,7 @@ function SettingsPage() {
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="alert-phone">Owner alert number</Label>
             <Input id="alert-phone" value={alertPhone} onChange={(e) => setAlertPhone(e.target.value)} placeholder="e.g. 082 123 4567" className="h-11 rounded-xl" inputMode="tel" />
-            <p className="text-xs text-muted-foreground">LeadMachine uses this number for Zero UI owner commands and proactive alerts.</p>
+            <p className="text-xs text-muted-foreground">RevenueDesk uses this number for Zero UI owner commands and proactive alerts.</p>
           </div>
         </div>
         <div className="space-y-2">
@@ -340,7 +340,7 @@ function SettingsPage() {
           <div>
             <p className="text-sm font-medium">Watch the market for this business</p>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
-              LeadMachine will use your business profile, public sources and approved competitors to build evidence-backed market findings automatically.
+              RevenueDesk will use your business profile, public sources and approved competitors to build evidence-backed market findings automatically.
             </p>
           </div>
           <Switch checked={marketEnabled} onCheckedChange={setMarketEnabled} disabled={marketSaving} />
@@ -353,13 +353,13 @@ function SettingsPage() {
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="mi-keywords">Topics/services to watch</Label>
             <Input id="mi-keywords" value={marketKeywords} onChange={(e) => setMarketKeywords(e.target.value)} placeholder="roof repairs, waterproofing, emergency leaks" className="h-11 rounded-xl" />
-            <p className="text-xs text-muted-foreground">Comma-separated terms. LeadMachine also derives searches from your industry and services.</p>
+            <p className="text-xs text-muted-foreground">Comma-separated terms. RevenueDesk also derives searches from your industry and services.</p>
           </div>
         </div>
         <div className="space-y-3">
           <div>
             <p className="text-sm font-medium">Competitors</p>
-            <p className="mt-1 text-xs text-muted-foreground">LeadMachine can discover competitors automatically. Add, ignore or remove specific ones here.</p>
+            <p className="mt-1 text-xs text-muted-foreground">RevenueDesk can discover competitors automatically. Add, ignore or remove specific ones here.</p>
           </div>
           <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
             <Input value={newCompetitorName} onChange={(e) => setNewCompetitorName(e.target.value)} placeholder="Competitor name" className="h-10 rounded-xl" />
