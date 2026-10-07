@@ -16,9 +16,9 @@ import { getIndustryExperience } from "@/lib/industry-experiences";
 export const Route = createFileRoute("/_authenticated/_shell/website")({
   head: () => ({
     meta: [
-      { title: "Business Page — LeadMachine" },
+      { title: "Business Page — RevenueDesk" },
       { name: "description", content: "Edit and publish your public business page with services, FAQs and a lead form." },
-      { property: "og:title", content: "Business Page — LeadMachine" },
+      { property: "og:title", content: "Business Page — RevenueDesk" },
       { property: "og:description", content: "Edit and publish your public business page with services, FAQs and a lead form." },
     ],
   }),
