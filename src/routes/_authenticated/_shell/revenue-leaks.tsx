@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowRight, Clock3, MessageCircle, ShieldAlert } from "lucide-react";
@@ -103,6 +104,6 @@ function Metric({ label, value, danger }: { label: string; value: string; danger
   return <Card className={`p-4 ${danger ? "border-primary/30 bg-primary/5" : ""}`}><p className="text-xs text-muted-foreground">{label}</p><p className={`mt-2 text-3xl font-semibold ${danger ? "text-primary" : ""}`}>{value}</p></Card>;
 }
 
-function LeakType({ icon: Icon, title, text }: { icon: React.ComponentType<{ className?: string }>; title: string; text: string }) {
+function LeakType({ icon: Icon, title, text }: { icon: ComponentType<{ className?: string }>; title: string; text: string }) {
   return <Card className="p-5"><Icon className="h-5 w-5 text-primary" /><p className="mt-4 font-semibold">{title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p></Card>;
 }
