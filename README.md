@@ -4,7 +4,7 @@ RevenueDesk is the AI front desk and revenue recovery system for service busines
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://second-life-ai.lovable.app
+**Live app**: NOT PUBLISHED. https://second-life-ai.lovable.app returned "Project not found" (HTTP 404) on 11 Oct 2026. Republish from the Lovable editor and update this line with the verified URL.
 
 ## Build with Lovable
 
