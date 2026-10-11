@@ -6,7 +6,7 @@ The NahaLabs Content Agent is now project-local. No machine-global Claude skill 
 
 - Repository: https://github.com/Naha1981/leadmachine-leadcatch-lovable
 - Lovable project: 779ab8a2-3a42-4b06-8078-9ad14667c2f3
-- Live app: https://second-life-ai.lovable.app
+- Live app: NOT PUBLISHED (https://second-life-ai.lovable.app returned 404 "Project not found" on 11 Oct 2026; republish via Lovable and update this line)
 
 ## Upstream capability
 
