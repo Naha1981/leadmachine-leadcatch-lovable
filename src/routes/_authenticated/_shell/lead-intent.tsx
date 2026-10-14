@@ -14,9 +14,9 @@ import { AgentWorkforcePanel } from "@/components/agent-workforce/AgentWorkforce
 export const Route = createFileRoute("/_authenticated/_shell/lead-intent")({
   head: () => ({
     meta: [
-      { title: "Lead Intent — LeadMachine" },
+      { title: "Lead Intent — RevenueDesk" },
       { name: "description", content: "Paste a WhatsApp chat and get an AI hot/warm/cold score with next steps." },
-      { property: "og:title", content: "Lead Intent — LeadMachine" },
+      { property: "og:title", content: "Lead Intent — RevenueDesk" },
       { property: "og:description", content: "Paste a WhatsApp chat and get an AI hot/warm/cold score with next steps." },
     ],
   }),

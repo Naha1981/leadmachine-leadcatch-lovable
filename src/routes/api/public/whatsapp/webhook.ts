@@ -283,7 +283,7 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload, vali
             (lead.suburb ? " in " + lead.suburb : "") +
             ".\n\n" +
             (scored.summary || "High purchase intent detected.") +
-            "\n\nScore: " + scored.score + "/10\n\nLeadMachine has captured and scored the enquiry.",
+            "\n\nScore: " + scored.score + "/10\n\nRevenueDesk has captured and scored the enquiry.",
           "hot-lead:" + lead.id + ":" + new Date().toISOString().slice(0, 13),
         );
       } catch (error) {

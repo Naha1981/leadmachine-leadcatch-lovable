@@ -208,7 +208,7 @@ export async function processZeroUIDailySummaries(limit = 50) {
       .join("\n");
 
     const message = [
-      "☀️ DAILY LEADMACHINE SUMMARY",
+      "☀️ DAILY REVENUEDESK SUMMARY",
       "",
       (profile.business_name || "Your business") + " · last 24 hours",
       "• " + list.length + " new leads",
@@ -218,7 +218,7 @@ export async function processZeroUIDailySummaries(limit = 50) {
       "• " + (staleHot?.length ?? 0) + " hot leads older than 15 minutes",
       top ? "\n🔥 Top opportunities\n" + top : "",
       "",
-      "LeadMachine is monitoring the inbox and follow-ups for you.",
+      "RevenueDesk is monitoring the inbox and follow-ups for you.",
     ].filter(Boolean).join("\n");
 
     const key = "daily-summary:" + config.tenant_id + ":" + localDate;

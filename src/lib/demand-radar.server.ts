@@ -138,7 +138,7 @@ async function fetchReddit(query: string, subreddits: string[]) {
 
 function buildAlertText(signal: DemandSignal) {
   return [
-    `🚨 NEW DEMAND SIGNAL — LeadMachine`,
+    `🚨 NEW DEMAND SIGNAL — RevenueDesk`,
     "",
     `${signal.service} · ${signal.suburb || "Local area"} · ${signal.urgency}`,
     `Intent score: ${signal.intentScore}/10`,

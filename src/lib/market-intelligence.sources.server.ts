@@ -179,7 +179,7 @@ export async function collectInternalLeadEvidence(db: any, tenantId: string, sin
     groups.set(key, current);
   }
   return [...groups.entries()].sort((a,b) => b[1].count - a[1].count).slice(0, 8).map(([service, stats]) => ({
-    source: "LeadMachine internal signals",
+    source: "RevenueDesk internal signals",
     sourceType: "internal",
     sourceUrl: "/inbox",
     externalId: "lead-summary:" + service.toLowerCase().replace(/[^a-z0-9]+/g, "-"),

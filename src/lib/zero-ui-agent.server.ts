@@ -54,7 +54,7 @@ async function classifyOwnerIntent(text: string) {
       {
         role: "system",
         content:
-          "You are the LeadMachine owner assistant. Classify an owner WhatsApp request into exactly one intent. " +
+          "You are the RevenueDesk owner assistant. Classify an owner WhatsApp request into exactly one intent. " +
           'Return JSON only: {"intent":"new_leads_summary|hot_leads|follow_up_unreplied|why_losing_leads|pause_automation|resume_automation|status|help|unknown"}. ' +
           "Never invent a tenant, lead or action.",
       },
@@ -217,7 +217,7 @@ async function executeIntent(ctx: ZeroUIToolContext, intent: OwnerIntent) {
       const metrics = await getLeadMetrics(ctx);
       const wa = settings.profile?.whatsapp_status === "connected" ? "connected" : "not connected";
       return [
-        "LeadMachine status for " + (settings.profile?.business_name || "your business") + ":",
+        "RevenueDesk status for " + (settings.profile?.business_name || "your business") + ":",
         "• Zero UI: " + (settings.config.enabled ? "enabled" : "paused"),
         "• Automation: " + (settings.config.automation_enabled ? "active" : "paused"),
         "• WhatsApp: " + wa,
@@ -237,7 +237,7 @@ export async function handleOwnerCommand(baseCtx: Omit<ZeroUIToolContext, "agent
   const config = await getZeroUIConfig(db, ctx.tenantId);
   if (!config.enabled) {
     await audit(ctx, "owner_command_ignored_zero_ui_disabled", "ignored", { text: text.slice(0, 500) });
-    return "Zero UI is currently paused for this business. Open LeadMachine Control Centre and enable Zero UI first.";
+    return "Zero UI is currently paused for this business. Open RevenueDesk Control Centre and enable Zero UI first.";
   }
 
   const runId = await startRun(ctx, "owner_whatsapp_message", { text: text.slice(0, 500) });

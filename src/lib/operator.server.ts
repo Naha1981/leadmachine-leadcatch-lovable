@@ -117,7 +117,7 @@ export async function operatorRequest<T = any>(
 
     if (options.waAccountId && stored.waAccountId !== options.waAccountId) {
       throw new Error(
-        "WhatsApp account scope mismatch. The requested account is not assigned to this LeadMachine tenant.",
+        "WhatsApp account scope mismatch. The requested account is not assigned to this RevenueDesk tenant.",
       );
     }
 

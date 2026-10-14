@@ -116,7 +116,7 @@ export function AgentWorkforcePanel() {
               NahaLabs Agent Workforce
             </div>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-              LeadMachine finds a specific public revenue signal, shows the evidence and prepares an
+              RevenueDesk finds a specific public revenue signal, shows the evidence and prepares an
               approved execution path for the prospect.
             </p>
           </div>

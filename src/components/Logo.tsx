@@ -17,7 +17,7 @@ export function Logo() {
     <span className="inline-flex items-center gap-2">
       <LogoMark />
       <span className="text-[15px] font-semibold tracking-tight text-foreground">
-        Lead<span className="text-primary">Machine</span>
+        Revenue<span className="text-primary">Desk</span>
       </span>
     </span>
   );

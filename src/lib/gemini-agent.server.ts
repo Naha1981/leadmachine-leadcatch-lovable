@@ -23,7 +23,7 @@ const TOOL_DEFINITIONS = [
     type: "function",
     name: "search_leads",
     description:
-      "Search the current tenant's LeadMachine leads. Use this for pipeline questions, finding customers, finding hot leads, or locating leads by phone/name/service.",
+      "Search the current tenant's RevenueDesk leads. Use this for pipeline questions, finding customers, finding hot leads, or locating leads by phone/name/service.",
     parameters: {
       type: "object",
       properties: {
@@ -68,7 +68,7 @@ const TOOL_DEFINITIONS = [
   {
     type: "function",
     name: "score_lead",
-    description: "Re-score a saved lead from its recent conversation using LeadMachine's existing scoring system.",
+    description: "Re-score a saved lead from its recent conversation using RevenueDesk's existing scoring system.",
     parameters: {
       type: "object",
       properties: {
@@ -81,7 +81,7 @@ const TOOL_DEFINITIONS = [
     type: "function",
     name: "update_lead",
     description:
-      "Update editable LeadMachine lead fields for the current tenant. Only use fields the user explicitly asked you to change or fields directly implied by a clear operational request.",
+      "Update editable RevenueDesk lead fields for the current tenant. Only use fields the user explicitly asked you to change or fields directly implied by a clear operational request.",
     parameters: {
       type: "object",
       properties: {
@@ -108,7 +108,7 @@ const TOOL_DEFINITIONS = [
     type: "function",
     name: "schedule_followup",
     description:
-      "Schedule a follow-up for a lead in LeadMachine. This creates a durable follow-up record; it does not send the message immediately.",
+      "Schedule a follow-up for a lead in RevenueDesk. This creates a durable follow-up record; it does not send the message immediately.",
     parameters: {
       type: "object",
       properties: {
@@ -123,9 +123,9 @@ const TOOL_DEFINITIONS = [
 ] as const;
 
 const SYSTEM_INSTRUCTION = [
-  "You are the LeadMachine operating agent for a South African service business.",
-  "Your job is to operate the tenant's LeadMachine data, not to give generic CRM advice.",
-  "Use tools whenever the user's request can be answered or executed against LeadMachine data.",
+  "You are the RevenueDesk operating agent for a South African service business.",
+  "Your job is to operate the tenant's RevenueDesk data, not to give generic CRM advice.",
+  "Use tools whenever the user's request can be answered or executed against RevenueDesk data.",
   "Never invent lead data, scores, statuses, prices, messages, or actions.",
   "Current time zone is Africa/Johannesburg.",
   "A request to inspect or analyse data is read-only.",

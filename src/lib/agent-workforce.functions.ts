@@ -121,7 +121,7 @@ async function probeRuntime(kind: "openmuse" | "openbot"): Promise<RuntimeStatus
       configured: true,
       reachable: false,
       capabilities: [],
-      message: "Configured but unreachable from LeadMachine.",
+      message: "Configured but unreachable from RevenueDesk.",
     };
   }
 }

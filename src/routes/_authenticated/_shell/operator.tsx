@@ -11,10 +11,10 @@ import { Card, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/_shell/operator")({
   head: () => ({
     meta: [
-      { title: "Gemini Operator — LeadMachine" },
+      { title: "Gemini Operator — RevenueDesk" },
       {
         name: "description",
-        content: "Operate LeadMachine from one natural-language window with Gemini.",
+        content: "Operate RevenueDesk from one natural-language window with Gemini.",
       },
     ],
   }),
@@ -32,7 +32,7 @@ function GeminiOperatorPage() {
     {
       role: "assistant",
       content:
-        "I'm connected to this LeadMachine workspace. Ask me to find leads, inspect conversations, re-score a lead, update a lead, or schedule a follow-up.",
+        "I'm connected to this RevenueDesk workspace. Ask me to find leads, inspect conversations, re-score a lead, update a lead, or schedule a follow-up.",
     },
   ]);
   const [interactionId, setInteractionId] = useState<string | null>(null);
@@ -79,17 +79,17 @@ function GeminiOperatorPage() {
     <div className="mx-auto max-w-4xl space-y-6 p-5 md:p-8">
       <PageHeader
         title="Gemini Operator"
-        subtitle="One window for LeadMachine operations."
+        subtitle="One window for RevenueDesk operations."
       />
 
       <Card className="overflow-hidden p-0">
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Bot className="h-4 w-4" />
-            LeadMachine control plane
+            RevenueDesk control plane
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Gemini can read and operate your lead pipeline through controlled LeadMachine tools.
+            Gemini can read and operate your lead pipeline through controlled RevenueDesk tools.
           </p>
         </div>
 

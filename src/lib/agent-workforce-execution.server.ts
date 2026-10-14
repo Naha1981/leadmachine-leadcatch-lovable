@@ -129,16 +129,16 @@ async function renderProspectVideo(actionId: string, input: SalesExecutionInput)
       industry: input.category || "Service business",
       location: input.location || "Johannesburg",
       website: input.websiteUrl,
-      currentCta: "LeadMachine research scan",
+      currentCta: "RevenueDesk research scan",
       currentEnquiryFlow: "Public website research",
       digitalPresenceGap: String(input.findings[0]?.["detail"] ?? "Evidence-led conversion opportunity identified."),
       observedEnquiryFriction: String(input.findings[0]?.["detail"] ?? "Public enquiry journey requires a closer look."),
       potentialLeakageRisk: String(input.findings[1]?.["detail"] ?? "Research signal; commercial impact still requires validation."),
-      leadMachineConcept: "LeadMachine turns enquiries into evidence, priority, next action and approved follow-up.",
+      leadMachineConcept: "RevenueDesk turns enquiries into evidence, priority, next action and approved follow-up.",
       conversionEvent: "Qualified opportunity / booked job",
       followUpSequence: "Evidence → diagnosis → approved action → follow-up",
       prospectTier: "Research",
-      demoUrl: "https://demo.leadmachine.co.za/" + encodeURIComponent(actionId),
+      demoUrl: "https://demo.revenuedesk.co.za/" + encodeURIComponent(actionId),
     }),
     redirect: "error",
     signal: AbortSignal.timeout(180000),
@@ -172,7 +172,7 @@ async function executeSalesActionRow(action: any) {
       const result = await runOpenBotAgUi({
         threadId,
         runId,
-        messages: [{ id: randomUUID(), role: "user", content: "Prepare the approved LeadMachine sales execution for prospect " + input.businessName + ". Review the supplied public evidence and return a concise execution checklist. Do not contact the prospect, publish anything, change accounts, or take external action." }],
+        messages: [{ id: randomUUID(), role: "user", content: "Prepare the approved RevenueDesk sales execution for prospect " + input.businessName + ". Review the supplied public evidence and return a concise execution checklist. Do not contact the prospect, publish anything, change accounts, or take external action." }],
         context: [{ type: "tenant", tenantId }, { type: "prospect", businessName: input.businessName, websiteUrl: input.websiteUrl, location: input.location ?? null }],
         forwardedProps: { openbotRun: { tenantId, actionId, runId, approved: true } },
       });
@@ -217,7 +217,7 @@ async function executeSalesActionRow(action: any) {
       if (!profile?.wa_account_id || profile.whatsapp_status !== "connected") throw new Error("Business WhatsApp is not connected.");
       const evidenceTitles = input.findings.slice(0, 2).map((item) => String(item["title"] ?? "observed opportunity")).join("; ");
       const contact = input.contactName ? " " + input.contactName : "";
-      const message = "Hi" + contact + ", I’m Thabiso from NahaLabs. We looked at " + input.businessName + "’s public enquiry journey and found a specific opportunity: " + evidenceTitles + ". I put together a short LeadMachine walkthrough using the same evidence. " + (videoUrl ? videoUrl + " " : "") + "No assumptions about lost revenue — just the observed signal and the proposed fix. Worth a 10-minute look?";
+      const message = "Hi" + contact + ", I’m Thabiso from NahaLabs. We looked at " + input.businessName + "’s public enquiry journey and found a specific opportunity: " + evidenceTitles + ". I put together a short RevenueDesk walkthrough using the same evidence. " + (videoUrl ? videoUrl + " " : "") + "No assumptions about lost revenue — just the observed signal and the proposed fix. Worth a 10-minute look?";
       const sent = await sendText(tenantId, profile.wa_account_id, prospectPhone, message);
       const externalId = sent.message?.key?.id ?? null;
       successfulSteps += 1;

@@ -53,7 +53,7 @@ export function MarketIntelligencePanel() {
   return (
     <section className="space-y-4">
       <div className="flex items-end justify-between gap-3">
-        <div><h2 className="text-sm font-medium text-muted-foreground">Market Intelligence</h2><p className="mt-1 text-xl font-semibold tracking-tight">LeadMachine is watching the market</p></div>
+        <div><h2 className="text-sm font-medium text-muted-foreground">Market Intelligence</h2><p className="mt-1 text-xl font-semibold tracking-tight">RevenueDesk is watching the market</p></div>
         <span className="shrink-0 text-xs text-muted-foreground">Updated {updatedLabel}</span>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

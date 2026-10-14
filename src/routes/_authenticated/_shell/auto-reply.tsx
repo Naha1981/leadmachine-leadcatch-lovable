@@ -16,9 +16,9 @@ import { Card, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/_shell/auto-reply")({
   head: () => ({
     meta: [
-      { title: "Auto-Reply — LeadMachine" },
+      { title: "Auto-Reply — RevenueDesk" },
       { name: "description", content: "Set your instant greeting, qualification questions, keyword replies and after-hours message." },
-      { property: "og:title", content: "Auto-Reply — LeadMachine" },
+      { property: "og:title", content: "Auto-Reply — RevenueDesk" },
       { property: "og:description", content: "Configure instant WhatsApp replies." },
     ],
   }),
