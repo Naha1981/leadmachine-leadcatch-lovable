@@ -114,9 +114,21 @@ function Onboarding() {
       // Update the cached workspace synchronously so the dashboard guard sees onboarded=true,
       // then navigate immediately. Awaiting invalidateQueries before navigate could leave the
       // user stuck on the last onboarding step with everything saved but no way forward.
-      qc.setQueryData(["workspace"], { ...ws, profile: { ...ws.profile, onboarded: true } });
+      console.log("[onboarding] finish: seeding cache and navigating");
+      try {
+        qc.setQueryData(["workspace"], { ...ws, profile: { ...ws.profile, onboarded: true } });
+      } catch (e) {
+        console.error("[onboarding] setQueryData failed", e);
+      }
       void qc.invalidateQueries({ queryKey: ["workspace"] });
-      navigate({ to: "/dashboard" });
+      Promise.resolve(navigate({ to: "/dashboard" })).catch((e) => console.error("[onboarding] navigate rejected", e));
+      // Hard fallback: if the router did not move us within 1.5s, force the transition.
+      window.setTimeout(() => {
+        if (window.location.pathname !== "/dashboard") {
+          console.warn("[onboarding] router navigate did not land; forcing location.assign");
+          window.location.assign("/dashboard");
+        }
+      }, 1500);
       return true;
     }
 
