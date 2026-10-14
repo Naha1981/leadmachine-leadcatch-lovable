@@ -183,7 +183,8 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
   const [scoring, setScoring] = useState(false);
   const [drafting, setDrafting] = useState(false);
   const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);\n  const [monitoring, setMonitoring] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [monitoring, setMonitoring] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const lead = convo.leads!;
 
