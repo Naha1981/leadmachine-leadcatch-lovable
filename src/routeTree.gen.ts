@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as LandingRouteImport } from './routes/landing'
 import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authenticated/_shell/route'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
@@ -51,6 +52,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingRoute = LandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedShellRouteRoute = AuthenticatedShellRouteRouteImport.update({
@@ -199,6 +205,7 @@ const ApiPublicWhatsappWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/landing': typeof LandingRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/landing': typeof LandingRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/landing': typeof LandingRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
@@ -291,6 +300,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/landing'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/landing'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/landing'
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
     | '/api/health'
@@ -382,6 +394,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  LandingRoute: typeof LandingRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMarketIntelligenceRoute: typeof ApiMarketIntelligenceRoute
   ApiWhatsappPresenceRoute: typeof ApiWhatsappPresenceRoute
@@ -417,6 +430,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing': {
+      id: '/landing'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_shell': {
@@ -669,6 +689,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  LandingRoute: LandingRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMarketIntelligenceRoute: ApiMarketIntelligenceRoute,
   ApiWhatsappPresenceRoute: ApiWhatsappPresenceRoute,
