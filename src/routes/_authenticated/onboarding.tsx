@@ -110,8 +110,17 @@ function Onboarding() {
       return false;
     }
 
+    if (finish) {
+      // Update the cached workspace synchronously so the dashboard guard sees onboarded=true,
+      // then navigate immediately. Awaiting invalidateQueries before navigate could leave the
+      // user stuck on the last onboarding step with everything saved but no way forward.
+      qc.setQueryData(["workspace"], { ...ws, profile: { ...ws.profile, onboarded: true } });
+      void qc.invalidateQueries({ queryKey: ["workspace"] });
+      navigate({ to: "/dashboard" });
+      return true;
+    }
+
     await qc.invalidateQueries({ queryKey: ["workspace"] });
-    if (finish) navigate({ to: "/dashboard" });
     return true;
   }
 
