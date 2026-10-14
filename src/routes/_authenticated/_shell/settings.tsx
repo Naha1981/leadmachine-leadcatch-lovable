@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/lib/workspace";
 import { disconnectWhatsApp } from "@/lib/whatsapp.functions";
 import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
-import type { WorkingHours } from "@/lib/autoreply";
+import { normalizeWorkingHours, type WorkingHours } from "@/lib/autoreply";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,7 +62,7 @@ function SettingsPage() {
     setName(ws.profile.business_name);
     setIndustry(ws.profile.industry);
     setAlertPhone(ws.profile.contact_phone ?? "");
-    setHours(ws.profile.working_hours as WorkingHours);
+    setHours(normalizeWorkingHours(ws.profile.working_hours));
     setMarketEnabled(Boolean(ws.profile.market_intelligence_enabled));
     setMarketWebsite(ws.profile.market_intelligence_website ?? "");
     const keywords = Array.isArray(ws.profile.market_intelligence_keywords) ? ws.profile.market_intelligence_keywords : [];

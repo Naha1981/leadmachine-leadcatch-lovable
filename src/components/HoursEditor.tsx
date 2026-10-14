@@ -1,9 +1,10 @@
 import { Input } from "@/components/ui/input";
-import type { WorkingHours } from "@/lib/autoreply";
+import { normalizeWorkingHours, type WorkingHours } from "@/lib/autoreply";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function HoursEditor({ value, onChange }: { value: WorkingHours; onChange: (v: WorkingHours) => void }) {
+  value = normalizeWorkingHours(value);
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-7 gap-1.5">

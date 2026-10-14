@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Logo } from "@/components/Logo";
 import { WhatsAppConnect } from "@/components/WhatsAppConnect";
 import { HoursEditor } from "@/components/HoursEditor";
-import type { WorkingHours } from "@/lib/autoreply";
+import { normalizeWorkingHours, type WorkingHours } from "@/lib/autoreply";
 import { getVerticalPack } from "@/lib/vertical-packs";
 import { getIndustryExperience, getIndustryOptions } from "@/lib/industry-experiences";
 import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
@@ -56,7 +56,7 @@ function Onboarding() {
     setIndustry(ws.profile.industry);
     setSuburb(ws.profile.suburb ?? "");
     setAlertPhone(ws.profile.contact_phone ?? "");
-    setHours(ws.profile.working_hours as WorkingHours);
+    setHours(normalizeWorkingHours(ws.profile.working_hours));
     setGreeting(ws.config.greeting);
     setServices(ws.profile.services ?? "");
   }, [ws]);

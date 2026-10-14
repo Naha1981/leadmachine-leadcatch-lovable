@@ -3,6 +3,22 @@
 
 export type KeywordRule = { id: string; keywords: string[]; reply: string; enabled: boolean };
 export type WorkingHours = { days: number[]; start: string; end: string };
+
+export const DEFAULT_WORKING_HOURS: WorkingHours = { days: [1, 2, 3, 4, 5], start: "08:00", end: "17:00" };
+
+/** Accepts whatever is stored in business_profiles.working_hours (jsonb) and returns a valid WorkingHours.
+ * Older rows and manual edits can hold a string ("Mon-Fri 8-5"), null, or a partial object - never crash on those. */
+export function normalizeWorkingHours(value: unknown): WorkingHours {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const v = value as Partial<WorkingHours>;
+    return {
+      days: Array.isArray(v.days) ? v.days.filter((d): d is number => typeof d === "number") : DEFAULT_WORKING_HOURS.days,
+      start: typeof v.start === "string" && v.start ? v.start : DEFAULT_WORKING_HOURS.start,
+      end: typeof v.end === "string" && v.end ? v.end : DEFAULT_WORKING_HOURS.end,
+    };
+  }
+  return { ...DEFAULT_WORKING_HOURS };
+}
 export type AutoReplyConfig = {
   enabled: boolean;
   greeting: string;
@@ -14,7 +30,8 @@ export type AutoReplyConfig = {
 
 export const TIMEZONE = "Africa/Johannesburg";
 
-export function isWithinHours(hours: WorkingHours, now = new Date()): boolean {
+export function isWithinHours(rawHours: WorkingHours, now = new Date()): boolean {
+  const hours = normalizeWorkingHours(rawHours);
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: TIMEZONE,
     weekday: "short",
