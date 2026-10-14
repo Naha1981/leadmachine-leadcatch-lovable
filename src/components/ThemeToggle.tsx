@@ -24,7 +24,7 @@ export function ThemeToggle() {
       title={dark ? "Switch to light theme" : "Switch to dark theme"}
       data-theme-toggle
       onClick={handleToggle}
-      className="fixed bottom-4 right-4 z-[100] h-10 w-10 rounded-full border-border bg-background/95 shadow-soft backdrop-blur"
+      className="fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-[100] h-10 w-10 rounded-full border-border bg-background/95 shadow-soft backdrop-blur md:bottom-4"
     >
       {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
