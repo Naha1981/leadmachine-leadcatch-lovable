@@ -197,7 +197,7 @@ try {
   }
 
   await desktop.goto(base + "/landing", { waitUntil: "domcontentloaded" });
-  await desktop.getByRole("heading", { name: "The AI Revenue Desk for service businesses." }).waitFor();
+  await desktop.getByRole("heading", { name: "Turn plumbing enquiries into booked jobs." }).waitFor();
   await desktop.getByRole("button", { name: "Switch to dark theme" }).click();
   await desktop.waitForTimeout(100);
   await desktop.getByRole("button", { name: "Switch to light theme" }).click();
