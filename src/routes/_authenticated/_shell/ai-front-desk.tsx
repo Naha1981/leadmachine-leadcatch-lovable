@@ -67,14 +67,14 @@ function AIFontDeskPage() {
       "I can send that through.",
     ];
     flow.push({ from: "lead", text: customerMessage });
-    flow.push({ from: "bot", text: cfg.greeting || replies[0] });
+    flow.push({ from: "bot", text: cfg.greeting || replies[0] || "Yes, we can help. Let me get a few details first." });
     replies.slice(0, Math.min(2, cfg.questions.length)).forEach((reply) => {
       flow.push({ from: "lead", text: "Yes, please." });
       flow.push({ from: "bot", text: reply });
     });
-    if (cfg.questions.length) {
-      const question = cfg.questions[0];
-      flow.push({ from: "bot", text: question });
+    const firstQuestion = cfg.questions[0];
+    if (firstQuestion) {
+      flow.push({ from: "bot", text: firstQuestion });
     }
     return flow;
   }, [cfg, hours, experience]);
