@@ -51,6 +51,18 @@
 }
 
 /* Crisp, high-contrast light theme as the default */
+/* Elevation scale: soft, brand-tinted, layered.
+   Replaces the default 0 1px 3px rgba(0,0,0,.1) boilerplate stack. */
+@theme {
+  --shadow: 0 1px 3px 0 oklch(0.3 0.02 240 / 0.08), 0 1px 2px -1px oklch(0.3 0.02 240 / 0.06);
+  --shadow-xs: 0 1px 2px 0 oklch(0.3 0.02 240 / 0.06);
+  --shadow-sm: 0 1px 3px 0 oklch(0.3 0.02 240 / 0.08), 0 1px 2px -1px oklch(0.3 0.02 240 / 0.06);
+  --shadow-md: 0 3px 8px -2px oklch(0.3 0.02 240 / 0.1), 0 2px 4px -2px oklch(0.3 0.02 240 / 0.06);
+  --shadow-lg: 0 8px 20px -6px oklch(0.3 0.02 240 / 0.14), 0 3px 8px -4px oklch(0.3 0.02 240 / 0.08);
+  --shadow-xl: 0 16px 36px -10px oklch(0.3 0.02 240 / 0.18), 0 6px 14px -8px oklch(0.3 0.02 240 / 0.1);
+  --shadow-2xl: 0 24px 56px -14px oklch(0.3 0.02 240 / 0.22), 0 8px 20px -10px oklch(0.3 0.02 240 / 0.12);
+}
+
 :root {
   --radius: 0.875rem;
   --background: oklch(0.985 0.002 247);
