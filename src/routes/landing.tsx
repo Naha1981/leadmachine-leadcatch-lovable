@@ -217,14 +217,14 @@ function Landing() {
               </p>
             </div>
             <div className="space-y-3">
-              {[
+              {([
                 ["01", "Capture", "Bring WhatsApp, website, forms, QR and future channels into one enquiry flow.", MessageCircle],
                 ["02", "Understand", "AI identifies service, urgency, fit, intent and the next best action.", Sparkles],
                 ["03", "Act", "Reply, qualify, route, quote, book or hand over to a human.", Bot],
                 ["04", "Recover", "Find missed, unanswered, hot, stalled and forgotten opportunities.", Zap],
                 ["05", "Measure", "See response time, pipeline movement, leak alerts and conversion signals.", BarChart3],
                 ["06", "Learn", "Use recurring customer demand and competitor signals to find the next opportunity.", DollarSign],
-              ].map(([num, title, text, Icon]) => (
+              ] as [string, string, string, ComponentType<{ className?: string }>][]).map(([num, title, text, Icon]) => (
                 <div key={String(num)} className="grid gap-4 rounded-2xl border border-border p-5 sm:grid-cols-[48px_180px_1fr] sm:items-start">
                   <span className="text-xs font-semibold text-muted-foreground">{num}</span>
                   <div className="flex items-center gap-2">
