@@ -24,7 +24,7 @@ try {
   if (!seed.ok || !seed.siteUrl) throw new Error("Acceptance fixture did not seed");
 
   await desktop.goto(base + "/dashboard", { waitUntil: "domcontentloaded" });
-  await desktop.getByText("LeadMachine is watching the market", { exact: true }).waitFor({ timeout: 10000 });
+  await desktop.getByText("RevenueDesk is watching the market", { exact: true }).waitFor({ timeout: 10000 });
   for (const label of ["Customer Problems", "Competitor Opportunities", "Unanswered Questions", "Content Opportunities", "Lead Opportunities"]) {
     await desktop.getByText(label, { exact: true }).waitFor({ timeout: 5000 });
   }
@@ -196,15 +196,13 @@ try {
     throw new Error("Urgent WhatsApp lead was not scored hot");
   }
 
-  await desktop.goto(base + "/", { waitUntil: "domcontentloaded" });
-  await desktop.getByRole("heading", { name: "Someone just asked for your service. LeadMachine found the post." }).waitFor();
-  await desktop.getByText("Live social signal", { exact: true }).waitFor();
-  await desktop.getByText("LeadMachine alerted you", { exact: true }).waitFor();
+  await desktop.goto(base + "/landing", { waitUntil: "domcontentloaded" });
+  await desktop.getByRole("heading", { name: "The AI Revenue Desk for service businesses." }).waitFor();
   await desktop.getByRole("button", { name: "Switch to dark theme" }).click();
   await desktop.waitForTimeout(100);
   await desktop.getByRole("button", { name: "Switch to light theme" }).click();
 
-  await mobile.goto(base + "/", { waitUntil: "domcontentloaded" });
+  await mobile.goto(base + "/landing", { waitUntil: "domcontentloaded" });
   const mobileToggle = mobile.getByRole("button", { name: "Switch to dark theme" });
   await mobileToggle.click();
   await mobile.waitForTimeout(100);
