@@ -17,6 +17,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authenticated/_shell/route'
+import { Route as AuthenticatedAcceptInviteRouteImport } from './routes/_authenticated/accept-invite'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiMarketIntelligenceRouteImport } from './routes/api/market-intelligence'
@@ -84,6 +85,12 @@ const AuthenticatedShellRouteRoute = AuthenticatedShellRouteRouteImport.update({
   id: '/_shell',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAcceptInviteRoute =
+  AuthenticatedAcceptInviteRouteImport.update({
+    id: '/accept-invite',
+    path: '/accept-invite',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -247,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/accept-invite': typeof AuthenticatedAcceptInviteRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -283,6 +291,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/accept-invite': typeof AuthenticatedAcceptInviteRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -322,6 +331,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
+  '/_authenticated/accept-invite': typeof AuthenticatedAcceptInviteRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/accept-invite'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/accept-invite'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -434,6 +446,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/_authenticated/_shell'
+    | '/_authenticated/accept-invite'
     | '/_authenticated/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -543,6 +556,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedShellRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/accept-invite': {
+      id: '/_authenticated/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AuthenticatedAcceptInviteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -782,11 +802,13 @@ const AuthenticatedShellRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedShellRouteRoute: typeof AuthenticatedShellRouteRouteWithChildren
+  AuthenticatedAcceptInviteRoute: typeof AuthenticatedAcceptInviteRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedShellRouteRoute: AuthenticatedShellRouteRouteWithChildren,
+  AuthenticatedAcceptInviteRoute: AuthenticatedAcceptInviteRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
 
