@@ -8,6 +8,13 @@ import { useWorkspace } from "@/lib/workspace";
 import { disconnectWhatsApp } from "@/lib/whatsapp.functions";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
+import {
+  getDeveloperSettings,
+  createApiKey,
+  revokeApiKey,
+  saveWebhook,
+  deleteWebhook,
+} from "@/lib/developer.functions";
 import { normalizeWorkingHours, type WorkingHours } from "@/lib/autoreply";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +71,20 @@ function SettingsPage() {
   const [marketSaving, setMarketSaving] = useState(false);
   const [newCompetitorName, setNewCompetitorName] = useState("");
   const [newCompetitorUrl, setNewCompetitorUrl] = useState("");
+  const loadDeveloper = useServerFn(getDeveloperSettings);
+  const createKey = useServerFn(createApiKey);
+  const revokeKey = useServerFn(revokeApiKey);
+  const addWebhook = useServerFn(saveWebhook);
+  const removeWebhook = useServerFn(deleteWebhook);
+  const [devLoading, setDevLoading] = useState(true);
+  const [devKeys, setDevKeys] = useState<Array<{ id: string; label: string; key_prefix: string; created_at: string; last_used_at: string | null }>>([]);
+  const [devHooks, setDevHooks] = useState<Array<{ id: string; url: string; events: string[]; active: boolean }>>([]);
+  const [devDeliveries, setDevDeliveries] = useState<Array<{ id: string; event: string; status: number | null; ok: boolean | null; error: string | null; attempted_at: string }>>([]);
+  const [newKeyLabel, setNewKeyLabel] = useState("");
+  const [newKeyValue, setNewKeyValue] = useState("");
+  const [newHookUrl, setNewHookUrl] = useState("");
+  const [newHookSecret, setNewHookSecret] = useState("");
+  const [devSaving, setDevSaving] = useState(false);
   const experience = getIndustryExperience(industry);
 
   useEffect(() => {
@@ -129,6 +150,28 @@ function SettingsPage() {
     };
   }, [ws?.tenantId]);
 
+  useEffect(() => {
+    if (!ws) return;
+    let active = true;
+    setDevLoading(true);
+    loadDeveloper()
+      .then((d) => {
+        if (!active) return;
+        setDevKeys(d.apiKeys);
+        setDevHooks(d.webhooks);
+        setDevDeliveries(d.deliveries);
+      })
+      .catch(() => {
+        if (active) toast.error("Could not load developer settings");
+      })
+      .finally(() => {
+        if (active) setDevLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [ws, loadDeveloper]);
+
   // Live status updates from the webhook/status poll.
   useEffect(() => {
     if (!ws) return;
@@ -153,6 +196,63 @@ function SettingsPage() {
   if (!ws || !hours) return null;
   const p = ws.profile;
   const connected = p.whatsapp_status === "connected";
+
+  async function refreshDeveloper() {
+    const d = await loadDeveloper();
+    setDevKeys(d.apiKeys);
+    setDevHooks(d.webhooks);
+    setDevDeliveries(d.deliveries);
+  }
+
+  async function onCreateKey() {
+    setDevSaving(true);
+    try {
+      const { key } = await createKey({ data: { label: newKeyLabel } });
+      setNewKeyValue(key);
+      setNewKeyLabel("");
+      toast.success("API key created");
+      await refreshDeveloper();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create API key");
+    } finally {
+      setDevSaving(false);
+    }
+  }
+
+  async function onRevokeKey(id: string) {
+    try {
+      await revokeKey({ data: { id } });
+      toast.success("API key revoked");
+      await refreshDeveloper();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not revoke API key");
+    }
+  }
+
+  async function onAddWebhook() {
+    setDevSaving(true);
+    try {
+      const { secret } = await addWebhook({ data: { url: newHookUrl, events: ["lead.created"] } });
+      setNewHookSecret(secret);
+      setNewHookUrl("");
+      toast.success("Webhook added");
+      await refreshDeveloper();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not add webhook");
+    } finally {
+      setDevSaving(false);
+    }
+  }
+
+  async function onDeleteWebhook(id: string) {
+    try {
+      await removeWebhook({ data: { id } });
+      toast.success("Webhook removed");
+      await refreshDeveloper();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove webhook");
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -590,6 +690,114 @@ function SettingsPage() {
             {marketSaving ? "Saving…" : "Save Market Intelligence"}
           </Button>
         </div>
+      </Card>
+
+      <Card className="space-y-4">
+        <div>
+          <h2 className="font-medium">Developer</h2>
+          <p className="text-sm text-muted-foreground">
+            Connect your own tools: pull leads through the API and get a webhook ping for every new
+            lead. Included in your plan.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>API keys</Label>
+          {devLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : devKeys.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No API keys yet.</p>
+          ) : (
+            <ul className="space-y-1 text-sm">
+              {devKeys.map((k) => (
+                <li key={k.id} className="flex items-center justify-between gap-2">
+                  <span>
+                    {k.label} <span className="text-muted-foreground">({k.key_prefix}…)</span>
+                    {k.last_used_at ? (
+                      <span className="text-muted-foreground"> · last used {timeAgo(k.last_used_at)}</span>
+                    ) : null}
+                  </span>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => onRevokeKey(k.id)}>
+                    Revoke
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              value={newKeyLabel}
+              onChange={(e) => setNewKeyLabel(e.target.value)}
+              placeholder="Key label, e.g. Website"
+              className="max-w-xs"
+            />
+            <Button variant="outline" className="rounded-xl" onClick={onCreateKey} disabled={devSaving}>
+              Create API key
+            </Button>
+          </div>
+          {newKeyValue ? (
+            <div className="rounded-xl border bg-muted/40 p-3 text-sm">
+              <p className="font-medium">Copy this key now. It is shown once.</p>
+              <p className="mt-1 break-all font-mono text-xs">{newKeyValue}</p>
+            </div>
+          ) : null}
+          <p className="text-xs text-muted-foreground">
+            Use it as the <span className="font-mono">x-api-key</span> header on{" "}
+            <span className="font-mono">GET /api/public/v1/leads</span>.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Webhooks</Label>
+          {devHooks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No webhooks yet.</p>
+          ) : (
+            <ul className="space-y-1 text-sm">
+              {devHooks.map((h) => (
+                <li key={h.id} className="flex items-center justify-between gap-2">
+                  <span className="break-all">
+                    {h.url} <span className="text-muted-foreground">({h.events.join(", ")})</span>
+                  </span>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => onDeleteWebhook(h.id)}>
+                    Remove
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              value={newHookUrl}
+              onChange={(e) => setNewHookUrl(e.target.value)}
+              placeholder="https://your-server.example/hook"
+              className="max-w-md"
+            />
+            <Button variant="outline" className="rounded-xl" onClick={onAddWebhook} disabled={devSaving}>
+              Add webhook
+            </Button>
+          </div>
+          {newHookSecret ? (
+            <div className="rounded-xl border bg-muted/40 p-3 text-sm">
+              <p className="font-medium">Copy this signing secret now. It is shown once.</p>
+              <p className="mt-1 break-all font-mono text-xs">{newHookSecret}</p>
+            </div>
+          ) : null}
+        </div>
+
+        {devDeliveries.length > 0 ? (
+          <div className="space-y-1">
+            <Label>Recent deliveries</Label>
+            <ul className="space-y-1 text-xs text-muted-foreground">
+              {devDeliveries.map((d) => (
+                <li key={d.id}>
+                  {d.ok ? "Delivered" : "Failed"} · {d.event}
+                  {d.status ? ` · HTTP ${d.status}` : ""} · {timeAgo(d.attempted_at)}
+                  {d.error ? ` · ${d.error}` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </Card>
 
       <Card className="flex items-center justify-between gap-4">

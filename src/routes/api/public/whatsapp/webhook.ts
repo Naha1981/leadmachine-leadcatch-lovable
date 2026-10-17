@@ -211,6 +211,8 @@ async function handleMessage(db: any, tenantId: string, p: OperatorPayload, vali
     lead = r.data;
     isNewLead = true;
     await db.from("lead_events").insert({ tenant_id: tenantId, lead_id: lead.id, type: "lead_created", payload: { phone } });
+    const { fireTenantEvent } = await import("@/lib/webhooks.server");
+    await fireTenantEvent(tenantId, "lead.created", { lead_id: lead.id, name: lead.name, phone, source: "whatsapp" });
   } else if (!lead.name && d.pushName && !fromMe) {
     await db.from("leads").update({ name: d.pushName }).eq("id", lead.id);
   }

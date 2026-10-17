@@ -793,6 +793,105 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_api_keys: {
+        Row: {
+          id: string
+          tenant_id: string
+          label: string
+          key_hash: string
+          key_prefix: string
+          created_at: string
+          last_used_at: string | null
+          revoked_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          label?: string
+          key_hash?: string
+          key_prefix?: string
+          created_at?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id: string
+          label?: string
+          key_hash?: string
+          key_prefix?: string
+          created_at?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+        }
+        Relationships: []
+      }
+      tenant_webhooks: {
+        Row: {
+          id: string
+          tenant_id: string
+          url: string
+          secret: string
+          events: string[]
+          active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          url: string
+          secret?: string
+          events?: string[]
+          active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id: string
+          url: string
+          secret?: string
+          events?: string[]
+          active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          id: string
+          tenant_id: string
+          webhook_id: string
+          event: string
+          payload: Json
+          status: number | null
+          ok: boolean | null
+          error: string | null
+          attempted_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          webhook_id?: string
+          event?: string
+          payload?: Json
+          status?: number | null
+          ok?: boolean | null
+          error?: string | null
+          attempted_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id: string
+          webhook_id?: string
+          event?: string
+          payload?: Json
+          status?: number | null
+          ok?: boolean | null
+          error?: string | null
+          attempted_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           actual_revenue_cents: number | null
