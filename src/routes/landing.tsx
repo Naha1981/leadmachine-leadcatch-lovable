@@ -414,52 +414,26 @@ function Landing() {
               Pricing
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
-              Start with the revenue problem, not the feature list.
+              One flat price. Everything included.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              These are the redesigned packaging levels. We can validate the exact
-              willingness-to-pay with the first 10–20 customers.
+              No per-seat fees, no per-message charges, no tiers hiding the good
+              parts. One price for the whole system.
             </p>
           </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-4">
+          <div className="mt-10 max-w-md">
             <PriceCard
-              name="Starter"
-              price="R997"
-              description="Capture and organise enquiries."
-              items={["WhatsApp inbox", "Instant replies", "Lead capture", "Business page"]}
-            />
-            <PriceCard
-              name="Growth"
-              price="R1,997"
+              name="RevenueDesk"
+              price="R499"
               featured
-              description="The AI front desk."
+              description="The full AI revenue desk for your business. Cancel any time."
               items={[
-                "Everything in Starter",
-                "AI qualification",
-                "AI reply drafts",
-                "Follow-up workflows",
-              ]}
-            />
-            <PriceCard
-              name="Pro"
-              price="R3,997"
-              description="Revenue recovery and intelligence."
-              items={[
-                "Everything in Growth",
-                "Revenue leak detection",
-                "Advanced automation",
-                "Market Intelligence",
-              ]}
-            />
-            <PriceCard
-              name="Managed"
-              price="Custom"
-              description="NahaLabs operates the system with you."
-              items={[
-                "Setup and optimisation",
-                "Custom workflows",
-                "Integrations",
-                "Ongoing support",
+                "AI front desk on your WhatsApp, 24/7",
+                "Inbox, lead capture and AI qualification",
+                "Follow-up workflows and revenue leak detection",
+                "Business page and Market Intelligence",
+                "Control it from WhatsApp with Zero UI",
+                "No per-message or failed-broadcast charges",
               ]}
             />
           </div>
