@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/lib/workspace";
 import { disconnectWhatsApp } from "@/lib/whatsapp.functions";
+import { deleteMyAccount } from "@/lib/account.functions";
 import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
 import { normalizeWorkingHours, type WorkingHours } from "@/lib/autoreply";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,10 @@ export const Route = createFileRoute("/_authenticated/_shell/settings")({
   head: () => ({
     meta: [
       { title: "Settings — RevenueDesk" },
-      { name: "description", content: "Business profile, working hours, WhatsApp connection and account." },
+      {
+        name: "description",
+        content: "Business profile, working hours, WhatsApp connection and account.",
+      },
       { property: "og:title", content: "Settings — RevenueDesk" },
       { property: "og:description", content: "Manage your RevenueDesk settings." },
     ],
@@ -41,6 +45,9 @@ function SettingsPage() {
   const [alertPhone, setAlertPhone] = useState("");
   const [hours, setHours] = useState<WorkingHours | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteAccount = useServerFn(deleteMyAccount);
   const [zeroLoading, setZeroLoading] = useState(true);
   const [zeroSaving, setZeroSaving] = useState(false);
   const [zeroEnabled, setZeroEnabled] = useState(false);
@@ -50,7 +57,9 @@ function SettingsPage() {
   const [marketEnabled, setMarketEnabled] = useState(false);
   const [marketWebsite, setMarketWebsite] = useState("");
   const [marketKeywords, setMarketKeywords] = useState("");
-  const [marketCompetitors, setMarketCompetitors] = useState<Array<{ id: string; name: string; website_url: string; status: string }>>([]);
+  const [marketCompetitors, setMarketCompetitors] = useState<
+    Array<{ id: string; name: string; website_url: string; status: string }>
+  >([]);
   const [marketLoading, setMarketLoading] = useState(false);
   const [marketSaving, setMarketSaving] = useState(false);
   const [newCompetitorName, setNewCompetitorName] = useState("");
@@ -65,7 +74,9 @@ function SettingsPage() {
     setHours(normalizeWorkingHours(ws.profile.working_hours));
     setMarketEnabled(Boolean(ws.profile.market_intelligence_enabled));
     setMarketWebsite(ws.profile.market_intelligence_website ?? "");
-    const keywords = Array.isArray(ws.profile.market_intelligence_keywords) ? ws.profile.market_intelligence_keywords : [];
+    const keywords = Array.isArray(ws.profile.market_intelligence_keywords)
+      ? ws.profile.market_intelligence_keywords
+      : [];
     setMarketKeywords(keywords.map(String).join(", "));
   }, [ws]);
 
@@ -81,9 +92,15 @@ function SettingsPage() {
         setZeroAutoFollowups(settings.autoFollowupsEnabled);
         setZeroWhatsAppConnected(settings.whatsappConnected);
       })
-      .catch((error) => toast.error(error instanceof Error ? error.message : "Could not load Zero UI settings"))
-      .finally(() => { if (active) setZeroLoading(false); });
-    return () => { active = false; };
+      .catch((error) =>
+        toast.error(error instanceof Error ? error.message : "Could not load Zero UI settings"),
+      )
+      .finally(() => {
+        if (active) setZeroLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [ws, loadZeroUI]);
 
   useEffect(() => {
@@ -101,12 +118,15 @@ function SettingsPage() {
         if (error) toast.error("Could not load competitors");
         setMarketCompetitors(data ?? []);
       } catch (error) {
-        if (active) toast.error(error instanceof Error ? error.message : "Could not load competitors");
+        if (active)
+          toast.error(error instanceof Error ? error.message : "Could not load competitors");
       } finally {
         if (active) setMarketLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [ws?.tenantId]);
 
   // Live status updates from the webhook/status poll.
@@ -114,11 +134,20 @@ function SettingsPage() {
     if (!ws) return;
     const ch = supabase
       .channel(`profile-${ws.tenantId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "business_profiles", filter: `tenant_id=eq.${ws.tenantId}` }, () =>
-        qc.invalidateQueries({ queryKey: ["workspace"] }),
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "business_profiles",
+          filter: `tenant_id=eq.${ws.tenantId}`,
+        },
+        () => qc.invalidateQueries({ queryKey: ["workspace"] }),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [ws, qc]);
 
   if (!ws || !hours) return null;
@@ -129,10 +158,19 @@ function SettingsPage() {
     setSaving(true);
     const { error } = await supabase
       .from("business_profiles")
-      .update({ business_name: name.trim(), industry: industry.trim(), contact_phone: alertPhone.trim(), working_hours: hours!, updated_at: new Date().toISOString() })
+      .update({
+        business_name: name.trim(),
+        industry: industry.trim(),
+        contact_phone: alertPhone.trim(),
+        working_hours: hours!,
+        updated_at: new Date().toISOString(),
+      })
       .eq("tenant_id", ws!.tenantId);
     setSaving(false);
-    if (error) { toast.error("Could not save"); return; }
+    if (error) {
+      toast.error("Could not save");
+      return;
+    }
     toast.success("Settings saved");
     qc.invalidateQueries({ queryKey: ["workspace"] });
   }
@@ -140,7 +178,11 @@ function SettingsPage() {
   async function saveMarketIntelligence() {
     if (!ws) return;
     setMarketSaving(true);
-    const keywords = marketKeywords.split(",").map((value) => value.trim()).filter(Boolean).slice(0, 15);
+    const keywords = marketKeywords
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, 15);
     const { error } = await supabase
       .from("business_profiles")
       .update({
@@ -151,7 +193,10 @@ function SettingsPage() {
       })
       .eq("tenant_id", ws.tenantId);
     setMarketSaving(false);
-    if (error) { toast.error("Could not save Market Intelligence settings"); return; }
+    if (error) {
+      toast.error("Could not save Market Intelligence settings");
+      return;
+    }
     toast.success("Market Intelligence settings saved");
     qc.invalidateQueries({ queryKey: ["workspace"] });
   }
@@ -186,8 +231,13 @@ function SettingsPage() {
       .update({ status, updated_at: new Date().toISOString() })
       .eq("id", id)
       .eq("tenant_id", ws!.tenantId);
-    if (error) { toast.error("Could not update competitor"); return; }
-    setMarketCompetitors((current) => current.map((item) => item.id === id ? { ...item, status } : item));
+    if (error) {
+      toast.error("Could not update competitor");
+      return;
+    }
+    setMarketCompetitors((current) =>
+      current.map((item) => (item.id === id ? { ...item, status } : item)),
+    );
   }
 
   async function deleteCompetitor(id: string) {
@@ -196,8 +246,25 @@ function SettingsPage() {
       .delete()
       .eq("id", id)
       .eq("tenant_id", ws!.tenantId);
-    if (error) { toast.error("Could not remove competitor"); return; }
+    if (error) {
+      toast.error("Could not remove competitor");
+      return;
+    }
     setMarketCompetitors((current) => current.filter((item) => item.id !== id));
+  }
+
+  async function deleteAccountForever() {
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      await supabase.auth.signOut();
+      toast.success("Your account and data have been deleted.");
+      navigate({ to: "/auth" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not delete the account");
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   }
 
   async function signOut() {
@@ -210,7 +277,13 @@ function SettingsPage() {
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
         title={experience ? experience.label + " RevenueDesk Settings" : "RevenueDesk Settings"}
-        subtitle={experience ? "Control the rules, services and customer-handling behaviour RevenueDesk uses for " + experience.label.toLowerCase() + " enquiries." : "Control your business profile, customer-handling rules and channels."}
+        subtitle={
+          experience
+            ? "Control the rules, services and customer-handling behaviour RevenueDesk uses for " +
+              experience.label.toLowerCase() +
+              " enquiries."
+            : "Control your business profile, customer-handling rules and channels."
+        }
       />
 
       <Card className="space-y-4">
@@ -218,8 +291,14 @@ function SettingsPage() {
         <div className="flex items-center justify-between gap-4 text-sm">
           <div>
             <p className="flex items-center gap-2 font-medium">
-              <span className={`h-2 w-2 rounded-full ${connected ? "bg-primary" : "bg-destructive"}`} />
-              {connected ? "Connected" : p.whatsapp_status === "connecting" ? "Waiting for link" : "Not connected"}
+              <span
+                className={`h-2 w-2 rounded-full ${connected ? "bg-primary" : "bg-destructive"}`}
+              />
+              {connected
+                ? "Connected"
+                : p.whatsapp_status === "connecting"
+                  ? "Waiting for link"
+                  : "Not connected"}
             </p>
             <p className="mt-1 text-muted-foreground">
               {p.whatsapp_number ? displayPhone(p.whatsapp_number) : "No number linked"}
@@ -227,7 +306,14 @@ function SettingsPage() {
             </p>
           </div>
           {connected && (
-            <Button variant="outline" className="rounded-xl" onClick={async () => { await disconnect(); qc.invalidateQueries({ queryKey: ["workspace"] }); }}>
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={async () => {
+                await disconnect();
+                qc.invalidateQueries({ queryKey: ["workspace"] });
+              }}
+            >
               Disconnect
             </Button>
           )}
@@ -240,7 +326,8 @@ function SettingsPage() {
           <div>
             <h2 className="font-medium">Zero UI</h2>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              WhatsApp becomes the day-to-day interface. RevenueDesk can monitor leads, answer owner requests, schedule safe follow-ups and send proactive alerts without the dashboard.
+              WhatsApp becomes the day-to-day interface. RevenueDesk can monitor leads, answer owner
+              requests, schedule safe follow-ups and send proactive alerts without the dashboard.
             </p>
           </div>
           <Switch
@@ -262,11 +349,17 @@ function SettingsPage() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-border bg-background p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">WhatsApp</p>
-            <p className="mt-1 text-sm font-semibold">{zeroWhatsAppConnected ? "Connected" : "Connect first"}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              WhatsApp
+            </p>
+            <p className="mt-1 text-sm font-semibold">
+              {zeroWhatsAppConnected ? "Connected" : "Connect first"}
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-background p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Automation</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Automation
+            </p>
             <div className="mt-1 flex items-center justify-between gap-3">
               <p className="text-sm font-semibold">{zeroAutomation ? "Active" : "Paused"}</p>
               <Switch
@@ -278,7 +371,9 @@ function SettingsPage() {
                     await updateZeroUI({ data: { automationEnabled: checked } });
                     setZeroAutomation(checked);
                   } catch (error) {
-                    toast.error(error instanceof Error ? error.message : "Could not update automation");
+                    toast.error(
+                      error instanceof Error ? error.message : "Could not update automation",
+                    );
                   } finally {
                     setZeroSaving(false);
                   }
@@ -290,7 +385,9 @@ function SettingsPage() {
         <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
           <div>
             <p className="text-sm font-medium">Automatic follow-ups</p>
-            <p className="text-xs text-muted-foreground">Owner commands can schedule eligible follow-ups; replies cancel them.</p>
+            <p className="text-xs text-muted-foreground">
+              Owner commands can schedule eligible follow-ups; replies cancel them.
+            </p>
           </div>
           <Switch
             checked={zeroAutoFollowups}
@@ -301,37 +398,64 @@ function SettingsPage() {
                 await updateZeroUI({ data: { autoFollowupsEnabled: checked } });
                 setZeroAutoFollowups(checked);
               } catch (error) {
-                toast.error(error instanceof Error ? error.message : "Could not update follow-up setting");
+                toast.error(
+                  error instanceof Error ? error.message : "Could not update follow-up setting",
+                );
               } finally {
                 setZeroSaving(false);
               }
             }}
           />
         </div>
-        {!zeroWhatsAppConnected && <p className="text-xs text-muted-foreground">Connect the business WhatsApp number above before enabling Zero UI.</p>}
+        {!zeroWhatsAppConnected && (
+          <p className="text-xs text-muted-foreground">
+            Connect the business WhatsApp number above before enabling Zero UI.
+          </p>
+        )}
       </Card>
       <Card className="space-y-4">
         <h2 className="font-medium">Business profile</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="n">Business name</Label>
-            <Input id="n" value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-xl" />
+            <Input
+              id="n"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-11 rounded-xl"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="i">Industry</Label>
-            <Input id="i" value={industry} onChange={(e) => setIndustry(e.target.value)} className="h-11 rounded-xl" />
+            <Input
+              id="i"
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              className="h-11 rounded-xl"
+            />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="alert-phone">Owner alert number</Label>
-            <Input id="alert-phone" value={alertPhone} onChange={(e) => setAlertPhone(e.target.value)} placeholder="e.g. 082 123 4567" className="h-11 rounded-xl" inputMode="tel" />
-            <p className="text-xs text-muted-foreground">RevenueDesk uses this number for Zero UI owner commands and proactive alerts.</p>
+            <Input
+              id="alert-phone"
+              value={alertPhone}
+              onChange={(e) => setAlertPhone(e.target.value)}
+              placeholder="e.g. 082 123 4567"
+              className="h-11 rounded-xl"
+              inputMode="tel"
+            />
+            <p className="text-xs text-muted-foreground">
+              RevenueDesk uses this number for Zero UI owner commands and proactive alerts.
+            </p>
           </div>
         </div>
         <div className="space-y-2">
           <Label>Working hours</Label>
           <HoursEditor value={hours} onChange={setHours} />
         </div>
-        <Button onClick={save} disabled={saving} className="h-11 rounded-xl px-5 font-semibold">{saving ? "Saving…" : "Save changes"}</Button>
+        <Button onClick={save} disabled={saving} className="h-11 rounded-xl px-5 font-semibold">
+          {saving ? "Saving…" : "Save changes"}
+        </Button>
       </Card>
 
       <Card className="space-y-4">
@@ -340,56 +464,129 @@ function SettingsPage() {
           <div>
             <p className="text-sm font-medium">Watch the market for this business</p>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
-              RevenueDesk will use your business profile, public sources and approved competitors to build evidence-backed market findings automatically.
+              RevenueDesk will use your business profile, public sources and approved competitors to
+              build evidence-backed market findings automatically.
             </p>
           </div>
-          <Switch checked={marketEnabled} onCheckedChange={setMarketEnabled} disabled={marketSaving} />
+          <Switch
+            checked={marketEnabled}
+            onCheckedChange={setMarketEnabled}
+            disabled={marketSaving}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="mi-website">Business website</Label>
-            <Input id="mi-website" value={marketWebsite} onChange={(e) => setMarketWebsite(e.target.value)} placeholder="https://example.co.za" className="h-11 rounded-xl" />
+            <Input
+              id="mi-website"
+              value={marketWebsite}
+              onChange={(e) => setMarketWebsite(e.target.value)}
+              placeholder="https://example.co.za"
+              className="h-11 rounded-xl"
+            />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="mi-keywords">Topics/services to watch</Label>
-            <Input id="mi-keywords" value={marketKeywords} onChange={(e) => setMarketKeywords(e.target.value)} placeholder="roof repairs, waterproofing, emergency leaks" className="h-11 rounded-xl" />
-            <p className="text-xs text-muted-foreground">Comma-separated terms. RevenueDesk also derives searches from your industry and services.</p>
+            <Input
+              id="mi-keywords"
+              value={marketKeywords}
+              onChange={(e) => setMarketKeywords(e.target.value)}
+              placeholder="roof repairs, waterproofing, emergency leaks"
+              className="h-11 rounded-xl"
+            />
+            <p className="text-xs text-muted-foreground">
+              Comma-separated terms. RevenueDesk also derives searches from your industry and
+              services.
+            </p>
           </div>
         </div>
         <div className="space-y-3">
           <div>
             <p className="text-sm font-medium">Competitors</p>
-            <p className="mt-1 text-xs text-muted-foreground">RevenueDesk can discover competitors automatically. Add, ignore or remove specific ones here.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              RevenueDesk can discover competitors automatically. Add, ignore or remove specific
+              ones here.
+            </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-            <Input value={newCompetitorName} onChange={(e) => setNewCompetitorName(e.target.value)} placeholder="Competitor name" className="h-10 rounded-xl" />
-            <Input value={newCompetitorUrl} onChange={(e) => setNewCompetitorUrl(e.target.value)} placeholder="https://competitor.co.za" className="h-10 rounded-xl" />
-            <Button type="button" onClick={addCompetitor} disabled={marketSaving || !newCompetitorName.trim() || !newCompetitorUrl.trim()} className="h-10 rounded-xl">Add</Button>
+            <Input
+              value={newCompetitorName}
+              onChange={(e) => setNewCompetitorName(e.target.value)}
+              placeholder="Competitor name"
+              className="h-10 rounded-xl"
+            />
+            <Input
+              value={newCompetitorUrl}
+              onChange={(e) => setNewCompetitorUrl(e.target.value)}
+              placeholder="https://competitor.co.za"
+              className="h-10 rounded-xl"
+            />
+            <Button
+              type="button"
+              onClick={addCompetitor}
+              disabled={marketSaving || !newCompetitorName.trim() || !newCompetitorUrl.trim()}
+              className="h-10 rounded-xl"
+            >
+              Add
+            </Button>
           </div>
           <div className="space-y-2">
             {marketLoading ? (
               <p className="text-sm text-muted-foreground">Loading competitors…</p>
             ) : marketCompetitors.length === 0 ? (
               <p className="text-sm text-muted-foreground">No competitors added yet.</p>
-            ) : marketCompetitors.map((competitor) => (
-              <div key={competitor.id} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{competitor.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{competitor.website_url}</p>
-                  <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{competitor.status}</p>
+            ) : (
+              marketCompetitors.map((competitor) => (
+                <div
+                  key={competitor.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{competitor.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {competitor.website_url}
+                    </p>
+                    <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+                      {competitor.status}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setCompetitorStatus(
+                          competitor.id,
+                          competitor.status === "ignored" ? "active" : "ignored",
+                        )
+                      }
+                      className="rounded-xl"
+                    >
+                      {competitor.status === "ignored" ? "Use" : "Ignore"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => deleteCompetitor(competitor.id)}
+                      className="rounded-xl"
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex shrink-0 gap-2">
-                  <Button type="button" size="sm" variant="outline" onClick={() => setCompetitorStatus(competitor.id, competitor.status === "ignored" ? "active" : "ignored")} className="rounded-xl">
-                    {competitor.status === "ignored" ? "Use" : "Ignore"}
-                  </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => deleteCompetitor(competitor.id)} className="rounded-xl">Remove</Button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
         <div className="flex justify-end">
-          <Button type="button" onClick={saveMarketIntelligence} disabled={marketSaving} className="h-11 rounded-xl">
+          <Button
+            type="button"
+            onClick={saveMarketIntelligence}
+            disabled={marketSaving}
+            className="h-11 rounded-xl"
+          >
             {marketSaving ? "Saving…" : "Save Market Intelligence"}
           </Button>
         </div>
@@ -400,7 +597,76 @@ function SettingsPage() {
           <p className="font-medium">Account</p>
           <p className="text-muted-foreground">{ws.userEmail}</p>
         </div>
-        <Button variant="outline" className="rounded-xl" onClick={signOut}>Log out</Button>
+        <Button variant="outline" className="rounded-xl" onClick={signOut}>
+          Log out
+        </Button>
+      </Card>
+
+      <Card className="flex items-center justify-between gap-4">
+        <div className="text-sm">
+          <p className="font-medium">Support</p>
+          <p className="text-muted-foreground">
+            Questions or something not working? Email{" "}
+            <a
+              href="mailto:sales@nahalabs.co.za"
+              className="text-primary underline underline-offset-2"
+            >
+              sales@nahalabs.co.za
+            </a>{" "}
+            and we will help.
+          </p>
+        </div>
+      </Card>
+
+      <Card className="space-y-3 border-destructive/40">
+        <div className="text-sm">
+          <p className="font-medium text-destructive">Delete account</p>
+          <p className="mt-1 text-muted-foreground">
+            Permanently deletes your account, your workspace and every conversation, lead and
+            setting in it. This cannot be undone.
+          </p>
+        </div>
+        {confirmDelete ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="destructive"
+              onClick={deleteAccountForever}
+              disabled={deleting}
+              className="rounded-xl"
+            >
+              {deleting ? "Deleting…" : "Yes, delete everything"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleting}
+              className="rounded-xl"
+            >
+              Keep my account
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDelete(true)}
+              className="rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10"
+            >
+              Delete account
+            </Button>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          See our{" "}
+          <Link to="/privacy" className="underline underline-offset-2">
+            Privacy Policy
+          </Link>{" "}
+          and{" "}
+          <Link to="/terms" className="underline underline-offset-2">
+            Terms
+          </Link>
+          .
+        </p>
       </Card>
     </div>
   );

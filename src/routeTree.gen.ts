@@ -13,6 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as LandingRouteImport } from './routes/landing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authenticated/_shell/route'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
@@ -57,6 +60,21 @@ const AuthRoute = AuthRouteImport.update({
 const LandingRoute = LandingRouteImport.update({
   id: '/landing',
   path: '/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedShellRouteRoute = AuthenticatedShellRouteRouteImport.update({
@@ -206,6 +224,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/landing': typeof LandingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -236,6 +257,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/landing': typeof LandingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -268,6 +292,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/landing': typeof LandingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
@@ -301,6 +328,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/landing'
+    | '/privacy'
+    | '/reset-password'
+    | '/terms'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -331,6 +361,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/landing'
+    | '/privacy'
+    | '/reset-password'
+    | '/terms'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -362,6 +395,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/landing'
+    | '/privacy'
+    | '/reset-password'
+    | '/terms'
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
     | '/api/health'
@@ -395,6 +431,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   LandingRoute: typeof LandingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsRoute: typeof TermsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMarketIntelligenceRoute: typeof ApiMarketIntelligenceRoute
   ApiWhatsappPresenceRoute: typeof ApiWhatsappPresenceRoute
@@ -437,6 +476,27 @@ declare module '@tanstack/react-router' {
       path: '/landing'
       fullPath: '/landing'
       preLoaderRoute: typeof LandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_shell': {
@@ -690,6 +750,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   LandingRoute: LandingRoute,
+  PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  TermsRoute: TermsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMarketIntelligenceRoute: ApiMarketIntelligenceRoute,
   ApiWhatsappPresenceRoute: ApiWhatsappPresenceRoute,

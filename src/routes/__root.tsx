@@ -18,6 +18,17 @@ import { ThemeProvider, useTheme } from "@/lib/theme";
 import { getPersistedTheme } from "@/lib/theme.server";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+function ServiceWorkerRegistration() {
+  useEffect(() => {
+    if (import.meta.env.PROD && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        /* installability enhancement only */
+      });
+    }
+  }, []);
+  return null;
+}
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -48,7 +59,9 @@ function ErrorComponent({ error, reset }: import("@tanstack/react-router").Error
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">This page didn't load</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          This page didn't load
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">Something went wrong. Try again.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -79,7 +92,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#ffffff" },
       { title: "RevenueDesk — Never miss another WhatsApp lead" },
-      { name: "description", content: "See every WhatsApp enquiry, reply instantly and keep a clean log of every lead." },
+      {
+        name: "description",
+        content: "See every WhatsApp enquiry, reply instantly and keep a clean log of every lead.",
+      },
       { property: "og:title", content: "RevenueDesk" },
       { property: "og:description", content: "Never miss another WhatsApp lead." },
       { property: "og:type", content: "website" },
@@ -96,7 +112,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap",
+      },
     ],
   }),
   beforeLoad: async () => ({
@@ -148,6 +167,7 @@ function RootComponent() {
           <QueryClientProvider client={queryClient}>
             <Outlet />
             <ThemeToggle />
+            <ServiceWorkerRegistration />
             <RootToaster />
           </QueryClientProvider>
           <Scripts />
@@ -191,4 +211,3 @@ function RootToaster() {
   const { theme } = useTheme();
   return <Toaster theme={theme} position="top-center" />;
 }
-
