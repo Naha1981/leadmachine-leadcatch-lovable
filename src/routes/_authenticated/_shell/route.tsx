@@ -9,6 +9,8 @@ import {
   Settings,
   ShieldAlert,
   Globe,
+  FileText,
+  Users,
 } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
 import { Logo } from "@/components/Logo";
@@ -21,6 +23,8 @@ const NAV = [
   { to: "/inbox", label: "Conversations", icon: Inbox },
   { to: "/revenue-leaks", label: "Revenue Leaks", icon: ShieldAlert },
   { to: "/ai-front-desk", label: "AI Front Desk", icon: Bot },
+  { to: "/quotes", label: "Quotes", icon: FileText },
+  { to: "/customers", label: "Customers", icon: Users },
   { to: "/insights", label: "Insights", icon: BarChart3 },
   { to: "/website", label: "Business Page", icon: Globe },
   { to: "/settings", label: "Settings", icon: Settings },
