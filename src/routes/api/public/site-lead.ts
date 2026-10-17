@@ -12,6 +12,7 @@ const Body = z.object({
   consent: z.literal(true),
   website: z.string().max(200).optional().default(""),
   quoteFormToken: z.string().min(20).max(1000),
+  photoPaths: z.array(z.string().trim().min(10).max(300)).max(5).optional().default([]),
 });
 
 async function hashIp(ip: string): Promise<string> {
@@ -178,7 +179,8 @@ export const Route = createFileRoute("/api/public/site-lead")({
         }
         if (!site) return Response.json({ ok: false, error: "This page is not available." }, { status: 404 });
 
-        const tenantId = site.tenant_id;
+        const tenantId = site.tenant_id as string;
+        const photoPaths = parsed.photoPaths.filter((p) => p.startsWith(`${tenantId}/`)).slice(0, 5);
         const { data: profile, error: profileError } = await db
           .from("business_profiles")
           .select("business_name, industry, services")
@@ -191,7 +193,7 @@ export const Route = createFileRoute("/api/public/site-lead")({
 
         const { data: existing, error: existingError } = await db
           .from("leads")
-          .select("id")
+          .select("id, photo_paths")
           .eq("tenant_id", tenantId)
           .eq("phone", phone)
           .maybeSingle();
@@ -223,6 +225,7 @@ export const Route = createFileRoute("/api/public/site-lead")({
               ai_summary: scored.summary,
               ai_scored_at: new Date().toISOString(),
               ai_last_scored_message_at: new Date().toISOString(),
+              photo_paths: photoPaths,
             })
             .select("id")
             .single();
@@ -232,8 +235,12 @@ export const Route = createFileRoute("/api/public/site-lead")({
           }
           leadId = r.data.id;
         } else {
+          const priorPaths = Array.isArray((existing as { photo_paths?: string[] } | null)?.photo_paths)
+            ? ((existing as { photo_paths?: string[] }).photo_paths as string[])
+            : [];
           const updateResult = await db.from("leads").update({
             name: parsed.name,
+            photo_paths: [...priorPaths, ...photoPaths].slice(0, 20),
             status: "new",
             ai_score: scored.score,
             ai_temperature: scored.temperature,
