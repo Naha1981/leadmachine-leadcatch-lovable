@@ -712,6 +712,87 @@ export type Database = {
           },
         ]
       }
+      quotes: {
+        Row: {
+          id: string
+          tenant_id: string
+          lead_id: string | null
+          customer_name: string
+          title: string
+          amount_cents: number
+          status: string
+          sent_on: string
+          follow_up_on: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          lead_id?: string | null
+          customer_name: string
+          title?: string
+          amount_cents?: number
+          status?: string
+          sent_on?: string
+          follow_up_on?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          lead_id?: string | null
+          customer_name?: string
+          title?: string
+          amount_cents?: number
+          status?: string
+          sent_on?: string
+          follow_up_on?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      service_customers: {
+        Row: {
+          id: string
+          tenant_id: string
+          lead_id: string | null
+          name: string
+          phone: string | null
+          service_every_days: number | null
+          monthly_value_cents: number | null
+          last_service_on: string
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          lead_id?: string | null
+          name: string
+          phone?: string | null
+          service_every_days?: number | null
+          monthly_value_cents?: number | null
+          last_service_on?: string
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          lead_id?: string | null
+          name?: string
+          phone?: string | null
+          service_every_days?: number | null
+          monthly_value_cents?: number | null
+          last_service_on?: string
+          notes?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           actual_revenue_cents: number | null
