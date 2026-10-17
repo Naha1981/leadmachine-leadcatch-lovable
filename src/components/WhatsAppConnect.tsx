@@ -71,7 +71,11 @@ export function WhatsAppConnect({ onConnected }: { onConnected?: () => void }) {
   }
 
   if (phase === "connected") {
-    return <p className="text-sm font-medium text-primary">Connected. New messages will appear in your inbox.</p>;
+    return (
+      <p className="text-sm font-medium text-primary">
+        Connected. New messages will appear in your inbox.
+      </p>
+    );
   }
 
   if (phase === "idle") {
@@ -85,7 +89,23 @@ export function WhatsAppConnect({ onConnected }: { onConnected?: () => void }) {
   return (
     <div className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-start">
       <div className="flex h-52 w-52 items-center justify-center rounded-2xl bg-foreground p-3">
-        {qr ? <QRCodeSVG value={qr} size={184} /> : <span className="text-xs text-background">Generating code…</span>}
+        {qr ? (
+          qr.startsWith("data:image") ? (
+            // The WhatsApp service returns a ready-made QR image (data URL).
+            // Rendering it as text inside QRCodeSVG overflows the encoder and crashes the page.
+            <img
+              src={qr}
+              width={184}
+              height={184}
+              alt="WhatsApp linking code"
+              className="h-[184px] w-[184px] rounded-lg"
+            />
+          ) : (
+            <QRCodeSVG value={qr} size={184} level="L" />
+          )
+        ) : (
+          <span className="text-xs text-background">Generating code…</span>
+        )}
       </div>
       <div className="space-y-4 text-sm">
         <ol className="list-decimal space-y-1 pl-4 text-muted-foreground">
@@ -94,10 +114,20 @@ export function WhatsAppConnect({ onConnected }: { onConnected?: () => void }) {
           <li>Point your phone at this code</li>
         </ol>
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">Can't scan? Link with your phone number instead.</p>
+          <p className="text-xs text-muted-foreground">
+            Can't scan? Link with your phone number instead.
+          </p>
           <div className="flex gap-2">
-            <Input placeholder="27821234567" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-10 rounded-xl" inputMode="tel" />
-            <Button variant="secondary" onClick={getCode} className="h-10 rounded-xl">Get code</Button>
+            <Input
+              placeholder="27821234567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="h-10 rounded-xl"
+              inputMode="tel"
+            />
+            <Button variant="secondary" onClick={getCode} className="h-10 rounded-xl">
+              Get code
+            </Button>
           </div>
           {code && <p className="font-mono text-lg tracking-[0.3em] text-primary">{code}</p>}
         </div>
