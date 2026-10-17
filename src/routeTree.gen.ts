@@ -24,11 +24,13 @@ import { Route as ApiWhatsappPresenceRouteImport } from './routes/api/whatsapp-p
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as AuthenticatedShellAiFrontDeskRouteImport } from './routes/_authenticated/_shell/ai-front-desk'
 import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authenticated/_shell/auto-reply'
+import { Route as AuthenticatedShellCustomersRouteImport } from './routes/_authenticated/_shell/customers'
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellInboxRouteImport } from './routes/_authenticated/_shell/inbox'
 import { Route as AuthenticatedShellInsightsRouteImport } from './routes/_authenticated/_shell/insights'
 import { Route as AuthenticatedShellLeadIntentRouteImport } from './routes/_authenticated/_shell/lead-intent'
 import { Route as AuthenticatedShellOperatorRouteImport } from './routes/_authenticated/_shell/operator'
+import { Route as AuthenticatedShellQuotesRouteImport } from './routes/_authenticated/_shell/quotes'
 import { Route as AuthenticatedShellRevenueLeaksRouteImport } from './routes/_authenticated/_shell/revenue-leaks'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authenticated/_shell/website'
@@ -118,6 +120,12 @@ const AuthenticatedShellAutoReplyRoute =
     path: '/auto-reply',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
+const AuthenticatedShellCustomersRoute =
+  AuthenticatedShellCustomersRouteImport.update({
+    id: '/customers',
+    path: '/customers',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
 const AuthenticatedShellDashboardRoute =
   AuthenticatedShellDashboardRouteImport.update({
     id: '/dashboard',
@@ -145,6 +153,12 @@ const AuthenticatedShellOperatorRoute =
   AuthenticatedShellOperatorRouteImport.update({
     id: '/operator',
     path: '/operator',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
+const AuthenticatedShellQuotesRoute =
+  AuthenticatedShellQuotesRouteImport.update({
+    id: '/quotes',
+    path: '/quotes',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
 const AuthenticatedShellRevenueLeaksRoute =
@@ -234,11 +248,13 @@ export interface FileRoutesByFullPath {
   '/s/$slug': typeof SSlugRoute
   '/ai-front-desk': typeof AuthenticatedShellAiFrontDeskRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/customers': typeof AuthenticatedShellCustomersRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
   '/insights': typeof AuthenticatedShellInsightsRoute
   '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/operator': typeof AuthenticatedShellOperatorRoute
+  '/quotes': typeof AuthenticatedShellQuotesRoute
   '/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
@@ -267,11 +283,13 @@ export interface FileRoutesByTo {
   '/s/$slug': typeof SSlugRoute
   '/ai-front-desk': typeof AuthenticatedShellAiFrontDeskRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/customers': typeof AuthenticatedShellCustomersRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
   '/insights': typeof AuthenticatedShellInsightsRoute
   '/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/operator': typeof AuthenticatedShellOperatorRoute
+  '/quotes': typeof AuthenticatedShellQuotesRoute
   '/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
@@ -303,11 +321,13 @@ export interface FileRoutesById {
   '/s/$slug': typeof SSlugRoute
   '/_authenticated/_shell/ai-front-desk': typeof AuthenticatedShellAiFrontDeskRoute
   '/_authenticated/_shell/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/_authenticated/_shell/customers': typeof AuthenticatedShellCustomersRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/inbox': typeof AuthenticatedShellInboxRoute
   '/_authenticated/_shell/insights': typeof AuthenticatedShellInsightsRoute
   '/_authenticated/_shell/lead-intent': typeof AuthenticatedShellLeadIntentRoute
   '/_authenticated/_shell/operator': typeof AuthenticatedShellOperatorRoute
+  '/_authenticated/_shell/quotes': typeof AuthenticatedShellQuotesRoute
   '/_authenticated/_shell/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/website': typeof AuthenticatedShellWebsiteRoute
@@ -338,11 +358,13 @@ export interface FileRouteTypes {
     | '/s/$slug'
     | '/ai-front-desk'
     | '/auto-reply'
+    | '/customers'
     | '/dashboard'
     | '/inbox'
     | '/insights'
     | '/lead-intent'
     | '/operator'
+    | '/quotes'
     | '/revenue-leaks'
     | '/settings'
     | '/website'
@@ -371,11 +393,13 @@ export interface FileRouteTypes {
     | '/s/$slug'
     | '/ai-front-desk'
     | '/auto-reply'
+    | '/customers'
     | '/dashboard'
     | '/inbox'
     | '/insights'
     | '/lead-intent'
     | '/operator'
+    | '/quotes'
     | '/revenue-leaks'
     | '/settings'
     | '/website'
@@ -406,11 +430,13 @@ export interface FileRouteTypes {
     | '/s/$slug'
     | '/_authenticated/_shell/ai-front-desk'
     | '/_authenticated/_shell/auto-reply'
+    | '/_authenticated/_shell/customers'
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/inbox'
     | '/_authenticated/_shell/insights'
     | '/_authenticated/_shell/lead-intent'
     | '/_authenticated/_shell/operator'
+    | '/_authenticated/_shell/quotes'
     | '/_authenticated/_shell/revenue-leaks'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/website'
@@ -555,6 +581,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellAutoReplyRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
+    '/_authenticated/_shell/customers': {
+      id: '/_authenticated/_shell/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AuthenticatedShellCustomersRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
     '/_authenticated/_shell/dashboard': {
       id: '/_authenticated/_shell/dashboard'
       path: '/dashboard'
@@ -588,6 +621,13 @@ declare module '@tanstack/react-router' {
       path: '/operator'
       fullPath: '/operator'
       preLoaderRoute: typeof AuthenticatedShellOperatorRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
+    '/_authenticated/_shell/quotes': {
+      id: '/_authenticated/_shell/quotes'
+      path: '/quotes'
+      fullPath: '/quotes'
+      preLoaderRoute: typeof AuthenticatedShellQuotesRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
     '/_authenticated/_shell/revenue-leaks': {
@@ -687,11 +727,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedShellRouteRouteChildren {
   AuthenticatedShellAiFrontDeskRoute: typeof AuthenticatedShellAiFrontDeskRoute
   AuthenticatedShellAutoReplyRoute: typeof AuthenticatedShellAutoReplyRoute
+  AuthenticatedShellCustomersRoute: typeof AuthenticatedShellCustomersRoute
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellInboxRoute: typeof AuthenticatedShellInboxRoute
   AuthenticatedShellInsightsRoute: typeof AuthenticatedShellInsightsRoute
   AuthenticatedShellLeadIntentRoute: typeof AuthenticatedShellLeadIntentRoute
   AuthenticatedShellOperatorRoute: typeof AuthenticatedShellOperatorRoute
+  AuthenticatedShellQuotesRoute: typeof AuthenticatedShellQuotesRoute
   AuthenticatedShellRevenueLeaksRoute: typeof AuthenticatedShellRevenueLeaksRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
   AuthenticatedShellWebsiteRoute: typeof AuthenticatedShellWebsiteRoute
@@ -701,11 +743,13 @@ const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren
   {
     AuthenticatedShellAiFrontDeskRoute: AuthenticatedShellAiFrontDeskRoute,
     AuthenticatedShellAutoReplyRoute: AuthenticatedShellAutoReplyRoute,
+    AuthenticatedShellCustomersRoute: AuthenticatedShellCustomersRoute,
     AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
     AuthenticatedShellInboxRoute: AuthenticatedShellInboxRoute,
     AuthenticatedShellInsightsRoute: AuthenticatedShellInsightsRoute,
     AuthenticatedShellLeadIntentRoute: AuthenticatedShellLeadIntentRoute,
     AuthenticatedShellOperatorRoute: AuthenticatedShellOperatorRoute,
+    AuthenticatedShellQuotesRoute: AuthenticatedShellQuotesRoute,
     AuthenticatedShellRevenueLeaksRoute: AuthenticatedShellRevenueLeaksRoute,
     AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
     AuthenticatedShellWebsiteRoute: AuthenticatedShellWebsiteRoute,
