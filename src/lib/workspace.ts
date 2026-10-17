@@ -31,6 +31,16 @@ export async function loadWorkspace(): Promise<Workspace> {
   }
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("Not signed in");
+  // Team members join someone else's workspace: a non-owner role wins over ownership.
+  const { data: memberships } = await supabase.from("user_roles").select("tenant_id, role").eq("user_id", u.user.id);
+  const memberOf = (memberships ?? []).find((m) => m.role !== "owner");
+  if (memberOf) {
+    const { data: profile } = await supabase.from("business_profiles").select("*").eq("tenant_id", memberOf.tenant_id).maybeSingle();
+    const { data: config } = await supabase.from("auto_reply_configs").select("*").eq("tenant_id", memberOf.tenant_id).maybeSingle();
+    if (profile && config) {
+      return { tenantId: memberOf.tenant_id, userEmail: u.user.email ?? "", profile, config };
+    }
+  }
   let { data: tenant } = await supabase.from("tenants").select("id").eq("owner_id", u.user.id).maybeSingle();
   if (!tenant) {
     const r = await supabase.from("tenants").insert({ owner_id: u.user.id }).select("id").single();

@@ -8,6 +8,7 @@ import { useWorkspace } from "@/lib/workspace";
 import { disconnectWhatsApp } from "@/lib/whatsapp.functions";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
+import { listTeam, inviteMember, revokeInvite, removeMember } from "@/lib/team.functions";
 import {
   getDeveloperSettings,
   createApiKey,
@@ -85,6 +86,16 @@ function SettingsPage() {
   const [newHookUrl, setNewHookUrl] = useState("");
   const [newHookSecret, setNewHookSecret] = useState("");
   const [devSaving, setDevSaving] = useState(false);
+  const loadTeam = useServerFn(listTeam);
+  const invite = useServerFn(inviteMember);
+  const revoke = useServerFn(revokeInvite);
+  const remove = useServerFn(removeMember);
+  const [teamLoading, setTeamLoading] = useState(true);
+  const [teamError, setTeamError] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<Array<{ userId: string; role: string; email: string }>>([]);
+  const [teamInvites, setTeamInvites] = useState<Array<{ id: string; email: string; role: string; created_at: string }>>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [teamSaving, setTeamSaving] = useState(false);
   const experience = getIndustryExperience(industry);
 
   useEffect(() => {
@@ -172,6 +183,27 @@ function SettingsPage() {
     };
   }, [ws, loadDeveloper]);
 
+  useEffect(() => {
+    if (!ws) return;
+    let active = true;
+    setTeamLoading(true);
+    loadTeam()
+      .then((d) => {
+        if (!active) return;
+        setTeamMembers(d.members);
+        setTeamInvites(d.invites);
+      })
+      .catch(() => {
+        if (active) setTeamError(true);
+      })
+      .finally(() => {
+        if (active) setTeamLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [ws, loadTeam]);
+
   // Live status updates from the webhook/status poll.
   useEffect(() => {
     if (!ws) return;
@@ -202,6 +234,46 @@ function SettingsPage() {
     setDevKeys(d.apiKeys);
     setDevHooks(d.webhooks);
     setDevDeliveries(d.deliveries);
+  }
+
+  async function refreshTeam() {
+    const d = await loadTeam();
+    setTeamMembers(d.members);
+    setTeamInvites(d.invites);
+  }
+
+  async function onInvite() {
+    setTeamSaving(true);
+    try {
+      await invite({ data: { email: inviteEmail, origin: window.location.origin } });
+      setInviteEmail("");
+      toast.success("Invite sent");
+      await refreshTeam();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send invite");
+    } finally {
+      setTeamSaving(false);
+    }
+  }
+
+  async function onRevokeInvite(id: string) {
+    try {
+      await revoke({ data: { id } });
+      toast.success("Invite revoked");
+      await refreshTeam();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not revoke invite");
+    }
+  }
+
+  async function onRemoveMember(userId: string) {
+    try {
+      await remove({ data: { userId } });
+      toast.success("Team member removed");
+      await refreshTeam();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove team member");
+    }
   }
 
   async function onCreateKey() {
@@ -691,6 +763,60 @@ function SettingsPage() {
           </Button>
         </div>
       </Card>
+
+      {!teamError ? (
+        <Card className="space-y-4">
+          <div>
+            <h2 className="font-medium">Team</h2>
+            <p className="text-sm text-muted-foreground">
+              Invite your team to work this workspace with you. Unlimited seats, included in your
+              plan. Team members see the inbox, leads and quotes.
+            </p>
+          </div>
+          {teamLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : (
+            <ul className="space-y-1 text-sm">
+              {teamMembers.map((m) => (
+                <li key={m.userId} className="flex items-center justify-between gap-2">
+                  <span>
+                    {m.email || m.userId} <span className="text-muted-foreground">· {m.role}</span>
+                  </span>
+                  {m.role !== "owner" ? (
+                    <Button variant="outline" size="sm" className="rounded-xl" onClick={() => onRemoveMember(m.userId)}>
+                      Remove
+                    </Button>
+                  ) : null}
+                </li>
+              ))}
+              {teamInvites.map((i) => (
+                <li key={i.id} className="flex items-center justify-between gap-2">
+                  <span>
+                    {i.email} <span className="text-muted-foreground">· invited</span>
+                  </span>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => onRevokeInvite(i.id)}>
+                    Revoke
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="teammate@business.co.za"
+              className="max-w-xs"
+            />
+            <Button variant="outline" className="rounded-xl" onClick={onInvite} disabled={teamSaving}>
+              {teamSaving ? "Sending…" : "Invite"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            They get an email invite. Once they sign up and accept, they work in this workspace.
+          </p>
+        </Card>
+      ) : null}
 
       <Card className="space-y-4">
         <div>

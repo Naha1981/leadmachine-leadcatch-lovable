@@ -793,6 +793,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_invites: {
+        Row: {
+          id: string
+          tenant_id: string
+          email: string
+          business_name: string
+          role: string
+          invited_by: string
+          created_at: string
+          accepted_at: string | null
+        }
+        Insert: {
+          tenant_id: string
+          email: string
+          business_name?: string
+          role?: string
+          invited_by: string
+          accepted_at?: string | null
+        }
+        Update: {
+          email?: string
+          business_name?: string
+          role?: string
+          accepted_at?: string | null
+        }
+        Relationships: []
+      }
       tenant_api_keys: {
         Row: {
           id: string
