@@ -6,6 +6,7 @@ import { getE2EBusiness, isE2EEnabled } from "@/lib/e2e-store.server";
 
 export type PublicSite = {
   slug: string;
+  tenant_id: string;
   headline: string;
   subheadline: string;
   about: string;
@@ -26,6 +27,7 @@ export const getPublicSite = createServerFn({ method: "GET" })
       const business = getE2EBusiness();
       return {
         slug: business.slug,
+        tenant_id: "00000000-0000-0000-0000-00000000e2e1",
         headline: business.businessName,
         subheadline: "Fast plumbing help across Gauteng.",
         about: "A controlled test business page for automated acceptance tests.",
@@ -55,7 +57,7 @@ export const getPublicSite = createServerFn({ method: "GET" })
     });
     const { data: s, error } = await db
       .from("websites")
-      .select("slug, headline, subheadline, about, services, faqs, cta_text, accent, whatsapp_number")
+      .select("slug, tenant_id, headline, subheadline, about, services, faqs, cta_text, accent, whatsapp_number")
       .eq("slug", data.slug.toLowerCase())
       .eq("published", true)
       .maybeSingle();

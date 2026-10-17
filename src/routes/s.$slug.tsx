@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { MessageCircle, CheckCircle2 } from "lucide-react";
 import { getPublicSite } from "@/lib/sites.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -95,13 +96,14 @@ function PublicSitePage() {
       )}
 
       <section id="quote" className="mx-auto max-w-xl px-5 py-14">
-        <LeadForm slug={site.slug} cta={site.cta_text} quoteFormToken={site.quote_form_token} />
+        <LeadForm slug={site.slug} cta={site.cta_text} quoteFormToken={site.quote_form_token} tenantId={site.tenant_id} />
       </section>
     </div>
   );
 }
 
-function LeadForm({ slug, cta, quoteFormToken }: { slug: string; cta: string; quoteFormToken: string }) {
+function LeadForm({ slug, cta, quoteFormToken, tenantId }: { slug: string; cta: string; quoteFormToken: string; tenantId: string }) {
+  const [photos, setPhotos] = useState<File[]>([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
@@ -116,10 +118,21 @@ function LeadForm({ slug, cta, quoteFormToken }: { slug: string; cta: string; qu
     if (!consent) { setError("Please agree so we can contact you."); return; }
     setState("sending");
     try {
+      const photoPaths: string[] = [];
+      for (const file of photos.slice(0, 5)) {
+        const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-60);
+        const path = `${tenantId}/${crypto.randomUUID()}-${safe}`;
+        const { error: upErr } = await supabase.storage.from("lead-photos").upload(path, file, {
+          contentType: file.type || "image/jpeg",
+          upsert: false,
+        });
+        if (upErr) throw new Error("One of the photos would not upload. Please try a smaller image.");
+        photoPaths.push(path);
+      }
       const res = await fetch("/api/public/site-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, name, phone, message, consent: true, website, quoteFormToken }),
+        body: JSON.stringify({ slug, name, phone, message, consent: true, website, quoteFormToken, photoPaths }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j.ok) throw new Error(j.error ?? "Something went wrong.");
@@ -148,6 +161,23 @@ function LeadForm({ slug, cta, quoteFormToken }: { slug: string; cta: string; qu
       <Input required maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="h-11 rounded-xl" />
       <Input required maxLength={20} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="WhatsApp number e.g. 082 123 4567" inputMode="tel" className="h-11 rounded-xl" />
       <Textarea maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="What do you need help with?" className="rounded-xl" />
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-muted-foreground" htmlFor="lead-photos">
+          Photos of the job (optional, up to 5)
+        </label>
+        <input
+          id="lead-photos"
+          type="file"
+          accept="image/*"
+          multiple
+          className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary"
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []).filter((f) => f.type.startsWith("image/") && f.size <= 5 * 1024 * 1024);
+            setPhotos(files.slice(0, 5));
+          }}
+        />
+        {photos.length > 0 && <p className="text-xs text-muted-foreground">{photos.length} photo{photos.length === 1 ? "" : "s"} attached</p>}
+      </div>
       <label className="flex items-start gap-2 text-xs text-muted-foreground">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
         I agree that this business may contact me on WhatsApp about my request (POPIA).
