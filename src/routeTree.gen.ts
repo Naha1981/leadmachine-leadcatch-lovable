@@ -43,6 +43,7 @@ import { Route as ApiPublicSiteLeadRouteImport } from './routes/api/public/site-
 import { Route as ApiTestAcceptanceRouteImport } from './routes/api/test/acceptance'
 import { Route as ApiCronMarketIntelligenceIngestRouteImport } from './routes/api/cron/market-intelligence/ingest'
 import { Route as ApiCronMarketIntelligenceJobsRouteImport } from './routes/api/cron/market-intelligence/jobs'
+import { Route as ApiPublicV1LeadsRouteImport } from './routes/api/public/v1/leads'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -227,6 +228,11 @@ const ApiCronMarketIntelligenceJobsRoute =
     path: '/jobs',
     getParentRoute: () => ApiCronMarketIntelligenceRoute,
   } as any)
+const ApiPublicV1LeadsRoute = ApiPublicV1LeadsRouteImport.update({
+  id: '/api/public/v1/leads',
+  path: '/api/public/v1/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp/webhook',
@@ -267,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
   '/api/cron/market-intelligence/ingest': typeof ApiCronMarketIntelligenceIngestRoute
   '/api/cron/market-intelligence/jobs': typeof ApiCronMarketIntelligenceJobsRoute
+  '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -302,6 +309,7 @@ export interface FileRoutesByTo {
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
   '/api/cron/market-intelligence/ingest': typeof ApiCronMarketIntelligenceIngestRoute
   '/api/cron/market-intelligence/jobs': typeof ApiCronMarketIntelligenceJobsRoute
+  '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesById {
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/api/test/acceptance': typeof ApiTestAcceptanceRoute
   '/api/cron/market-intelligence/ingest': typeof ApiCronMarketIntelligenceIngestRoute
   '/api/cron/market-intelligence/jobs': typeof ApiCronMarketIntelligenceJobsRoute
+  '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRouteTypes {
@@ -377,6 +386,7 @@ export interface FileRouteTypes {
     | '/api/test/acceptance'
     | '/api/cron/market-intelligence/ingest'
     | '/api/cron/market-intelligence/jobs'
+    | '/api/public/v1/leads'
     | '/api/public/whatsapp/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/api/test/acceptance'
     | '/api/cron/market-intelligence/ingest'
     | '/api/cron/market-intelligence/jobs'
+    | '/api/public/v1/leads'
     | '/api/public/whatsapp/webhook'
   id:
     | '__root__'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/api/test/acceptance'
     | '/api/cron/market-intelligence/ingest'
     | '/api/cron/market-intelligence/jobs'
+    | '/api/public/v1/leads'
     | '/api/public/whatsapp/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -471,6 +483,7 @@ export interface RootRouteChildren {
   ApiDemandRadarLatestRoute: typeof ApiDemandRadarLatestRoute
   ApiPublicSiteLeadRoute: typeof ApiPublicSiteLeadRoute
   ApiTestAcceptanceRoute: typeof ApiTestAcceptanceRoute
+  ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
 
@@ -714,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronMarketIntelligenceJobsRouteImport
       parentRoute: typeof ApiCronMarketIntelligenceRoute
     }
+    '/api/public/v1/leads': {
+      id: '/api/public/v1/leads'
+      path: '/api/public/v1/leads'
+      fullPath: '/api/public/v1/leads'
+      preLoaderRoute: typeof ApiPublicV1LeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/whatsapp/webhook': {
       id: '/api/public/whatsapp/webhook'
       path: '/api/public/whatsapp/webhook'
@@ -808,6 +828,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDemandRadarLatestRoute: ApiDemandRadarLatestRoute,
   ApiPublicSiteLeadRoute: ApiPublicSiteLeadRoute,
   ApiTestAcceptanceRoute: ApiTestAcceptanceRoute,
+  ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }
 export const routeTree = rootRouteImport

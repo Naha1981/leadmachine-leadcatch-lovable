@@ -255,6 +255,16 @@ export const Route = createFileRoute("/api/public/site-lead")({
           }
         }
 
+        const { fireTenantEvent } = await import("@/lib/webhooks.server");
+        await fireTenantEvent(tenantId, "lead.created", {
+          lead_id: leadId,
+          name: parsed.name,
+          phone,
+          message: parsed.message || "",
+          photo_paths: photoPaths,
+          source: "website",
+        });
+
         if (parsed.message) {
           const messageResult = await db.from("conversation_messages").insert({
             tenant_id: tenantId,
