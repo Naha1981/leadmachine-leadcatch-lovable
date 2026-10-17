@@ -33,7 +33,7 @@ type Convo = {
   last_message_preview: string | null;
   last_message_at: string;
   unread_count: number;
-  leads: { id: string; name: string | null; phone: string; status: string; ai_score: number | null; ai_temperature: string | null; ai_summary: string | null } | null;
+  leads: { id: string; name: string | null; phone: string; status: string; ai_score: number | null; ai_temperature: string | null; ai_summary: string | null; photo_paths: string[] | null } | null;
 };
 
 function InboxPage() {
@@ -50,7 +50,7 @@ function InboxPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("conversations")
-        .select("id, lead_id, last_message_preview, last_message_at, unread_count, leads(id, name, phone, status, ai_score, ai_temperature, ai_summary)")
+        .select("id, lead_id, last_message_preview, last_message_at, unread_count, leads(id, name, phone, status, ai_score, ai_temperature, ai_summary, photo_paths)")
         .order("last_message_at", { ascending: false })
         .limit(200);
       if (error) throw error;
@@ -174,6 +174,33 @@ function Avatar({ name, phone }: { name?: string | null | undefined; phone: stri
 }
 
 type Msg = { id: string; direction: string; body: string; is_auto: boolean; delivery_status: string; created_at: string };
+
+function LeadPhotos({ paths }: { paths: string[] }) {
+  const { data: urls } = useQuery({
+    queryKey: ["lead-photos", paths],
+    enabled: paths.length > 0,
+    staleTime: 3_000_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage.from("lead-photos").createSignedUrls(paths, 3600);
+      if (error) throw error;
+      return data.map((d) => d.signedUrl).filter((u): u is string => Boolean(u));
+    },
+  });
+  if (!paths.length) return null;
+  return (
+    <div className="border-b border-border bg-card px-4 py-2.5">
+      <p className="text-xs font-medium text-muted-foreground">Photos from the customer</p>
+      <div className="mt-1.5 flex flex-wrap gap-2">
+        {(urls ?? []).map((u, i) => (
+          <a key={i} href={u} target="_blank" rel="noreferrer">
+            <img src={u} alt={`Job photo ${i + 1}`} className="h-20 w-20 rounded-xl border border-border object-cover" />
+          </a>
+        ))}
+        {!urls && <p className="text-xs text-muted-foreground">Loading photos…</p>}
+      </div>
+    </div>
+  );
+}
 
 function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; onBack: () => void }) {
   const qc = useQueryClient();
@@ -352,6 +379,7 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
           <span className="font-medium text-foreground">AI: </span>{lead.ai_summary}
         </div>
       )}
+      <LeadPhotos paths={lead.photo_paths ?? []} />
       <div className="border-b border-border bg-card px-4 py-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-2.5">
