@@ -9,6 +9,10 @@ export const APP_ID = "leadcatch-sa";
 type OperatorAuthOptions = {
   auth?: "tenant" | "platform";
   waAccountId?: string;
+  /** Per-request timeout. Default 15s; provisioning calls need more (cold start). */
+  timeoutMs?: number;
+  /** Extra attempts after the first failure, for cold-start tolerance. */
+  retries?: number;
 };
 
 type OperatorTenantCredential = {
@@ -25,7 +29,9 @@ function isMissingCredentialTable(error: any): boolean {
   );
 }
 
-async function getStoredTenantCredential(tenantId: string): Promise<OperatorTenantCredential | null> {
+async function getStoredTenantCredential(
+  tenantId: string,
+): Promise<OperatorTenantCredential | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const db = supabaseAdmin as any;
   const { data, error } = await db
@@ -58,18 +64,16 @@ export async function saveOperatorTenantCredential(
 ): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const db = supabaseAdmin as any;
-  const { error } = await db
-    .from("whatsapp_operator_credentials")
-    .upsert(
-      {
-        app_id: APP_ID,
-        tenant_id: tenantId,
-        wa_account_id: waAccountId,
-        tenant_token: tenantToken,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "app_id,tenant_id" },
-    );
+  const { error } = await db.from("whatsapp_operator_credentials").upsert(
+    {
+      app_id: APP_ID,
+      tenant_id: tenantId,
+      wa_account_id: waAccountId,
+      tenant_token: tenantToken,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "app_id,tenant_id" },
+  );
 
   if (error) {
     if (isMissingCredentialTable(error)) {
@@ -126,15 +130,30 @@ export async function operatorRequest<T = any>(
 
   if (init.body) headers.set("Content-Type", "application/json");
 
-  let res: Response;
-  try {
-    res = await fetch(`${baseUrl.replace(/\/$/, "")}${path}`, {
-      ...init,
-      headers,
-      signal: init.signal ?? AbortSignal.timeout(15_000),
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+  // The WhatsApp service sleeps on a free host and can take 30-60s to wake.
+  // Provisioning calls pass a longer timeout plus one retry so a first-time
+  // "Connect WhatsApp" does not fail before the service is even up.
+  const timeoutMs = options.timeoutMs ?? 15_000;
+  const attempts = 1 + (options.retries ?? 0);
+  let res: Response | undefined;
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      res = await fetch(`${baseUrl.replace(/\/$/, "")}${path}`, {
+        ...init,
+        headers,
+        signal: init.signal ?? AbortSignal.timeout(timeoutMs),
+      });
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2_000));
+      }
+    }
+  }
+  if (!res) {
+    const message = lastError instanceof Error ? lastError.message : String(lastError);
     throw new Error(`WhatsApp service request failed: ${message}`);
   }
 
@@ -293,10 +312,5 @@ export async function getWhatsAppPresenceReport(
     };
     narrative: string;
     caveats: string[];
-  }>(
-    tenantId,
-    "/presence/report?" + params.toString(),
-    {},
-    { waAccountId },
-  );
+  }>(tenantId, "/presence/report?" + params.toString(), {}, { waAccountId });
 }
