@@ -55,7 +55,12 @@ export function WhatsAppConnect({ onConnected }: { onConnected?: () => void }) {
         onConnected?.();
       } else setPhase("linking");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not reach the WhatsApp service");
+      const m = e instanceof Error ? e.message : "Could not reach the WhatsApp service";
+      toast.error(
+        /abort|timeout|timed out/i.test(m)
+          ? "The WhatsApp service is waking up. A first connect can take a minute - press Connect WhatsApp again if it stops."
+          : m,
+      );
     } finally {
       setBusy(false);
     }
