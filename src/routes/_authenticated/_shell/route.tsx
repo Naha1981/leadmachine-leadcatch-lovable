@@ -11,6 +11,7 @@ import {
   Globe,
   FileText,
   Users,
+  Workflow,
 } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
 import { Logo } from "@/components/Logo";
@@ -63,6 +64,15 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           {label}
         </Link>
       ))}
+      <a
+        href="https://canvas.nahalabs.co.za/#/t/revenuedesk"
+        target="_blank"
+        rel="noopener"
+        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+      >
+        <Workflow className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        Lead flow map ↗
+      </a>
     </nav>
   );
 }
@@ -170,6 +180,21 @@ function Shell() {
                 </span>
               </Link>
             ))}
+            <a
+              href="https://canvas.nahalabs.co.za/#/t/revenuedesk"
+              target="_blank"
+              rel="noopener"
+              onClick={() => setMoreOpen(false)}
+              className="flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-accent active:bg-accent"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <Workflow className="h-5 w-5 text-foreground" strokeWidth={1.8} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-foreground">Lead flow map</span>
+                <span className="block truncate text-xs text-muted-foreground">See where leads stall and who owns the next step</span>
+              </span>
+            </a>
           </nav>
           <div className="mt-3 flex items-center gap-2 border-t border-border px-2 pt-3 text-xs text-muted-foreground">
             <span className={`h-2 w-2 rounded-full ${connected ? "bg-primary" : "bg-muted-foreground/50"}`} />
