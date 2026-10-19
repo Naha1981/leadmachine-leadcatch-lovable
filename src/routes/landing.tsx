@@ -110,7 +110,7 @@ function Landing() {
             </div>
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
-                <CheckCheck className="h-3.5 w-3.5 text-primary" /> 14-day trial
+                <CheckCheck className="h-3.5 w-3.5 text-primary" /> 7-day trial
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" /> POPIA-aware capture
@@ -426,7 +426,7 @@ function Landing() {
               name="RevenueDesk"
               price="R499"
               featured
-              description="The full AI revenue desk for your business. Cancel any time."
+              description="The full AI revenue desk for your business. Start with a 7-day free trial, then R499/month. Cancel any time."
               items={[
                 "AI front desk on your WhatsApp, 24/7",
                 "Inbox, lead capture and AI qualification",

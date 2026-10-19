@@ -582,9 +582,107 @@ export const INDUSTRY_EXPERIENCES: IndustryExperience[] = [
   },
 ];
 
+function makeExperience(
+  id: string, label: string, aliases: string[], category: string, noun: string, services: string[],
+  questions: string[], keywords: string[], customerMessage: string, assistantReply: string,
+): IndustryExperience {
+  return {
+    id, label, aliases, category,
+    headline: `Turn ${noun} enquiries into confirmed bookings.`,
+    subheadline: `RevenueDesk answers ${noun} enquiries instantly, qualifies them and books the next step while you run the business.`,
+    deskName: `${label} Revenue Desk`,
+    problem: `${label} enquiries go cold when nobody replies fast enough.`,
+    outcome: `Every ${noun} enquiry is answered, qualified and pushed towards a booking.`,
+    services, qualificationQuestions: questions,
+    urgentKeywords: ["urgent", "today", "asap", "emergency"],
+    fitKeywords: keywords,
+    leakTypes: ["Enquiry waiting for a reply", "Quote not followed up", "Booking not confirmed"],
+    assistantRole: `${noun} front-desk assistant`,
+    customerMessage, assistantReply,
+    signalLabels: ["Need", "Timing", "Area"],
+  };
+}
+
+INDUSTRY_EXPERIENCES.push(
+  makeExperience("car-dealership", "Car dealership", ["car dealership", "car dealer", "vehicle sales"], "Automotive", "vehicle",
+    ["New vehicle enquiries", "Used vehicle enquiries", "Test drives", "Trade-in valuations", "Finance pre-approval"],
+    ["Which vehicle are you interested in?", "Is it a new or used purchase?", "Will you finance or pay cash?", "When can you come in for a test drive?"],
+    ["car", "vehicle", "test drive", "trade-in", "finance", "suv", "bakkie"],
+    "Hi, is the white Polo still available? I would like a test drive.",
+    "Yes, it is. Would you like to come for a test drive? I have a free slot and can confirm it for you."),
+  makeExperience("restaurant-hospitality", "Restaurant/hospitality", ["restaurant/hospitality", "restaurant", "hospitality", "guest house", "lodge"], "Hospitality", "table and guest",
+    ["Table reservations", "Events and functions", "Catering requests", "Menu questions"],
+    ["For how many people?", "Which date and time?", "Any dietary needs or a special occasion?"],
+    ["table", "reservation", "book", "menu", "function"],
+    "Hi, do you have a table for 6 on Saturday evening?",
+    "We can help. I have a slot on Saturday at 19:00. Shall I confirm it for you?"),
+  makeExperience("accounting", "Accounting practice", ["accounting practice", "accountant", "bookkeeping", "tax practitioner"], "Professional services", "accounting",
+    ["Bookkeeping", "Tax returns", "Payroll", "Company registration", "Annual financial statements"],
+    ["What do you need help with?", "Is it for a company or personal?", "Is there a deadline?"],
+    ["tax", "vat", "payroll", "bookkeeping", "sars", "annual"],
+    "Hi, I need help with my company tax return before the deadline.",
+    "We can help with that. Is it for a company or personal tax, and when is your deadline? I can book a call for you."),
+  makeExperience("construction", "Construction/renovations", ["construction/renovations", "construction", "renovation", "builder", "building contractor"], "Home & field services", "building",
+    ["Renovations", "Extensions", "Painting and tiling", "Roofing", "Quotes and site visits"],
+    ["What work do you need done?", "Which suburb is the property in?", "When would you like to start?", "Do you have plans or photos?"],
+    ["renovat", "build", "extension", "tiling", "paint", "quote"],
+    "Hi, I want to renovate my kitchen. Can someone come and quote?",
+    "Yes, we can. Which suburb are you in? I can book a site visit for you."),
+  makeExperience("school-training", "School/training provider", ["school/training provider", "school", "training provider", "college", "tutoring"], "Education", "learner",
+    ["Admissions enquiries", "Course information", "Open day and tours", "Fees and payment plans"],
+    ["Which grade or course are you asking about?", "When would the learner start?", "Would you like to visit or book a call?"],
+    ["admission", "grade", "course", "fees", "enrol", "tour"],
+    "Hi, do you have space in Grade 8 next year?",
+    "Thanks for asking. I can help with admissions. Would you like to book a school tour? I have a slot available."),
+  makeExperience("fitness-gym", "Fitness/gym", ["fitness/gym", "gym", "fitness", "personal trainer", "studio"], "Health & wellness", "membership",
+    ["Memberships", "Free trial sessions", "Personal training", "Classes"],
+    ["What are your fitness goals?", "Would you like a free trial session?", "Which days and times suit you?"],
+    ["gym", "membership", "trial", "class", "trainer"],
+    "Hi, how much is a membership and can I try a session first?",
+    "Welcome. We offer a trial session. I have a free slot. Shall I book it for you?"),
+  makeExperience("other-service", "Other service business", ["other service business", "other"], "Other", "customer",
+    ["Enquiries", "Quotes", "Bookings", "Follow-ups"],
+    ["What do you need help with?", "Which area are you in?", "When would you like this done?"],
+    ["quote", "book", "service", "price"],
+    "Hi, can you help me with a quote?",
+    "Yes, happy to help. What do you need, and when? I can book a time for you."),
+);
+
+/** The 18 industries offered at onboarding: picker label -> experience id. */
+export const INDUSTRY_PICKER: { label: string; experienceId: string; category: string }[] = [
+  { label: "Dentist/healthcare", experienceId: "dental", category: "Health & wellness" },
+  { label: "Plumber", experienceId: "plumber", category: "Home & field services" },
+  { label: "Electrician", experienceId: "electrician", category: "Home & field services" },
+  { label: "Estate agent", experienceId: "real-estate", category: "Property" },
+  { label: "Car dealership", experienceId: "car-dealership", category: "Automotive" },
+  { label: "Restaurant/hospitality", experienceId: "restaurant-hospitality", category: "Hospitality" },
+  { label: "Beauty salon/aesthetics", experienceId: "aesthetics", category: "Health & wellness" },
+  { label: "Legal practice", experienceId: "legal", category: "Professional services" },
+  { label: "Accounting practice", experienceId: "accounting", category: "Professional services" },
+  { label: "Solar installer", experienceId: "solar", category: "Home & field services" },
+  { label: "Cleaning", experienceId: "cleaning", category: "Home & field services" },
+  { label: "HVAC/refrigeration", experienceId: "hvac", category: "Home & field services" },
+  { label: "Construction/renovations", experienceId: "construction", category: "Home & field services" },
+  { label: "Auto repair/mechanic", experienceId: "auto-workshop", category: "Automotive" },
+  { label: "Logistics/freight", experienceId: "container-transport", category: "Logistics" },
+  { label: "School/training provider", experienceId: "school-training", category: "Education" },
+  { label: "Fitness/gym", experienceId: "fitness-gym", category: "Health & wellness" },
+  { label: "Other service business", experienceId: "other-service", category: "Other" },
+];
+// Make every picker label resolve to its experience without changing existing labels.
+for (const item of INDUSTRY_PICKER) {
+  const exp = INDUSTRY_EXPERIENCES.find((e) => e.id === item.experienceId);
+  const alias = item.label.toLowerCase();
+  if (exp && !exp.aliases.includes(alias)) exp.aliases.push(alias);
+}
+
 export function getIndustryExperience(industry: string | null | undefined): IndustryExperience | null {
   const value = (industry ?? "").trim().toLowerCase();
   if (!value) return null;
+  const exact = INDUSTRY_EXPERIENCES.find((experience) =>
+    value === experience.id || value === experience.label.toLowerCase() || experience.aliases.includes(value),
+  );
+  if (exact) return exact;
   return INDUSTRY_EXPERIENCES.find((experience) =>
     value === experience.id ||
     value === experience.label.toLowerCase() ||
@@ -593,9 +691,5 @@ export function getIndustryExperience(industry: string | null | undefined): Indu
 }
 
 export function getIndustryOptions() {
-  return INDUSTRY_EXPERIENCES.map((experience) => ({
-    value: experience.label,
-    label: experience.label,
-    category: experience.category,
-  }));
+  return INDUSTRY_PICKER.map((item) => ({ value: item.label, label: item.label, category: item.category }));
 }

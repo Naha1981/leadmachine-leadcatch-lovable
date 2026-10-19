@@ -164,7 +164,7 @@ function Onboarding() {
               <div className="space-y-2">
                 <Label>What kind of business is this?</Label>
                 <div className="space-y-4">
-                  {["Home & field services", "Automotive", "Property & high-value sales", "Property & protection", "Health & high-value appointments", "Professional services", "Hospitality & events", "Commercial services"].map((category) => {
+                  {Array.from(new Set(industryOptions.map((item) => item.category))).map((category) => {
                     const options = industryOptions.filter((item) => item.category === category);
                     if (!options.length) return null;
                     return (
