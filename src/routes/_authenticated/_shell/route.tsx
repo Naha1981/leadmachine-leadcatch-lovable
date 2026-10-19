@@ -11,9 +11,12 @@ import {
   Globe,
   FileText,
   Users,
+  CalendarDays,
+  Newspaper,
   Workflow,
 } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
+import { getTrialState, trialNow, TRIAL_DAYS } from "@/lib/trial";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
@@ -24,6 +27,8 @@ const NAV = [
   { to: "/inbox", label: "Conversations", icon: Inbox },
   { to: "/revenue-leaks", label: "Revenue Leaks", icon: ShieldAlert },
   { to: "/ai-front-desk", label: "AI Front Desk", icon: Bot },
+  { to: "/bookings", label: "Bookings", icon: CalendarDays },
+  { to: "/weekly-content", label: "Weekly content", icon: Newspaper },
   { to: "/quotes", label: "Quotes", icon: FileText },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/insights", label: "Insights", icon: BarChart3 },
@@ -41,6 +46,8 @@ const TABS = [
 
 // Secondary destinations live behind the More tab's bottom sheet.
 const MORE = [
+  { to: "/bookings", label: "Bookings", icon: CalendarDays, blurb: "Open times and confirmed bookings" },
+  { to: "/weekly-content", label: "Weekly content", icon: Newspaper, blurb: "A weekly post plan for you to approve" },
   { to: "/insights", label: "Insights", icon: BarChart3, blurb: "Patterns across your leads and conversations" },
   { to: "/website", label: "Business Page", icon: Globe, blurb: "Your public page and what it captures" },
   { to: "/settings", label: "Settings", icon: Settings, blurb: "Hours, services, notifications, account" },
@@ -87,6 +94,11 @@ function Shell() {
     if (ws && !ws.profile.onboarded) navigate({ to: "/onboarding" });
   }, [ws, navigate]);
 
+  const trial = getTrialState(ws?.profile, trialNow());
+  useEffect(() => {
+    if (ws && ws.profile.onboarded && trial.locked) navigate({ to: "/billing" });
+  }, [ws, trial.locked, navigate]);
+
   const connected = ws?.profile.whatsapp_status === "connected";
   const moreActive = MORE.some(({ to }) => pathname.startsWith(to));
 
@@ -116,6 +128,12 @@ function Shell() {
       </header>
 
       <main className="min-w-0 flex-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
+        {ws && trial.status === "trial" && (
+          <div data-testid="trial-banner" className="flex items-center justify-between gap-3 border-b border-border bg-primary/10 px-4 py-2 text-xs md:text-sm">
+            <span className="font-medium">Day {trial.day} of {TRIAL_DAYS}</span>
+            <Link to="/billing" className="text-primary underline-offset-2 hover:underline">Subscribe, R499/month</Link>
+          </div>
+        )}
         {isLoading ? (
           <div className="p-6 text-sm text-muted-foreground">Loading your Revenue Desk…</div>
         ) : error ? (

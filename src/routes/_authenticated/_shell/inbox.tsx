@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { LEAD_STATUSES, type LeadStatus, StatusBadge, displayPhone, timeAgo } from "@/components/ui-bits";
 import { getIndustryExperience } from "@/lib/industry-experiences";
+import { BookingCard } from "@/components/BookingCard";
+import { isE2E, listBookings, listConversationMessages, listSimConversations } from "@/lib/bookings";
 
 export const Route = createFileRoute("/_authenticated/_shell/inbox")({
   head: () => ({
@@ -48,6 +50,10 @@ function InboxPage() {
     queryKey: ["conversations", ws?.tenantId],
     enabled: !!ws,
     queryFn: async () => {
+      if (isE2E()) {
+        const sims = await listSimConversations(ws!.tenantId);
+        return sims.map((c) => ({ id: c.id, lead_id: c.lead_id, last_message_preview: "Test enquiry", last_message_at: c.created_at, unread_count: 0, leads: { id: c.lead_id, name: c.customer_name, phone: "27000000000", status: "new", ai_score: null, ai_temperature: null, ai_summary: null, photo_paths: null } })) as Convo[];
+      }
       const { data, error } = await supabase
         .from("conversations")
         .select("id, lead_id, last_message_preview, last_message_at, unread_count, leads(id, name, phone, status, ai_score, ai_temperature, ai_summary, photo_paths)")
@@ -173,7 +179,7 @@ function Avatar({ name, phone }: { name?: string | null | undefined; phone: stri
   return <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">{initials}</div>;
 }
 
-type Msg = { id: string; direction: string; body: string; is_auto: boolean; delivery_status: string; created_at: string };
+type Msg = { id: string; direction: string; body: string; is_auto: boolean; delivery_status: string; created_at: string; kind?: string; booking_id?: string | null };
 
 function LeadPhotos({ paths }: { paths: string[] }) {
   const { data: urls } = useQuery({
@@ -218,16 +224,19 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
   const { data: msgs = [] } = useQuery({
     queryKey: ["messages", convo.id],
     queryFn: async () => {
+      if (isE2E()) return (await listConversationMessages(convo.id)).map((m) => ({ ...m, is_auto: m.direction === "outbound", delivery_status: "sent" })) as Msg[];
       const { data, error } = await supabase
         .from("conversation_messages")
-        .select("id, direction, body, is_auto, delivery_status, created_at")
+        .select("id, direction, body, is_auto, delivery_status, created_at, kind, booking_id")
         .eq("conversation_id", convo.id)
         .order("created_at")
         .limit(500);
       if (error) throw error;
-      return data as Msg[];
+      return data as unknown as Msg[];
     },
   });
+
+  const { data: bookingList = [] } = useQuery({ queryKey: ["bookings", tenantId], queryFn: () => listBookings(tenantId) });
 
   // Mark read on open and whenever new inbound arrives while open.
   useEffect(() => {
@@ -433,6 +442,9 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-5">
         {msgs.map((m) => (
           <div key={m.id} className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}>
+            {m.kind === "booking" ? (
+              <BookingCard startsAt={bookingList.find((b) => b.id === m.booking_id)?.starts_at} service={bookingList.find((b) => b.id === m.booking_id)?.service} />
+            ) : (
             <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${m.direction === "outbound" ? "rounded-br-md bg-primary text-primary-foreground" : "rounded-bl-md bg-secondary text-secondary-foreground"}`}>
               <p className="whitespace-pre-wrap break-words">{m.body}</p>
               <p className={`mt-1 flex items-center gap-1 text-[10px] ${m.direction === "outbound" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
@@ -441,6 +453,7 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
                 {m.delivery_status === "failed" && <span className="font-semibold"> · Not sent</span>}
               </p>
             </div>
+            )}
           </div>
         ))}
         <div ref={endRef} />

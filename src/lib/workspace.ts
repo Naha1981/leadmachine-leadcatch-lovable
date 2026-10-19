@@ -25,6 +25,8 @@ export async function loadWorkspace(): Promise<Workspace> {
         market_intelligence_enabled: true,
         onboarded: true,
         whatsapp_status: "connected",
+        trial_started_at: new Date().toISOString(),
+        subscription_status: "trial",
       } as unknown as Tables<"business_profiles">,
       config: { tenant_id: "00000000-0000-0000-0000-00000000e2e1", enabled: true } as unknown as Tables<"auto_reply_configs">,
     };

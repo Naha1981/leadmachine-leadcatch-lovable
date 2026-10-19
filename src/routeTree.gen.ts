@@ -18,6 +18,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedShellRouteRouteImport } from './routes/_authenticated/_shell/route'
 import { Route as AuthenticatedAcceptInviteRouteImport } from './routes/_authenticated/accept-invite'
+import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiMarketIntelligenceRouteImport } from './routes/api/market-intelligence'
@@ -25,6 +26,7 @@ import { Route as ApiWhatsappPresenceRouteImport } from './routes/api/whatsapp-p
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as AuthenticatedShellAiFrontDeskRouteImport } from './routes/_authenticated/_shell/ai-front-desk'
 import { Route as AuthenticatedShellAutoReplyRouteImport } from './routes/_authenticated/_shell/auto-reply'
+import { Route as AuthenticatedShellBookingsRouteImport } from './routes/_authenticated/_shell/bookings'
 import { Route as AuthenticatedShellCustomersRouteImport } from './routes/_authenticated/_shell/customers'
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellInboxRouteImport } from './routes/_authenticated/_shell/inbox'
@@ -35,6 +37,7 @@ import { Route as AuthenticatedShellQuotesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedShellRevenueLeaksRouteImport } from './routes/_authenticated/_shell/revenue-leaks'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authenticated/_shell/website'
+import { Route as AuthenticatedShellWeeklyContentRouteImport } from './routes/_authenticated/_shell/weekly-content'
 import { Route as ApiCronDemandRadarRouteImport } from './routes/api/cron/demand-radar'
 import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
 import { Route as ApiCronMarketIntelligenceRouteImport } from './routes/api/cron/market-intelligence'
@@ -91,6 +94,11 @@ const AuthenticatedAcceptInviteRoute =
     path: '/accept-invite',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -126,6 +134,12 @@ const AuthenticatedShellAutoReplyRoute =
   AuthenticatedShellAutoReplyRouteImport.update({
     id: '/auto-reply',
     path: '/auto-reply',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
+const AuthenticatedShellBookingsRoute =
+  AuthenticatedShellBookingsRouteImport.update({
+    id: '/bookings',
+    path: '/bookings',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
 const AuthenticatedShellCustomersRoute =
@@ -185,6 +199,12 @@ const AuthenticatedShellWebsiteRoute =
   AuthenticatedShellWebsiteRouteImport.update({
     id: '/website',
     path: '/website',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
+const AuthenticatedShellWeeklyContentRoute =
+  AuthenticatedShellWeeklyContentRouteImport.update({
+    id: '/weekly-content',
+    path: '/weekly-content',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
 const ApiCronDemandRadarRoute = ApiCronDemandRadarRouteImport.update({
@@ -255,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/accept-invite': typeof AuthenticatedAcceptInviteRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -262,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/s/$slug': typeof SSlugRoute
   '/ai-front-desk': typeof AuthenticatedShellAiFrontDeskRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/bookings': typeof AuthenticatedShellBookingsRoute
   '/customers': typeof AuthenticatedShellCustomersRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
@@ -272,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
+  '/weekly-content': typeof AuthenticatedShellWeeklyContentRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRouteWithChildren
@@ -292,6 +315,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/accept-invite': typeof AuthenticatedAcceptInviteRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -299,6 +323,7 @@ export interface FileRoutesByTo {
   '/s/$slug': typeof SSlugRoute
   '/ai-front-desk': typeof AuthenticatedShellAiFrontDeskRoute
   '/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/bookings': typeof AuthenticatedShellBookingsRoute
   '/customers': typeof AuthenticatedShellCustomersRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/inbox': typeof AuthenticatedShellInboxRoute
@@ -309,6 +334,7 @@ export interface FileRoutesByTo {
   '/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
+  '/weekly-content': typeof AuthenticatedShellWeeklyContentRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRouteWithChildren
@@ -332,6 +358,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
   '/_authenticated/accept-invite': typeof AuthenticatedAcceptInviteRoute
+  '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/health': typeof ApiHealthRoute
   '/api/market-intelligence': typeof ApiMarketIntelligenceRoute
@@ -339,6 +366,7 @@ export interface FileRoutesById {
   '/s/$slug': typeof SSlugRoute
   '/_authenticated/_shell/ai-front-desk': typeof AuthenticatedShellAiFrontDeskRoute
   '/_authenticated/_shell/auto-reply': typeof AuthenticatedShellAutoReplyRoute
+  '/_authenticated/_shell/bookings': typeof AuthenticatedShellBookingsRoute
   '/_authenticated/_shell/customers': typeof AuthenticatedShellCustomersRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/inbox': typeof AuthenticatedShellInboxRoute
@@ -349,6 +377,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/website': typeof AuthenticatedShellWebsiteRoute
+  '/_authenticated/_shell/weekly-content': typeof AuthenticatedShellWeeklyContentRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRouteWithChildren
@@ -371,6 +400,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/accept-invite'
+    | '/billing'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -378,6 +408,7 @@ export interface FileRouteTypes {
     | '/s/$slug'
     | '/ai-front-desk'
     | '/auto-reply'
+    | '/bookings'
     | '/customers'
     | '/dashboard'
     | '/inbox'
@@ -388,6 +419,7 @@ export interface FileRouteTypes {
     | '/revenue-leaks'
     | '/settings'
     | '/website'
+    | '/weekly-content'
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/market-intelligence'
@@ -408,6 +440,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/accept-invite'
+    | '/billing'
     | '/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -415,6 +448,7 @@ export interface FileRouteTypes {
     | '/s/$slug'
     | '/ai-front-desk'
     | '/auto-reply'
+    | '/bookings'
     | '/customers'
     | '/dashboard'
     | '/inbox'
@@ -425,6 +459,7 @@ export interface FileRouteTypes {
     | '/revenue-leaks'
     | '/settings'
     | '/website'
+    | '/weekly-content'
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/market-intelligence'
@@ -447,6 +482,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/_shell'
     | '/_authenticated/accept-invite'
+    | '/_authenticated/billing'
     | '/_authenticated/onboarding'
     | '/api/health'
     | '/api/market-intelligence'
@@ -454,6 +490,7 @@ export interface FileRouteTypes {
     | '/s/$slug'
     | '/_authenticated/_shell/ai-front-desk'
     | '/_authenticated/_shell/auto-reply'
+    | '/_authenticated/_shell/bookings'
     | '/_authenticated/_shell/customers'
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/inbox'
@@ -464,6 +501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/revenue-leaks'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/website'
+    | '/_authenticated/_shell/weekly-content'
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/market-intelligence'
@@ -565,6 +603,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAcceptInviteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/billing': {
+      id: '/_authenticated/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AuthenticatedBillingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -612,6 +657,13 @@ declare module '@tanstack/react-router' {
       path: '/auto-reply'
       fullPath: '/auto-reply'
       preLoaderRoute: typeof AuthenticatedShellAutoReplyRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
+    '/_authenticated/_shell/bookings': {
+      id: '/_authenticated/_shell/bookings'
+      path: '/bookings'
+      fullPath: '/bookings'
+      preLoaderRoute: typeof AuthenticatedShellBookingsRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
     '/_authenticated/_shell/customers': {
@@ -682,6 +734,13 @@ declare module '@tanstack/react-router' {
       path: '/website'
       fullPath: '/website'
       preLoaderRoute: typeof AuthenticatedShellWebsiteRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
+    '/_authenticated/_shell/weekly-content': {
+      id: '/_authenticated/_shell/weekly-content'
+      path: '/weekly-content'
+      fullPath: '/weekly-content'
+      preLoaderRoute: typeof AuthenticatedShellWeeklyContentRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
     '/api/cron/demand-radar': {
@@ -767,6 +826,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedShellRouteRouteChildren {
   AuthenticatedShellAiFrontDeskRoute: typeof AuthenticatedShellAiFrontDeskRoute
   AuthenticatedShellAutoReplyRoute: typeof AuthenticatedShellAutoReplyRoute
+  AuthenticatedShellBookingsRoute: typeof AuthenticatedShellBookingsRoute
   AuthenticatedShellCustomersRoute: typeof AuthenticatedShellCustomersRoute
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellInboxRoute: typeof AuthenticatedShellInboxRoute
@@ -777,12 +837,14 @@ interface AuthenticatedShellRouteRouteChildren {
   AuthenticatedShellRevenueLeaksRoute: typeof AuthenticatedShellRevenueLeaksRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
   AuthenticatedShellWebsiteRoute: typeof AuthenticatedShellWebsiteRoute
+  AuthenticatedShellWeeklyContentRoute: typeof AuthenticatedShellWeeklyContentRoute
 }
 
 const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren =
   {
     AuthenticatedShellAiFrontDeskRoute: AuthenticatedShellAiFrontDeskRoute,
     AuthenticatedShellAutoReplyRoute: AuthenticatedShellAutoReplyRoute,
+    AuthenticatedShellBookingsRoute: AuthenticatedShellBookingsRoute,
     AuthenticatedShellCustomersRoute: AuthenticatedShellCustomersRoute,
     AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
     AuthenticatedShellInboxRoute: AuthenticatedShellInboxRoute,
@@ -793,6 +855,7 @@ const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren
     AuthenticatedShellRevenueLeaksRoute: AuthenticatedShellRevenueLeaksRoute,
     AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
     AuthenticatedShellWebsiteRoute: AuthenticatedShellWebsiteRoute,
+    AuthenticatedShellWeeklyContentRoute: AuthenticatedShellWeeklyContentRoute,
   }
 
 const AuthenticatedShellRouteRouteWithChildren =
@@ -803,12 +866,14 @@ const AuthenticatedShellRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedShellRouteRoute: typeof AuthenticatedShellRouteRouteWithChildren
   AuthenticatedAcceptInviteRoute: typeof AuthenticatedAcceptInviteRoute
+  AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedShellRouteRoute: AuthenticatedShellRouteRouteWithChildren,
   AuthenticatedAcceptInviteRoute: AuthenticatedAcceptInviteRoute,
+  AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
 
