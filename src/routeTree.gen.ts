@@ -37,6 +37,7 @@ import { Route as AuthenticatedShellQuotesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedShellRevenueLeaksRouteImport } from './routes/_authenticated/_shell/revenue-leaks'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellWebsiteRouteImport } from './routes/_authenticated/_shell/website'
+import { Route as AuthenticatedShellWeeklyContentRouteImport } from './routes/_authenticated/_shell/weekly-content'
 import { Route as ApiCronDemandRadarRouteImport } from './routes/api/cron/demand-radar'
 import { Route as ApiCronLeadLeakageRouteImport } from './routes/api/cron/lead-leakage'
 import { Route as ApiCronMarketIntelligenceRouteImport } from './routes/api/cron/market-intelligence'
@@ -200,6 +201,12 @@ const AuthenticatedShellWebsiteRoute =
     path: '/website',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
+const AuthenticatedShellWeeklyContentRoute =
+  AuthenticatedShellWeeklyContentRouteImport.update({
+    id: '/weekly-content',
+    path: '/weekly-content',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
 const ApiCronDemandRadarRoute = ApiCronDemandRadarRouteImport.update({
   id: '/api/cron/demand-radar',
   path: '/api/cron/demand-radar',
@@ -287,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
+  '/weekly-content': typeof AuthenticatedShellWeeklyContentRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRouteWithChildren
@@ -326,6 +334,7 @@ export interface FileRoutesByTo {
   '/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/website': typeof AuthenticatedShellWebsiteRoute
+  '/weekly-content': typeof AuthenticatedShellWeeklyContentRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRouteWithChildren
@@ -368,6 +377,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/revenue-leaks': typeof AuthenticatedShellRevenueLeaksRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/website': typeof AuthenticatedShellWebsiteRoute
+  '/_authenticated/_shell/weekly-content': typeof AuthenticatedShellWeeklyContentRoute
   '/api/cron/demand-radar': typeof ApiCronDemandRadarRoute
   '/api/cron/lead-leakage': typeof ApiCronLeadLeakageRoute
   '/api/cron/market-intelligence': typeof ApiCronMarketIntelligenceRouteWithChildren
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/revenue-leaks'
     | '/settings'
     | '/website'
+    | '/weekly-content'
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/market-intelligence'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/revenue-leaks'
     | '/settings'
     | '/website'
+    | '/weekly-content'
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/market-intelligence'
@@ -489,6 +501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/revenue-leaks'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/website'
+    | '/_authenticated/_shell/weekly-content'
     | '/api/cron/demand-radar'
     | '/api/cron/lead-leakage'
     | '/api/cron/market-intelligence'
@@ -723,6 +736,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellWebsiteRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
+    '/_authenticated/_shell/weekly-content': {
+      id: '/_authenticated/_shell/weekly-content'
+      path: '/weekly-content'
+      fullPath: '/weekly-content'
+      preLoaderRoute: typeof AuthenticatedShellWeeklyContentRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
     '/api/cron/demand-radar': {
       id: '/api/cron/demand-radar'
       path: '/api/cron/demand-radar'
@@ -817,6 +837,7 @@ interface AuthenticatedShellRouteRouteChildren {
   AuthenticatedShellRevenueLeaksRoute: typeof AuthenticatedShellRevenueLeaksRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
   AuthenticatedShellWebsiteRoute: typeof AuthenticatedShellWebsiteRoute
+  AuthenticatedShellWeeklyContentRoute: typeof AuthenticatedShellWeeklyContentRoute
 }
 
 const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren =
@@ -834,6 +855,7 @@ const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren
     AuthenticatedShellRevenueLeaksRoute: AuthenticatedShellRevenueLeaksRoute,
     AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
     AuthenticatedShellWebsiteRoute: AuthenticatedShellWebsiteRoute,
+    AuthenticatedShellWeeklyContentRoute: AuthenticatedShellWeeklyContentRoute,
   }
 
 const AuthenticatedShellRouteRouteWithChildren =

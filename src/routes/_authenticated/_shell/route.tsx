@@ -12,6 +12,7 @@ import {
   FileText,
   Users,
   CalendarDays,
+  Newspaper,
   Workflow,
 } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
@@ -27,6 +28,7 @@ const NAV = [
   { to: "/revenue-leaks", label: "Revenue Leaks", icon: ShieldAlert },
   { to: "/ai-front-desk", label: "AI Front Desk", icon: Bot },
   { to: "/bookings", label: "Bookings", icon: CalendarDays },
+  { to: "/weekly-content", label: "Weekly content", icon: Newspaper },
   { to: "/quotes", label: "Quotes", icon: FileText },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/insights", label: "Insights", icon: BarChart3 },
@@ -45,6 +47,7 @@ const TABS = [
 // Secondary destinations live behind the More tab's bottom sheet.
 const MORE = [
   { to: "/bookings", label: "Bookings", icon: CalendarDays, blurb: "Open times and confirmed bookings" },
+  { to: "/weekly-content", label: "Weekly content", icon: Newspaper, blurb: "A weekly post plan for you to approve" },
   { to: "/insights", label: "Insights", icon: BarChart3, blurb: "Patterns across your leads and conversations" },
   { to: "/website", label: "Business Page", icon: Globe, blurb: "Your public page and what it captures" },
   { to: "/settings", label: "Settings", icon: Settings, blurb: "Hours, services, notifications, account" },
