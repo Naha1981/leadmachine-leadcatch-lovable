@@ -137,8 +137,17 @@ export function scheduleFor(postDay: string, week: string): string | null {
 }
 
 async function bridge<T>(body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke("content-bridge", { body });
-  if (error) throw new Error(error.message ?? "Posting service unreachable");
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (!token) throw new Error("Sign in again to continue");
+  const res = await fetch(`${window.location.origin}/bridge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  let data: unknown = null;
+  try { data = await res.json(); } catch { /* non-JSON */ }
+  if (!res.ok) throw new Error((data as { error?: string })?.error ?? "Posting service unreachable");
   if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
   return data as T;
 }
