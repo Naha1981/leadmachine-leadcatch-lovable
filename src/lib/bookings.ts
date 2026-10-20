@@ -131,9 +131,15 @@ export async function startSimulatedEnquiry(tenantId: string, hours: WorkingHour
     s.convos.unshift({ id: conversationId, lead_id: leadId, customer_name: "Potential Customer", created_at: new Date().toISOString() });
     save(s);
   } else {
-    const lead = await db.from("leads").insert({ tenant_id: tenantId, name: "Potential Customer", phone: "27000000000", source: "simulated", service }).select("id").single();
-    if (lead.error) throw lead.error;
-    leadId = lead.data.id;
+    const existing = await db.from("leads").select("id").eq("tenant_id", tenantId).eq("phone", "27000000000").eq("source", "simulated").maybeSingle();
+    if (existing.error) throw existing.error;
+    if (existing.data) {
+      leadId = existing.data.id;
+    } else {
+      const lead = await db.from("leads").insert({ tenant_id: tenantId, name: "Potential Customer", phone: "27000000000", source: "simulated", service }).select("id").single();
+      if (lead.error) throw lead.error;
+      leadId = lead.data.id;
+    }
     const conv = await db.from("conversations").insert({ tenant_id: tenantId, lead_id: leadId, last_message_preview: text.slice(0, 120) }).select("id").single();
     if (conv.error) throw conv.error;
     conversationId = conv.data.id;
