@@ -140,9 +140,16 @@ export async function startSimulatedEnquiry(tenantId: string, hours: WorkingHour
       if (lead.error) throw lead.error;
       leadId = lead.data.id;
     }
-    const conv = await db.from("conversations").insert({ tenant_id: tenantId, lead_id: leadId, last_message_preview: text.slice(0, 120) }).select("id").single();
-    if (conv.error) throw conv.error;
-    conversationId = conv.data.id;
+    // conversations.lead_id is unique: a returning Potential Customer continues the same test chat.
+    const existingConv = await db.from("conversations").select("id").eq("tenant_id", tenantId).eq("lead_id", leadId).maybeSingle();
+    if (existingConv.error) throw existingConv.error;
+    if (existingConv.data) {
+      conversationId = existingConv.data.id;
+    } else {
+      const conv = await db.from("conversations").insert({ tenant_id: tenantId, lead_id: leadId, last_message_preview: text.slice(0, 120) }).select("id").single();
+      if (conv.error) throw conv.error;
+      conversationId = conv.data.id;
+    }
   }
   await addMessage(tenantId, { conversation_id: conversationId, lead_id: leadId, direction: "inbound", body: text });
   const reply = next
