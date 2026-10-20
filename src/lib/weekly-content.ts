@@ -6,6 +6,8 @@ export type PostSource = "radar" | "enquiries" | "bookings" | "trend";
 export type WeeklyPost = {
   id: string; tenant_id: string; week_start: string; post_day: string; topic: string; source: PostSource;
   source_note: string | null; copy: string; status: "draft" | "approved" | "rejected"; approved_at: string | null;
+  channel?: string | null; channel_post_id?: string | null; scheduled_for?: string | null;
+  posted_url?: string | null; publish_state?: PublishState | null; post_error?: string | null;
 };
 export type Signals = {
   radar: { title: string; suburb?: string | undefined }[];
@@ -110,5 +112,98 @@ export async function updatePost(tenantId: string, id: string, patch: Partial<Pi
   const full = { ...patch, ...(patch.status === "approved" ? { approved_at: new Date().toISOString() } : patch.status ? { approved_at: null } : {}) };
   if (isE2E()) { saveLocal(loadLocal().map((p) => (p.id === id ? { ...p, ...full } : p))); return; }
   const { error } = await db.from("weekly_content_posts").update(full).eq("id", id).eq("tenant_id", tenantId);
+  if (error) throw error;
+}
+
+// ---- Social posting (approve -> schedule -> auto-post) ---------------------
+export type ChannelAccount = { channel: string; handle: string; max_caption_chars: number };
+export type PublishState = "scheduled" | "published" | "failed";
+
+/** Bluesky captions cap at 300 chars; trim the post copy at a word boundary. */
+export function captionForChannel(copy: string, max = 300): string {
+  const flat = copy.trim();
+  if ([...flat].length <= max) return flat;
+  const cut = [...flat].slice(0, max - 1).join("");
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), cut.lastIndexOf("\n")))}…`;
+}
+
+/** Map a plan day name to this week's date at 09:00 local; past days post now. */
+export function scheduleFor(postDay: string, week: string): string | null {
+  const idx = DAYS.indexOf(postDay);
+  if (idx < 0) return null;
+  const d = new Date(`${week}T09:00:00`);
+  d.setDate(d.getDate() + idx);
+  return d.getTime() > Date.now() + 60_000 ? d.toISOString() : null; // null = publish now
+}
+
+async function bridge<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke("content-bridge", { body });
+  if (error) throw new Error(error.message ?? "Posting service unreachable");
+  if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+  return data as T;
+}
+
+export async function listChannelAccounts(): Promise<ChannelAccount[]> {
+  if (isE2E()) return [{ channel: "bluesky", handle: "demo.bsky.social", max_caption_chars: 300 }];
+  const r = await bridge<{ items: ChannelAccount[] }>({ action: "accounts" });
+  return r.items ?? [];
+}
+
+export async function connectChannel(channel: string, handle: string, appPassword: string): Promise<void> {
+  await bridge({ action: "connect", channel, handle, app_password: appPassword });
+}
+
+type ApiPost = { id: string; status: string; scheduled_at: string | null; published_at: string | null; external_url: string | null; error: string | null };
+
+/** Approve: create the channel post and schedule it (or post now when its day has passed). */
+export async function sendToChannel(post: WeeklyPost, week: string): Promise<{ id: string; scheduled_for: string | null; state: PublishState; url: string | null; error: string | null }> {
+  const when = scheduleFor(post.post_day, week);
+  if (isE2E()) return { id: uid(), scheduled_for: when ?? new Date().toISOString(), state: "scheduled", url: null, error: null };
+  const created = await bridge<ApiPost>({ action: "create", channel: "bluesky", caption: captionForChannel(post.copy), title: post.topic, idempotency_key: `weekly-${post.id}` });
+  const sched = await bridge<ApiPost>({ action: "schedule", id: created.id, ...(when ? { scheduled_at: when } : {}) });
+  return {
+    id: created.id,
+    scheduled_for: sched.scheduled_at ?? sched.published_at,
+    state: (sched.status as PublishState) ?? "scheduled",
+    url: sched.external_url,
+    error: sched.error,
+  };
+}
+
+export async function cancelChannelPost(channelPostId: string): Promise<void> {
+  if (isE2E()) return;
+  await bridge({ action: "cancel", id: channelPostId });
+}
+
+/** Refresh publish_state/posted_url for rows already sent to the channel. */
+export async function syncChannelStatus(tenantId: string, posts: WeeklyPost[]): Promise<void> {
+  const tracked = posts.filter((p) => p.channel_post_id && p.publish_state !== "published");
+  if (tracked.length === 0 || isE2E()) return;
+  const r = await bridge<{ items: ApiPost[] }>({ action: "list" });
+  const byId = new Map((r.items ?? []).map((p) => [p.id, p]));
+  for (const p of tracked) {
+    const a = byId.get(p.channel_post_id!);
+    if (!a) continue;
+    const patch = {
+      publish_state: a.status as PublishState,
+      posted_url: a.external_url,
+      scheduled_for: a.scheduled_at,
+      post_error: a.error,
+    };
+    await db.from("weekly_content_posts").update(patch).eq("id", p.id).eq("tenant_id", tenantId);
+  }
+}
+
+export async function markSentToChannel(tenantId: string, id: string, r: { id: string; scheduled_for: string | null; state: PublishState; url: string | null; error: string | null }): Promise<void> {
+  const patch: Partial<WeeklyPost> = { status: "approved", approved_at: new Date().toISOString(), channel: "bluesky", channel_post_id: r.id, scheduled_for: r.scheduled_for, publish_state: r.state, posted_url: r.url, post_error: r.error };
+  if (isE2E()) { saveLocal(loadLocal().map((p) => (p.id === id ? { ...p, ...patch } : p))); return; }
+  const { error } = await db.from("weekly_content_posts").update(patch).eq("id", id).eq("tenant_id", tenantId);
+  if (error) throw error;
+}
+
+export async function clearChannelState(tenantId: string, id: string): Promise<void> {
+  const patch: Partial<WeeklyPost> = { channel: null, channel_post_id: null, scheduled_for: null, publish_state: null, posted_url: null, post_error: null, status: "draft", approved_at: null };
+  if (isE2E()) { saveLocal(loadLocal().map((p) => (p.id === id ? { ...p, ...patch } : p))); return; }
+  const { error } = await db.from("weekly_content_posts").update(patch).eq("id", id).eq("tenant_id", tenantId);
   if (error) throw error;
 }
