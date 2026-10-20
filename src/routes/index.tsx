@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Landing } from "./landing";
 
-// App-first: the root URL opens the product, not a marketing page.
-// The marketing site lives at /landing.
+// The root URL is the public front door: anonymous visitors get the
+// marketing page right here (it also lives at /landing), while
+// signed-in users go straight into the product.
 //
 // This route also completes the Lovable OAuth round-trip: the broker
 // returns to the site origin with tokens in the URL (hash or query).
@@ -12,11 +14,29 @@ import { supabase } from "@/integrations/supabase/client";
 // sign-in would never stick.
 export const Route = createFileRoute("/")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "RevenueDesk — The AI Revenue Desk for service businesses" },
+      {
+        name: "description",
+        content:
+          "Capture enquiries, qualify leads, recover missed opportunities and keep follow-up moving with an AI Revenue Desk built for South African service businesses.",
+      },
+      { property: "og:title", content: "RevenueDesk — The AI Revenue Desk for service businesses" },
+      {
+        property: "og:description",
+        content:
+          "Capture enquiries, qualify leads, recover missed opportunities and keep follow-up moving.",
+      },
+      { property: "og:type", content: "website" },
+    ],
+  }),
   component: RootEntry,
 });
 
 function RootEntry() {
   const navigate = useNavigate();
+  const [anonymous, setAnonymous] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -38,8 +58,17 @@ function RootEntry() {
           navigate({ to: "/auth" });
           return;
         }
+        navigate({ to: "/dashboard" });
+        return;
       }
-      navigate({ to: "/dashboard" });
+
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (data.user) {
+        navigate({ to: "/dashboard" });
+        return;
+      }
+      setAnonymous(true);
     }
 
     enter();
@@ -48,5 +77,5 @@ function RootEntry() {
     };
   }, [navigate]);
 
-  return null;
+  return anonymous ? <Landing /> : null;
 }

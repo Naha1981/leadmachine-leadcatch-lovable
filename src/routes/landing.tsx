@@ -38,8 +38,14 @@ export const Route = createFileRoute("/landing")({
   component: Landing,
 });
 
-function Landing() {
-  const [industryId, setIndustryId] = useState("plumber");
+export function Landing() {
+  // Default to the generic "service businesses" copy. An industry variant
+  // shows only when a visitor picks one below or arrives via an explicit
+  // ?industry= link.
+  const [industryId, setIndustryId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("industry");
+  });
   const experience = getIndustryExperience(industryId);
 
   return (
@@ -72,7 +78,7 @@ function Landing() {
               to="/auth"
               className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
             >
-              Start free
+              Start free trial
             </Link>
           </div>
         </div>
@@ -99,7 +105,7 @@ function Landing() {
                 to="/auth"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-semibold text-primary-foreground"
               >
-                Start free <ArrowRight className="h-4 w-4" />
+                Start 7-day free trial <ArrowRight className="h-4 w-4" />
               </Link>
               <a
                 href="#how"
@@ -453,7 +459,7 @@ function Landing() {
               to="/auth"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-5 py-3 font-semibold text-foreground"
             >
-              Start free <ArrowRight className="h-4 w-4" />
+              Start 7-day free trial <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>
@@ -574,7 +580,7 @@ function PriceCard({
         to="/auth"
         className={`mt-6 block rounded-xl py-2.5 text-center text-sm font-semibold ${featured ? "bg-primary text-primary-foreground" : "border border-border bg-background hover:bg-accent"}`}
       >
-        Start free
+        Start 7-day free trial
       </Link>
     </div>
   );
