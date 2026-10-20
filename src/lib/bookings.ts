@@ -181,6 +181,16 @@ export async function confirmBooking(opts: { tenantId: string; conversationId: s
     booking = ins.data as Booking;
   }
   await addMessage(tenantId(opts), { conversation_id: opts.conversationId, lead_id: opts.leadId, direction: "outbound", body: `Booking confirmed: ${slotLabel(booking.starts_at)}`, kind: "booking", booking_id: booking.id });
+  // Best-effort: email the owner about the new booking. Never blocks the confirm.
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) await fetch(`${window.location.origin}/bridge`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ action: "booking-email", service: opts.service, starts_at: booking.starts_at, customer_name: booking.customer_name }),
+    });
+  } catch { /* notification is best-effort */ }
   return booking;
 }
 const tenantId = (o: { tenantId: string }) => o.tenantId;
