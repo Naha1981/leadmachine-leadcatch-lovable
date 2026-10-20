@@ -116,7 +116,7 @@ async function addMessage(tenantId: string, m: { conversation_id: string; lead_i
     s.messages.push({ id: uid(), conversation_id: m.conversation_id, direction: m.direction, body: m.body, kind: row.kind as "text" | "booking", booking_id: row.booking_id ?? null, created_at: new Date().toISOString() });
     save(s); return;
   }
-  const { error } = await db.from("conversation_messages").insert({ tenant_id: tenantId, is_auto: m.direction === "outbound", sender: m.direction === "outbound" ? "ai" : "customer", delivery_status: "simulated", ...row });
+  const { error } = await db.from("conversation_messages").insert({ tenant_id: tenantId, is_auto: m.direction === "outbound", sender: m.direction === "outbound" ? "auto" : "customer", delivery_status: "simulated", ...row });
   if (error) throw error;
   await db.from("conversations").update({ last_message_preview: m.body.slice(0, 120), last_message_at: new Date().toISOString() }).eq("id", m.conversation_id);
 }
