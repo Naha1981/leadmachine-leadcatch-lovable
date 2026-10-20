@@ -49,6 +49,43 @@ export function buildSlots(tenantId: string, hours: WorkingHours, from = new Dat
   return out;
 }
 
+/** Picks the slot to offer: the first future open slot matching the customer's requested day and part of day. */
+export function pickOfferSlot(slots: Slot[], customerText: string, now = new Date()): Slot | null {
+  const open = slots.filter((s) => s.status === "open" && new Date(s.starts_at).getTime() > now.getTime());
+  if (!open.length) return null;
+  const t = customerText.toLowerCase();
+  let wanted = open;
+  let dayOffset: number | null = null;
+  if (/\btomorrow\b/.test(t)) dayOffset = 1;
+  else if (/\btoday\b/.test(t)) dayOffset = 0;
+  else {
+    const names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    for (let i = 0; i < 7; i++) {
+      if (new RegExp(`\\b${names[i]}\\b`).test(t)) {
+        const diff = (i - now.getDay() + 7) % 7;
+        dayOffset = diff === 0 ? 7 : diff;
+        break;
+      }
+    }
+  }
+  if (dayOffset !== null) {
+    const dayStart = new Date(now); dayStart.setDate(dayStart.getDate() + dayOffset); dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1);
+    const inDay = wanted.filter((s) => { const st = new Date(s.starts_at); return st >= dayStart && st < dayEnd; });
+    if (inDay.length) wanted = inDay;
+  }
+  let range: [number, number] | null = null;
+  if (/\bmorning\b/.test(t)) range = [6, 12];
+  else if (/\bafternoon\b/.test(t)) range = [12, 17];
+  else if (/\bevening\b/.test(t)) range = [17, 22];
+  if (range) {
+    const [lo, hi] = range;
+    const inRange = wanted.filter((s) => { const h = new Date(s.starts_at).getHours(); return h >= lo && h < hi; });
+    if (inRange.length) wanted = inRange;
+  }
+  return wanted[0] ?? null;
+}
+
 export async function listSlots(tenantId: string): Promise<Slot[]> {
   if (isE2E()) return load().slots.filter((s) => new Date(s.ends_at) > new Date()).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const { data, error } = await db.from("availability_slots").select("*").eq("tenant_id", tenantId)
@@ -124,7 +161,7 @@ async function addMessage(tenantId: string, m: { conversation_id: string; lead_i
 /** Simulated enquiry: a "Potential Customer" messages in; the assistant offers the next open slot. */
 export async function startSimulatedEnquiry(tenantId: string, hours: WorkingHours, text: string, service: string): Promise<{ conversationId: string; leadId: string }> {
   const slots = await ensureSlots(tenantId, hours);
-  const next = slots.find((s) => s.status === "open");
+  const next = pickOfferSlot(slots, text);
   let conversationId: string; let leadId: string;
   if (isE2E()) {
     const s = load(); conversationId = uid(); leadId = uid();
@@ -161,8 +198,10 @@ export async function startSimulatedEnquiry(tenantId: string, hours: WorkingHour
 
 /** Customer confirms: slot is claimed, booking saved, and a booking card lands in the conversation. */
 export async function confirmBooking(opts: { tenantId: string; conversationId: string; leadId: string; service: string; simulated: boolean }): Promise<Booking> {
-  const slots = (await listSlots(opts.tenantId)).filter((s) => s.status === "open");
-  const slot = slots[0];
+  const msgs = await listConversationMessages(opts.conversationId);
+  const lastInbound = [...msgs].reverse().find((m) => m.direction === "inbound" && m.kind === "text");
+  const slots = await listSlots(opts.tenantId);
+  const slot = pickOfferSlot(slots, lastInbound?.body ?? "");
   if (!slot) throw new Error("No open times left");
   let booking: Booking;
   if (isE2E()) {

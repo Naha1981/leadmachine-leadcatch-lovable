@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CalendarDays, Send } from "lucide-react";
@@ -33,6 +33,9 @@ function BookingsPage() {
   const simQ = useQuery({ queryKey: ["sim-convos", tenantId], enabled: !!ws, queryFn: () => listSimConversations(tenantId) });
 
   const [activeId, setActiveId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!activeId && simQ.data?.length) setActiveId(simQ.data[0]!.id);
+  }, [activeId, simQ.data]);
   const [text, setText] = useState(experience?.customerMessage ?? "Hi, I would like to book an appointment.");
   const [busy, setBusy] = useState(false);
 
@@ -42,7 +45,7 @@ function BookingsPage() {
     queryFn: () => listConversationMessages(activeId!),
   });
   const bookingById = new Map((bookingsQ.data ?? []).map((b) => [b.id, b]));
-  const confirmed = (msgsQ.data ?? []).some((m) => m.kind === "booking");
+  const confirmed = (msgsQ.data ?? []).some((m) => m.kind === "booking" && bookingById.get(m.booking_id ?? "")?.status === "confirmed");
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["slots"] });
