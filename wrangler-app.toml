@@ -1,0 +1,9 @@
+name = "revenuedesk-app"
+account_id = "655bd72036df93c103f655230cf9ade7"
+main = ".output/server/index.mjs"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[assets]
+directory = ".output/public"
