@@ -1,0 +1,9 @@
+name = "revenuedesk"
+account_id = "655bd72036df93c103f655230cf9ade7"
+main = "index.js"
+compatibility_date = "2025-09-01"
+workers_dev = false
+# No [vars] and no secrets here: all six bindings are secret_text set on the
+# existing Worker and persist across code-only deploys.
+# Custom domain route (revenuedesk.nahalabs.co.za) is configured account-side
+# and is not affected by code-only deploys.

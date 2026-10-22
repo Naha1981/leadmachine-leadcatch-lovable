@@ -1,0 +1,31 @@
+{
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": [],
+  "bindings": [
+    {
+      "name": "CONTENT_API_KEY",
+      "type": "secret_text"
+    },
+    {
+      "name": "PF_MERCHANT_ID",
+      "type": "secret_text"
+    },
+    {
+      "name": "PF_MERCHANT_KEY",
+      "type": "secret_text"
+    },
+    {
+      "name": "PF_MODE",
+      "type": "secret_text"
+    },
+    {
+      "name": "PF_PASSPHRASE",
+      "type": "secret_text"
+    },
+    {
+      "name": "RESEND_API_KEY",
+      "type": "secret_text"
+    }
+  ],
+  "usage_model": "standard"
+}
