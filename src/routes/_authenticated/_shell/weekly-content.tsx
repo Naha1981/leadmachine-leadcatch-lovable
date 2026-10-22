@@ -41,7 +41,7 @@ function WeeklyContent() {
     if (!ws) return;
     setBusy(true);
     try {
-      const signals = await gatherSignals(tenantId);
+      const signals = await gatherSignals(tenantId, { industry: ws.profile.industry, area: ws.profile.suburb ?? "" });
       await generatePlan({ tenantId, industry: ws.profile.industry, businessName: ws.profile.business_name, suburb: ws.profile.suburb ?? "", signals, week });
       await qc.invalidateQueries({ queryKey: ["weekly-posts"] });
     } catch (e) { toast.error(e instanceof Error ? e.message : "Could not build the plan"); }

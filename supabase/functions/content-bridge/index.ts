@@ -84,6 +84,14 @@ Deno.serve(async (req) => {
         const r = await call("POST", `/api/v1/posts/${body.id}/cancel`);
         return json(r.body, r.status);
       }
+      case "radar": {
+        const q = new URLSearchParams();
+        if (body.industry) q.set("industry", String(body.industry).slice(0, 60));
+        if (body.area) q.set("area", String(body.area).slice(0, 60));
+        const qs = q.toString();
+        const r = await call("GET", `/v1/radar/weekly${qs ? `?${qs}` : ""}`);
+        return json(r.body, r.status);
+      }
       case "list": {
         const r = await call("GET", `/api/v1/posts${body.status ? `?status=${encodeURIComponent(body.status)}` : ""}`);
         return json(r.body, r.status);

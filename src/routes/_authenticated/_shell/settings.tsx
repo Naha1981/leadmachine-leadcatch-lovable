@@ -8,6 +8,7 @@ import { useWorkspace } from "@/lib/workspace";
 import { disconnectWhatsApp } from "@/lib/whatsapp.functions";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { getZeroUISettings, setZeroUISettings } from "@/lib/zero-ui.functions";
+import { getHiStatus, connectHi, disconnectHi } from "@/lib/hi.functions";
 import { listTeam, inviteMember, revokeInvite, removeMember } from "@/lib/team.functions";
 import {
   getDeveloperSettings,
@@ -585,6 +586,8 @@ function SettingsPage() {
           </p>
         )}
       </Card>
+
+      <HiAssistantCard />
       <Card className="space-y-4">
         <h2 className="font-medium">Business profile</h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -1003,5 +1006,105 @@ function SettingsPage() {
         </p>
       </Card>
     </div>
+  );
+}
+
+function HiAssistantCard() {
+  const loadStatus = useServerFn(getHiStatus);
+  const connect = useServerFn(connectHi);
+  const disconnect = useServerFn(disconnectHi);
+  const [state, setState] = useState<{ connected: boolean; label?: string | null; verifiedAt?: string | null } | null>(null);
+  const [key, setKey] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    loadStatus()
+      .then((r) => setState(r))
+      .catch(() => setState({ connected: false }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Card className="space-y-4">
+      <div>
+        <h2 className="font-medium">Advanced AI assistant (optional)</h2>
+        <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+          Connect your NahaLabs AI key and the owner assistant runs on your own AI account, with
+          its budgets and approvals. Without a key, the built-in assistant keeps working as it
+          does today.
+        </p>
+      </div>
+      {state === null ? (
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      ) : state.connected ? (
+        <div className="flex items-center justify-between gap-4 text-sm">
+          <div>
+            <p className="flex items-center gap-2 font-medium">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              Connected{state.label ? ` · ${state.label}` : ""}
+            </p>
+            {state.verifiedAt && (
+              <p className="mt-1 text-muted-foreground">Verified {timeAgo(state.verifiedAt)}</p>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            className="rounded-xl"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await disconnect();
+                setState({ connected: false });
+                setKey("");
+                toast.success("AI assistant disconnected");
+              } catch {
+                toast.error("Could not disconnect. Try again.");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Disconnect
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label htmlFor="hi-key">API key</Label>
+            <Input
+              id="hi-key"
+              type="password"
+              autoComplete="off"
+              placeholder="Paste your key"
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Stored on the server only. It is never shown again after you connect.
+            </p>
+          </div>
+          <Button
+            className="rounded-xl"
+            disabled={busy || !key.trim()}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                const r = await connect({ data: { apiKey: key.trim() } });
+                setState({ connected: true, label: r.label });
+                setKey("");
+                toast.success("AI assistant connected");
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Could not connect that key");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? "Checking…" : "Connect"}
+          </Button>
+        </div>
+      )}
+    </Card>
   );
 }

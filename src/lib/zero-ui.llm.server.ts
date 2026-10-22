@@ -32,17 +32,37 @@ async function chatExistingGateway(messages: ChatMessage[]): Promise<ChatResult>
   const model = "openai/gpt-6-astra";
   const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
     method: "POST",
-    headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
+    headers: {
+      "Lovable-API-Key": key,
+      "X-Lovable-AIG-SDK": "fetch",
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ model, input: messages, stream: false, store: false }),
   });
   if (!res.ok) throw new Error("Existing AI gateway error " + res.status);
   const body = await res.json();
-  const text = body.output_text ?? body.output?.map?.((x: any) => x?.content?.map?.((c: any) => c?.text ?? "").join("") ?? "").join("") ?? "";
+  const text =
+    body.output_text ??
+    body.output
+      ?.map?.((x: any) => x?.content?.map?.((c: any) => c?.text ?? "").join("") ?? "")
+      .join("") ??
+    "";
   if (typeof text !== "string" || !text.trim()) throw new Error("AI gateway returned no content");
   return { text, provider: "existing-gateway", model };
 }
 
-export async function zeroUiChat(messages: ChatMessage[]): Promise<ChatResult> {
+export async function zeroUiChat(
+  messages: ChatMessage[],
+  opts: { hiKey?: string | null } = {},
+): Promise<ChatResult> {
+  if (opts.hiKey) {
+    try {
+      const { hiChat } = await import("./hi.server");
+      return await hiChat(opts.hiKey, messages);
+    } catch {
+      // fall through to the built-in providers
+    }
+  }
   try {
     return await chatNahaLLM(messages);
   } catch {

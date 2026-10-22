@@ -10,7 +10,7 @@ export type WeeklyPost = {
   posted_url?: string | null; publish_state?: PublishState | null; post_error?: string | null;
 };
 export type Signals = {
-  radar: { title: string; suburb?: string | undefined }[];
+  radar: { title: string; suburb?: string | undefined; url?: string | undefined }[];
   questions: string[];
   bookingsCount: number;
   topService: string | null;
@@ -27,7 +27,29 @@ export function weekStart(d = new Date()): string {
   return x.toISOString().slice(0, 10);
 }
 
-export async function gatherSignals(tenantId: string): Promise<Signals> {
+type RevupSignal = { title?: unknown; url?: unknown; link?: unknown; source_url?: unknown };
+
+/** Live market-radar feed from the publishing service (RevUp). Best effort: never blocks the plan. */
+export async function gatherRevupRadar(industry: string, area: string): Promise<{ title: string; url?: string | undefined }[]> {
+  if (isE2E()) return [];
+  try {
+    const r = await bridge<{ signals?: RevupSignal[] }>({ action: "radar", industry, area });
+    const out: { title: string; url?: string | undefined }[] = [];
+    for (const x of r.signals ?? []) {
+      const title = typeof x.title === "string" ? x.title.trim() : "";
+      if (!title) continue;
+      const raw = typeof x.url === "string" ? x.url : typeof x.link === "string" ? x.link : typeof x.source_url === "string" ? x.source_url : "";
+      const url = /^https:\/\//.test(raw) ? raw : undefined;
+      out.push(url ? { title: title.slice(0, 140), url } : { title: title.slice(0, 140) });
+      if (out.length >= 5) break;
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+export async function gatherSignals(tenantId: string, opts: { industry?: string; area?: string } = {}): Promise<Signals> {
   const out: Signals = { radar: [], questions: [], bookingsCount: 0, topService: null };
   const bookings = (await listBookings(tenantId).catch(() => [])).filter((b) => b.status === "confirmed");
   out.bookingsCount = bookings.length;
@@ -45,6 +67,8 @@ export async function gatherSignals(tenantId: string): Promise<Signals> {
     out.questions = ((msgs ?? []) as { body: string }[]).map((m) => m.body).filter((t) => t.includes("?"));
     const { data: sig } = await db.from("demand_signals").select("topic, frequency").eq("tenant_id", tenantId).order("frequency", { ascending: false }).limit(5);
     out.radar = ((sig ?? []) as { topic: string }[]).map((s) => ({ title: s.topic }));
+    const revup = await gatherRevupRadar(opts.industry ?? "", opts.area ?? "");
+    if (revup.length > 0) out.radar = [...revup, ...out.radar].slice(0, 6);
   }
   return out;
 }
@@ -69,7 +93,11 @@ export function buildPlan(opts: { tenantId: string; industry: string; businessNa
   const r = opts.signals.radar[0];
   plans.push({
     topic: "Local demand this week", source: "radar",
-    note: r ? `Demand noticed nearby: "${r.title.slice(0, 90)}"${r.suburb ? ` (${r.suburb})` : ""}` : `Demand for ${label.toLowerCase()} in ${area}`,
+    note: r
+      ? r.url
+        ? `Market news this week: "${r.title.slice(0, 90)}"`
+        : `Demand noticed nearby: "${r.title.slice(0, 90)}"${r.suburb ? ` (${r.suburb})` : ""}`
+      : `Demand for ${label.toLowerCase()} in ${area}`,
     copy: `People in ${r?.suburb ?? area} are looking for ${services[0]!.toLowerCase()} right now.\n\nWe have times open this week. Message us to book yours before they fill up.\n\n${biz}`,
   });
   plans.push({

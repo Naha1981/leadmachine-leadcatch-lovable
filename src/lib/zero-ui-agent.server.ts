@@ -11,6 +11,15 @@ import {
 } from "./zero-ui-tools.server";
 import { getZeroUIConfig } from "./zero-ui-tenant.server";
 
+async function getHiKeyForTenant(tenantId: string): Promise<string | null> {
+  try {
+    const { getHiConnection } = await import("./hi.server");
+    return (await getHiConnection(tenantId))?.apiKey ?? null;
+  } catch {
+    return null; // assistant upgrade is optional; never block owner commands on it
+  }
+}
+
 type OwnerIntent =
   | "new_leads_summary"
   | "hot_leads"
@@ -47,7 +56,7 @@ function fallbackIntent(text: string): OwnerIntent {
   return "unknown";
 }
 
-async function classifyOwnerIntent(text: string) {
+async function classifyOwnerIntent(text: string, hiKey: string | null) {
   const fallback = fallbackIntent(text);
   try {
     const result = await zeroUiChat([
@@ -59,7 +68,7 @@ async function classifyOwnerIntent(text: string) {
           "Never invent a tenant, lead or action.",
       },
       { role: "user", content: text.slice(0, 2000) },
-    ]);
+    ], { hiKey });
     const parsed = extractJson(result.text);
     const allowed: OwnerIntent[] = [
       "new_leads_summary",
@@ -243,7 +252,8 @@ export async function handleOwnerCommand(baseCtx: Omit<ZeroUIToolContext, "agent
   const runId = await startRun(ctx, "owner_whatsapp_message", { text: text.slice(0, 500) });
   ctx.agentRunId = runId;
   try {
-    const classified = await classifyOwnerIntent(text);
+        const hiKey = await getHiKeyForTenant(ctx.tenantId);
+    const classified = await classifyOwnerIntent(text, hiKey);
     await db.from("zero_ui_agent_runs").update({
       intent: classified.intent,
       provider: classified.provider,
