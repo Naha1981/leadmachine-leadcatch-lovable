@@ -4,6 +4,8 @@ import { scoreInboundLead } from "@/lib/lead-scoring.server";
 import { getE2EBusiness, isE2EEnabled, recordQuoteLead } from "@/lib/e2e-store.server";
 import { checkDurableQuoteLimits } from "@/lib/quote-rate-limit.server";
 
+import { readQuoteRequest, QuoteRequestTooLarge } from "@/lib/quote-request.server";
+
 const Body = z.object({
   slug: z.string().trim().min(1).max(80),
   name: z.string().trim().min(1).max(80),
@@ -85,8 +87,11 @@ export const Route = createFileRoute("/api/public/site-lead")({
       POST: async ({ request }) => {
         let parsed;
         try {
-          parsed = Body.parse(await request.json());
-        } catch {
+          parsed = Body.parse(await readQuoteRequest(request));
+        } catch (error) {
+          if (error instanceof QuoteRequestTooLarge) {
+            return Response.json({ ok: false, error: "Enquiry is too large. Please shorten it and try again." }, { status: 413 });
+          }
           return Response.json({ ok: false, error: "Please check the form and try again." }, { status: 400 });
         }
         pruneLeadRateBuckets();

@@ -137,9 +137,13 @@ export function Landing() {
                   <p className="mt-1 text-lg font-semibold">What needs attention now</p>
                 </div>
                 <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
-                  Live
+                  Example workspace
                 </span>
               </div>
+
+              <p className="mt-4 text-xs leading-5 text-muted-foreground">
+                Illustrative data, not live customer activity.
+              </p>
 
               <div className="mt-5 grid grid-cols-3 gap-3">
                 <MiniMetric label="New enquiries" value="18" />
