@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { privOp } from "./privileged-ops.server";
 import { scoreInboundLead } from "@/lib/lead-scoring.server";
 import { requireTenantRole } from "@/lib/zero-ui-tenant.server";
 
@@ -8,7 +9,6 @@ const MAX_TURNS = 6;
 
 type AgentDeps = {
   db: SupabaseClient;
-  adminDb: SupabaseClient;
   tenantId: string;
   userId: string;
 };
@@ -141,10 +141,16 @@ function envBool(name: string, fallback: boolean): boolean {
   return value.toLowerCase() === "true";
 }
 
-async function geminiRequest(body: Record<string, unknown>) {
-  const apiKey = process.env["GEMINI_API_KEY"]?.trim();
-  if (!apiKey) throw new Error("Gemini is not configured. Add GEMINI_API_KEY to the server environment.");
+const GEMINI_BUSY_MESSAGE =
+  "The AI assistant is busy right now (high demand on the free tier). Please try again in a minute.";
 
+function isGeminiBusy(status: number, detail: string): boolean {
+  return status === 503 || status === 429 || /high demand|service_unavailable|overloaded|rate limit/i.test(detail);
+}
+
+async function geminiRequestOnce(apiKey: string, body: Record<string, unknown>) {
+  // Google can hold a saturated non-streaming request open without answering,
+  // so keep the timeout short and retry once instead of hanging for minutes.
   const response = await fetch(GEMINI_URL, {
     method: "POST",
     headers: {
@@ -152,7 +158,7 @@ async function geminiRequest(body: Record<string, unknown>) {
       "x-goog-api-key": apiKey,
     },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(120000),
+    signal: AbortSignal.timeout(45000),
   });
 
   const text = await response.text();
@@ -165,10 +171,33 @@ async function geminiRequest(body: Record<string, unknown>) {
 
   if (!response.ok) {
     const detail = typeof payload?.error?.message === "string" ? payload.error.message : text.slice(0, 500);
+    if (isGeminiBusy(response.status, detail)) throw new Error(GEMINI_BUSY_MESSAGE);
     throw new Error(`Gemini request failed (${response.status}): ${detail || "unknown error"}`);
   }
 
   return payload;
+}
+
+async function geminiRequest(body: Record<string, unknown>) {
+  const apiKey = process.env["GEMINI_API_KEY"]?.trim();
+  if (!apiKey) throw new Error("Gemini is not configured. Add GEMINI_API_KEY to the server environment.");
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await geminiRequestOnce(apiKey, body);
+    } catch (error) {
+      const name = (error as { name?: string } | null)?.name;
+      const aborted = name === "TimeoutError" || name === "AbortError";
+      const busy = error instanceof Error && error.message === GEMINI_BUSY_MESSAGE;
+      if ((aborted || busy) && attempt === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        continue;
+      }
+      if (aborted) throw new Error(GEMINI_BUSY_MESSAGE);
+      throw error;
+    }
+  }
+  throw new Error(GEMINI_BUSY_MESSAGE);
 }
 
 async function tenantProfile(deps: AgentDeps) {
@@ -385,20 +414,15 @@ async function scheduleFollowup(deps: AgentDeps, args: any): Promise<ToolCallRes
     .single();
   if (leadError || !lead) throw new Error("Lead not found.");
 
-  const { data, error } = await deps.adminDb
-    .from("zero_ui_followups")
-    .insert({
-      tenant_id: deps.tenantId,
-      lead_id: leadId,
-      scheduled_at: when.toISOString(),
-      message: message.slice(0, 1500),
-      reason: String(args.reason || "gemini_operator").slice(0, 120),
-      status: "pending",
-    })
-    .select("id,lead_id,scheduled_at,message,reason,status")
-    .single();
-
-  if (error || !data) throw error || new Error("Could not schedule follow-up.");
+  const data = await privOp<any>("insert_followup", {
+    tenant_id: deps.tenantId,
+    lead_id: leadId,
+    scheduled_at: when.toISOString(),
+    message: message.slice(0, 1500),
+    reason: String(args.reason || "gemini_operator").slice(0, 120),
+    status: "pending",
+  });
+  if (!data) throw new Error("Could not schedule follow-up.");
 
   return {
     output: { followup: data, note: "Scheduled only; no WhatsApp message was sent by this action." },
@@ -426,7 +450,7 @@ async function executeTool(deps: AgentDeps, name: string, args: any): Promise<To
 }
 
 async function auditTool(deps: AgentDeps, action: string, result: "success" | "failed", metadata: Record<string, unknown>) {
-  await deps.adminDb.from("zero_ui_audit_logs").insert({
+  await privOp("insert_audit_log", {
     tenant_id: deps.tenantId,
     actor_type: "user",
     actor_id: deps.userId,
@@ -446,13 +470,10 @@ export async function runLeadMachineGeminiAgent(
   const store = envBool("GEMINI_AGENT_STORE", true);
 
   if (previousInteractionId) {
-    const { data: previousRun, error: previousRunError } = await deps.adminDb
-      .from("zero_ui_agent_runs")
-      .select("tenant_id,input_summary,correlation_id")
-      .eq("tenant_id", deps.tenantId)
-      .eq("correlation_id", previousInteractionId)
-      .maybeSingle();
-    if (previousRunError) throw previousRunError;
+    const previousRun = await privOp<any>("get_agent_run_by_correlation", {
+      tenant_id: deps.tenantId,
+      correlation_id: previousInteractionId,
+    });
     const ownerId = (previousRun?.input_summary as any)?.userId;
     if (!previousRun || ownerId !== deps.userId) {
       throw new Error("Invalid Gemini conversation context.");
@@ -475,20 +496,17 @@ ${input}`;
     store,
   });
 
-  const runInsert = await deps.adminDb
-    .from("zero_ui_agent_runs")
-    .insert({
-      tenant_id: deps.tenantId,
-      trigger: "gemini_operator",
-      intent: input.slice(0, 500),
-      status: "running",
-      provider: "google-gemini",
-      model,
-      correlation_id: interaction?.id || null,
-      input_summary: { prompt: input.slice(0, 1200), userId: deps.userId },
-    })
-    .select("id")
-    .single();
+  const runInsertData = await privOp<any>("insert_agent_run", {
+    tenant_id: deps.tenantId,
+    trigger: "gemini_operator",
+    intent: input.slice(0, 500),
+    status: "running",
+    provider: "google-gemini",
+    model,
+    correlation_id: interaction?.id || null,
+    input_summary: { prompt: input.slice(0, 1200), userId: deps.userId },
+  });
+  const runInsert = { data: runInsertData };
 
   const agentRunId = runInsert.data?.id ?? null;
   const toolEvents: Array<{ name: string; status: "completed" | "failed"; output?: unknown }> = [];
@@ -508,14 +526,12 @@ ${input}`;
         if (!outputText) throw new Error("Gemini returned no final response.");
 
         if (agentRunId) {
-          await deps.adminDb
-            .from("zero_ui_agent_runs")
-            .update({
-              status: "completed",
-              output_summary: { toolEvents: toolEvents.map((e) => ({ name: e.name, status: e.status })) },
-              completed_at: new Date().toISOString(),
-            })
-            .eq("id", agentRunId);
+          await privOp("update_agent_run", {
+            id: agentRunId,
+            status: "completed",
+            output_summary: { toolEvents: toolEvents.map((e) => ({ name: e.name, status: e.status })) },
+            completed_at: new Date().toISOString(),
+          });
         }
 
         // Keep the server-function response strictly serializable.
@@ -569,14 +585,12 @@ ${input}`;
     throw new Error("Gemini reached the maximum tool-execution turns for this request.");
   } catch (error) {
     if (agentRunId) {
-      await deps.adminDb
-        .from("zero_ui_agent_runs")
-        .update({
-          status: "failed",
-          error: error instanceof Error ? error.message : "Gemini agent failed",
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", agentRunId);
+      await privOp("update_agent_run", {
+        id: agentRunId,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Gemini agent failed",
+        completed_at: new Date().toISOString(),
+      });
     }
     throw error;
   }

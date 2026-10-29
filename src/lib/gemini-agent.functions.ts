@@ -22,12 +22,9 @@ export const runLeadMachineGemini = createServerFn({ method: "POST" })
 
     if (error || !profile?.tenant_id) throw new Error("Workspace not found.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
     return runLeadMachineGeminiAgent(
       {
         db: context.supabase,
-        adminDb: supabaseAdmin as any,
         tenantId: profile.tenant_id as string,
         userId: context.userId,
       },

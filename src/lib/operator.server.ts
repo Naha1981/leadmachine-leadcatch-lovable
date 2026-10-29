@@ -20,40 +20,19 @@ type OperatorTenantCredential = {
   waAccountId?: string | null;
 };
 
-function isMissingCredentialTable(error: any): boolean {
-  const code = String(error?.code ?? "");
-  const message = String(error?.message ?? "");
-  return (
-    (code === "42P01" || code === "PGRST205") &&
-    message.toLowerCase().includes("whatsapp_operator_credentials")
-  );
-}
-
 async function getStoredTenantCredential(
   tenantId: string,
 ): Promise<OperatorTenantCredential | null> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const db = supabaseAdmin as any;
-  const { data, error } = await db
-    .from("whatsapp_operator_credentials")
-    .select("tenant_token, wa_account_id")
-    .eq("app_id", APP_ID)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
-  if (error) {
-    if (isMissingCredentialTable(error)) {
-      throw new Error(
-        "LeadMachine WhatsApp credential storage is not installed. Apply migration 20261001020000_whatsapp_operator_tenant_credentials.sql.",
-      );
-    }
-    throw new Error(`WhatsApp tenant credential lookup failed: ${error.message}`);
-  }
+  const { privOp } = await import("./privileged-ops.server");
+  const data = await privOp<{ tenant_token: string | null; wa_account_id: string | null } | null>(
+    "get_operator_credential",
+    { app_id: APP_ID, tenant_id: tenantId },
+  );
   if (!data?.tenant_token) return null;
 
   return {
-    tenantToken: data.tenant_token as string,
-    waAccountId: (data.wa_account_id as string | null | undefined) ?? null,
+    tenantToken: data.tenant_token,
+    waAccountId: data.wa_account_id ?? null,
   };
 }
 
@@ -62,27 +41,13 @@ export async function saveOperatorTenantCredential(
   waAccountId: string,
   tenantToken: string,
 ): Promise<void> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const db = supabaseAdmin as any;
-  const { error } = await db.from("whatsapp_operator_credentials").upsert(
-    {
-      app_id: APP_ID,
-      tenant_id: tenantId,
-      wa_account_id: waAccountId,
-      tenant_token: tenantToken,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "app_id,tenant_id" },
-  );
-
-  if (error) {
-    if (isMissingCredentialTable(error)) {
-      throw new Error(
-        "LeadMachine WhatsApp credential storage is not installed. Apply migration 20261001020000_whatsapp_operator_tenant_credentials.sql.",
-      );
-    }
-    throw new Error(`WhatsApp tenant credential save failed: ${error.message}`);
-  }
+  const { privOp } = await import("./privileged-ops.server");
+  await privOp("upsert_operator_credential", {
+    app_id: APP_ID,
+    tenant_id: tenantId,
+    wa_account_id: waAccountId,
+    tenant_token: tenantToken,
+  });
 }
 
 /**
