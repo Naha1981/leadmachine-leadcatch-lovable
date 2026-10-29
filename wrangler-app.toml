@@ -9,7 +9,7 @@ workers_dev = true
 directory = ".output/public"
 
 [vars]
-OPERATOR_URL = "https://my-own-whatsapp-2z5h.onrender.com"
+OPERATOR_URL = "https://my-own-whatsapp-2.onrender.com"
 NODE_ENV = "production"
 SUPABASE_URL = "https://zdaolncziicfgpfknxyd.supabase.co"
 SUPABASE_PUBLISHABLE_KEY = "sb_publishable_54XpTzU7w3xDBPtoKUgfnw_8ktNgZgf"

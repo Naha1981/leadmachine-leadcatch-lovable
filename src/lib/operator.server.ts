@@ -95,7 +95,7 @@ export async function operatorRequest<T = any>(
   init: RequestInit = {},
   options: OperatorAuthOptions = {},
 ): Promise<T> {
-  const baseUrl = process.env["OPERATOR_URL"] || "https://my-own-whatsapp-2z5h.onrender.com";
+  const baseUrl = process.env["OPERATOR_URL"] || "https://my-own-whatsapp-2.onrender.com";
   const apiKey = process.env["OPERATOR_API_KEY"];
   if (!baseUrl) {
     throw new Error("WhatsApp service is not configured yet (OPERATOR_URL).");
