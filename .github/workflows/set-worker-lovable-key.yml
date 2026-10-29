@@ -1,0 +1,27 @@
+name: Set worker LOVABLE_API_KEY from repo secret
+# One-shot bridge: copies the existing LEAD_MACHINE_LOVABLE_API_KEY repo secret
+# into the revenuedesk-app Cloudflare worker as the LOVABLE_API_KEY secret.
+# Run manually (workflow_dispatch). Safe to re-run. Delete after success.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  set-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Write LOVABLE_API_KEY to Cloudflare worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          KEY_VALUE: ${{ secrets.LEAD_MACHINE_LOVABLE_API_KEY }}
+        run: |
+          test -n "$KEY_VALUE" || { echo "LEAD_MACHINE_LOVABLE_API_KEY repo secret is empty"; exit 1; }
+          printf '%s' "$KEY_VALUE" | bunx wrangler secret put LOVABLE_API_KEY --config wrangler-app.toml
