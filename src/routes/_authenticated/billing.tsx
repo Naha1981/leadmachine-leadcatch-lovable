@@ -4,7 +4,7 @@ import { MessageCircle } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { getTrialState, trialNow, paymentReference, MONTHLY_PRICE_RAND, TRIAL_DAYS } from "@/lib/trial";
+import { getTrialState, trialNow, paymentReference, TRIAL_DAYS } from "@/lib/trial";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/billing")({
@@ -46,8 +46,20 @@ function submitPayfast(form: PayfastForm) {
   f.submit();
 }
 
-function whatsappPayUrl(reference: string): string {
-  const text = `Hi NahaLabs, I want to pay my RevenueDesk subscription (R499/month). My payment reference is ${reference}.`;
+type Plan = { id: string; name: string; price: number; blurb: string };
+
+const PLANS: Plan[] = [
+  { id: "starter", name: "Starter", price: 499, blurb: "Centralised lead capture, basic lead management and tracking, customer enquiry management." },
+  { id: "growth", name: "Growth", price: 999, blurb: "Everything in Starter, plus enhanced lead tracking and follow-up workflows, lead prioritisation and reporting." },
+  { id: "business-pro", name: "Business Pro", price: 1999, blurb: "Everything in Growth, plus advanced workflows and integrations where supported, enhanced reporting and multi-user requirements." },
+];
+
+function formatRand(n: number): string {
+  return "R" + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function whatsappPayUrl(reference: string, plan: Plan): string {
+  const text = `Hi NahaLabs, I want to pay my RevenueDesk ${plan.name} subscription (${formatRand(plan.price)}/month). My payment reference is ${reference}.`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text).replace(/%20/g, "+")}`;
 }
 
@@ -57,6 +69,8 @@ function Billing() {
   const ref = ws ? paymentReference(ws.tenantId, (ws.profile as { payment_reference?: string | null }).payment_reference) : "";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string>("starter");
+  const plan = PLANS.find((pl) => pl.id === planId) ?? PLANS[0];
   const paid = new URLSearchParams(window.location.search).get("paid") === "1";
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-6 p-6">
@@ -68,11 +82,28 @@ function Billing() {
         </p>
       </div>
       <div className="rounded-2xl border border-border bg-card p-5">
-        <p className="text-3xl font-semibold">R{MONTHLY_PRICE_RAND}<span className="text-sm font-normal text-muted-foreground"> / month, flat</span></p>
-        <p className="mt-1 text-xs text-muted-foreground">Unlimited seats. No setup fee. Cancel any time.</p>
+        <div className="grid gap-2">
+          {PLANS.map((pl) => (
+            <button
+              key={pl.id}
+              type="button"
+              data-testid={`plan-${pl.id}`}
+              onClick={() => setPlanId(pl.id)}
+              className={`rounded-xl border px-4 py-3 text-left transition-colors ${pl.id === plan.id ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-muted"}`}
+            >
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="font-semibold">{pl.name}</span>
+                <span className="font-semibold">{formatRand(pl.price)}<span className="text-xs font-normal text-muted-foreground">/month</span></span>
+              </span>
+              <span className="mt-1 block text-xs leading-4 text-muted-foreground">{pl.blurb}</span>
+            </button>
+          ))}
+        </div>
+        <p className="mt-4 text-3xl font-semibold">{formatRand(plan.price)}<span className="text-sm font-normal text-muted-foreground"> / month</span></p>
+        <p className="mt-1 text-xs text-muted-foreground">No setup fee. Cancel any time. WhatsApp messaging charges, where applicable, are billed separately by usage.</p>
         {paid ? (
           <p className="mt-4 rounded-xl bg-primary/10 px-3 py-2.5 text-sm font-medium">Payment received. We activate your subscription as soon as it clears.</p>
-        ) : PAYFAST_ENABLED ? (
+        ) : PAYFAST_ENABLED && plan.id === "starter" ? (
           <Button
             data-testid="subscribe-button"
             className="mt-4 w-full"
@@ -99,7 +130,7 @@ function Billing() {
         </div>
         <a
           data-testid="whatsapp-pay-link"
-          href={whatsappPayUrl(ref)}
+          href={whatsappPayUrl(ref, plan)}
           target="_blank"
           rel="noreferrer"
           className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"

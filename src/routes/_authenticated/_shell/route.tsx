@@ -131,7 +131,7 @@ function Shell() {
         {ws && trial.status === "trial" && (
           <div data-testid="trial-banner" className="flex items-center justify-between gap-3 border-b border-border bg-primary/10 px-4 py-2 text-xs md:text-sm">
             <span className="font-medium">Day {trial.day} of {TRIAL_DAYS}</span>
-            <Link to="/billing" className="text-primary underline-offset-2 hover:underline">Subscribe, R499/month</Link>
+            <Link to="/billing" className="text-primary underline-offset-2 hover:underline">Subscribe - plans from R499/month</Link>
           </div>
         )}
         {isLoading ? (

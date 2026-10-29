@@ -57,9 +57,11 @@ export function WhatsAppConnect({ onConnected }: { onConnected?: () => void }) {
     } catch (e) {
       const m = e instanceof Error ? e.message : "Could not reach the WhatsApp service";
       toast.error(
-        /abort|timeout|timed out/i.test(m)
-          ? "The WhatsApp service is waking up. A first connect can take a minute - press Connect WhatsApp again if it stops."
-          : m,
+        /not configured|OPERATOR_/i.test(m)
+          ? "WhatsApp connecting is being set up on our side. Please try again soon - if it keeps failing, contact NahaLabs and we will connect you manually."
+          : /abort|timeout|timed out|503|unavailable/i.test(m)
+            ? "The WhatsApp service is waking up. A first connect can take a minute - press Connect WhatsApp again if it stops."
+            : m,
       );
     } finally {
       setBusy(false);
@@ -71,7 +73,12 @@ export function WhatsAppConnect({ onConnected }: { onConnected?: () => void }) {
       const r = await pair({ data: { phoneNumber: phone } });
       setCode(r.code);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not get a code");
+      const m = e instanceof Error ? e.message : "Could not get a code";
+      toast.error(
+        /not configured|OPERATOR_/i.test(m)
+          ? "WhatsApp connecting is being set up on our side. Please try again soon - if it keeps failing, contact NahaLabs and we will connect you manually."
+          : m,
+      );
     }
   }
 

@@ -120,7 +120,7 @@ function QuotesPage() {
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-6 md:px-8 md:py-10">
       <PageHeader
         title="Quotes"
-        subtitle={`Quotes you sent that are waiting for a yes. RevenueDesk flags any quote that goes quiet for 3 days so the ${experience?.label.toLowerCase() ?? "work"} does not slip away.`}
+        subtitle={`Quotes you sent that are waiting for a yes. RevenueDesk flags any quote that goes quiet for 3 days so the deal does not slip away.`}
         action={<Button className="rounded-xl" onClick={() => setOpen((v) => !v)}>{open ? "Cancel" : "Log a quote"}</Button>}
       />
 

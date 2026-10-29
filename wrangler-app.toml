@@ -7,3 +7,6 @@ workers_dev = true
 
 [assets]
 directory = ".output/public"
+
+[vars]
+OPERATOR_URL = "https://my-own-whatsapp-2z5h.onrender.com"

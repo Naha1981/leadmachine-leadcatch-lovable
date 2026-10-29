@@ -424,26 +424,46 @@ export function Landing() {
               Pricing
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
-              One flat price. Everything included.
+              Simple monthly plans for every stage.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              No per-seat fees, no per-message charges, no tiers hiding the good
-              parts. One price for the whole system.
+              Start with a 7-day free trial on any plan. No setup fee, cancel any
+              time. WhatsApp messaging charges, where applicable, are billed
+              separately according to actual usage.
             </p>
           </div>
-          <div className="mt-10 max-w-md">
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
             <PriceCard
-              name="RevenueDesk"
+              name="Starter"
               price="R499"
-              featured
-              description="The full AI revenue desk for your business. Start with a 7-day free trial, then R499/month. Cancel any time."
+              description="For a business that needs every lead captured and answered."
               items={[
-                "AI front desk on your WhatsApp, 24/7",
-                "Inbox, lead capture and AI qualification",
-                "Follow-up workflows and revenue leak detection",
-                "Business page and Market Intelligence",
-                "Control it from WhatsApp with Zero UI",
-                "No per-message or failed-broadcast charges",
+                "Centralised lead capture",
+                "Basic lead management and tracking",
+                "Customer enquiry management",
+              ]}
+            />
+            <PriceCard
+              name="Growth"
+              price="R999"
+              featured
+              description="For a growing business that needs sharper follow-up."
+              items={[
+                "Everything in Starter",
+                "Enhanced lead tracking and follow-up workflows",
+                "Lead prioritisation and reporting",
+                "Suitable for a growing business",
+              ]}
+            />
+            <PriceCard
+              name="Business Pro"
+              price="R1,999"
+              description="For busier teams and multi-branch operations."
+              items={[
+                "Everything in Growth",
+                "Advanced workflows and integrations, where supported",
+                "Enhanced reporting and multi-user requirements",
+                "Suitable for busier teams or multi-branch operations",
               ]}
             />
           </div>
