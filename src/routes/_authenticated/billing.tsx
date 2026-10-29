@@ -70,7 +70,7 @@ function Billing() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string>("starter");
-  const plan = PLANS.find((pl) => pl.id === planId) ?? PLANS[0];
+  const plan: Plan = PLANS.find((pl) => pl.id === planId) ?? (PLANS[0] as Plan);
   const paid = new URLSearchParams(window.location.search).get("paid") === "1";
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-6 p-6">
@@ -120,7 +120,7 @@ function Billing() {
               }
             }}
           >
-            {busy ? "Opening secure payment…" : `Subscribe - R${MONTHLY_PRICE_RAND}/month`}
+            {busy ? "Opening secure payment…" : `Subscribe - ${formatRand(plan.price)}/month`}
           </Button>
         ) : null}
         {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
