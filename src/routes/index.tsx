@@ -16,13 +16,13 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "RevenueDesk — The AI Revenue Desk for service businesses" },
+      { title: "RevenueDesk — Never miss a paying customer again" },
       {
         name: "description",
         content:
           "Capture enquiries, qualify leads, recover missed opportunities and keep follow-up moving with an AI Revenue Desk built for South African service businesses.",
       },
-      { property: "og:title", content: "RevenueDesk — The AI Revenue Desk for service businesses" },
+      { property: "og:title", content: "RevenueDesk — Never miss a paying customer again" },
       {
         property: "og:description",
         content:
