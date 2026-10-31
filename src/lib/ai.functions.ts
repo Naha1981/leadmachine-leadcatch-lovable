@@ -169,49 +169,6 @@ function extractJson(raw: string): any {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 
-/** Score a lead 1-10 (hot/warm/cold) from its WhatsApp conversation. */
-export const scoreLead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ leadId: z.string().uuid() }).parse(d))
-  .handler(async ({ context, data }) => {
-    const sb = context.supabase;
-    const { data: lead, error } = await sb
-      .from("leads")
-      .select("id, tenant_id, name, phone, status, conversation_messages(direction, body, created_at)")
-      .eq("id", data.leadId)
-      .single();
-    if (error || !lead) throw new Error("Lead not found");
-
-    const msgs = ((lead as any).conversation_messages ?? [])
-      .sort((a: any, b: any) => a.created_at.localeCompare(b.created_at))
-      .slice(-25)
-      .map((m: any) => `${m.direction === "inbound" ? "Customer" : "Business"}: ${m.body}`)
-      .join("\n");
-    if (!msgs) throw new Error("This lead has no messages to score yet.");
-
-    const { data: profile } = await sb
-      .from("business_profiles")
-      .select("business_name, industry, trade, services")
-      .eq("tenant_id", lead.tenant_id)
-      .maybeSingle();
-
-    const raw = await chat([
-      { role: "system", content: INTENT_SYSTEM },
-      {
-        role: "user",
-        content: `Business: ${profile?.business_name || "Unknown"} (${profile?.industry || profile?.trade || "services"}). Services: ${profile?.services || "n/a"}.\n\nConversation:\n${msgs}`,
-      },
-    ]);
-    const r = normaliseIntent(extractJson(raw));
-    const stored = [r.summary, r.followUp.length ? `Next: ${r.followUp.join("; ")}` : ""].filter(Boolean).join(" ").slice(0, 600);
-
-    await sb
-      .from("leads")
-      .update({ ai_score: r.score, ai_temperature: r.temperature, ai_summary: stored, ai_scored_at: new Date().toISOString() })
-      .eq("id", lead.id);
-    return r;
-  });
-
 /** Generate landing-page copy for the tenant's public business site. */
 export const generateSiteCopy = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -250,10 +207,12 @@ export const generateSiteCopy = createServerFn({ method: "POST" })
   });
 
 const REPLY_SYSTEM =
-  "You write WhatsApp replies for a specific South African service-business industry. Use the business's actual trade, services and customer context so the reply sounds like a member of that industry, not a generic assistant. " +
-  "First judge purchase intent, then write ONE reply that matches it: hot = confirm availability fast and propose a concrete next step (time slot, call-out, quote); " +
-  "warm = answer their question, mention the most relevant service and ask one qualifying question; cold = friendly, short, leave the door open. " +
-  "Only mention services the business actually offers. PRICE RULE: never state or estimate any price, fee, rate, range or call-out cost unless the business's own pricing notes give that exact figure. If the customer asks about price and no pricing notes cover it, do not give a number - say the plumber will confirm the exact price once they have the job details, and ask for the details needed (photos, address, problem description). Keep it under 90 words, warm and personal, use the customer's name if known. " +
+  "You write WhatsApp replies as a real person working at a South African service business - like someone at the plumber's own office, not a company or an AI assistant. " +
+  "Write 1-3 short sentences that sound natural and realistic, the way people actually text on WhatsApp: plain words, no corporate phrases (never 'reach out', 'assist you further', 'do not hesitate', 'we value your enquiry'). " +
+  "First judge purchase intent, then write ONE reply that matches it: hot = confirm you can help and propose a concrete next step (time slot, call-out, quote); " +
+  "warm = answer their question and ask the one thing you still need to know; cold = friendly and short, leave the door open. " +
+  "Only mention services the business actually offers. PRICE RULE: never state or estimate any price, fee, rate, range or call-out cost unless the business's own pricing notes give that exact figure. If the customer asks about price and no pricing notes cover it, do not give a number - say the plumber will confirm the exact price once they have the job details, and ask for the details needed (photos, address, problem description). " +
+  "Keep it under 60 words, warm and personal, use the customer's name if known. " +
   "South African English, WhatsApp style, no emojis, no markdown. " +
   'Reply with JSON only: {"score": 1-10, "temperature": "hot"|"warm"|"cold", "reasoning": "one short sentence on why this reply", "reply": "the message text"}.';
 
@@ -312,7 +271,7 @@ export const draftReply = createServerFn({ method: "POST" })
           role: "user",
           content: `Business: ${p?.business_name || "our business"} (${p?.industry || p?.trade || "services"}), area: ${p?.suburb || "South Africa"}. Services: ${p?.services || "n/a"}. Pricing notes: none.${leadName ? ` Customer name: ${leadName}.` : ""}\n\nConversation:\n${convo}`,
         },
-      ]);
+      ], 300);
       try {
         const j2 = extractJson(retry);
         const reply2 = String(j2.reply ?? "").trim().slice(0, 1000);
@@ -335,13 +294,19 @@ export const draftReply = createServerFn({ method: "POST" })
       }
     }
     if (!reply) throw new Error("The AI returned no reply. Please try again.");
+    if (data.leadId) {
+      await sb
+        .from("leads")
+        .update({ ai_score: n.score, ai_temperature: n.temperature, ai_summary: String(j.reasoning ?? "").slice(0, 600), ai_scored_at: new Date().toISOString() })
+        .eq("id", data.leadId);
+    }
     return { score: n.score, temperature: n.temperature, reasoning: String(j.reasoning ?? "").slice(0, 300), reply };
   });
 
 const FOLLOWUP_SYSTEM =
-  "You write WhatsApp follow-up messages for a South African service business owner to send to a lead. " +
-  "Use the lead's details, the conversation context and the business's services. Be warm, specific and short (2-5 sentences), " +
-  "reference what the customer asked about, and end with one clear, easy next step. South African English, no emojis, no markdown. " +
+  "You write WhatsApp follow-up messages as a real person at a South African service business, for the owner to send to a lead. " +
+  "Use the lead's details, the conversation context and the business's services. Sound like a human texting, not a company: 1-3 short sentences, natural WhatsApp tone, no corporate phrasing. " +
+  "Reference what the customer asked about, and end with one clear, easy next step. South African English, no emojis, no markdown. " +
   'Reply with JSON only: {"temperature": "hot"|"warm"|"cold", "reasoning": "one short sentence on the approach", "message": "the WhatsApp message"}.';
 
 /** Draft a personalised WhatsApp follow-up from a lead's details and context. */
@@ -374,7 +339,7 @@ export const draftFollowUp = createServerFn({ method: "POST" })
           `Lead: ${data.leadName}. Interested in: ${data.service || "not stated"}. Last contact: ${data.lastContact || "unknown"}. ` +
           `Owner's goal for this message: ${data.goal || "move them to the next step"}.\n\nContext:\n${data.context}`,
       },
-    ]);
+    ], 250);
     const j = extractJson(raw);
     const message = String(j.message ?? "").trim().slice(0, 1000);
     if (!message) throw new Error("The AI returned no message. Please try again.");

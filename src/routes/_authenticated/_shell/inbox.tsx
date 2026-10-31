@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Search, Send, Bot, Gauge, PenLine, Activity, Clock3, RefreshCw, Radio } from "lucide-react";
-import { scoreLead, draftReply } from "@/lib/ai.functions";
+import { ArrowLeft, Search, Send, Bot, PenLine, Activity, Clock3, RefreshCw, Radio } from "lucide-react";
+import { draftReply } from "@/lib/ai.functions";
 import { TemperatureBadge } from "@/components/TemperatureBadge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -211,9 +211,7 @@ function LeadPhotos({ paths }: { paths: string[] }) {
 function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; onBack: () => void }) {
   const qc = useQueryClient();
   const send = useServerFn(sendMessage);
-  const score = useServerFn(scoreLead);
   const draft = useServerFn(draftReply);
-  const [scoring, setScoring] = useState(false);
   const [drafting, setDrafting] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -271,23 +269,13 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
     }
   }
 
-  async function runScore() {
-    setScoring(true);
-    try {
-      const r = await score({ data: { leadId: lead.id } });
-      toast.success(`Scored ${r.score}/10 — ${r.temperature}`);
-      qc.invalidateQueries({ queryKey: ["conversations"] });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not score this lead");
-    } finally { setScoring(false); }
-  }
-
   async function runDraft() {
     setDrafting(true);
     try {
       const r = await draft({ data: { leadId: lead.id } });
       setText(r.reply);
-      toast.success("Draft ready — check it, then send");
+      toast.success(`Draft ready — scored ${r.score}/10 (${r.temperature}). Check it, then send`);
+      qc.invalidateQueries({ queryKey: ["conversations"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not draft a reply");
     } finally { setDrafting(false); }
@@ -370,9 +358,6 @@ function Thread({ convo, tenantId, onBack }: { convo: Convo; tenantId: string; o
             <TemperatureBadge temperature={lead.ai_temperature} />
           </span>
         )}
-        <Button variant="outline" size="sm" onClick={runScore} disabled={scoring} className="h-9 rounded-xl">
-          <Gauge className="mr-1.5 h-4 w-4" />{scoring ? "Scoring…" : lead.ai_score != null ? "Re-score" : "Score with AI"}
-        </Button>
         <select
           value={lead.status}
           onChange={(e) => setStatus(e.target.value)}
