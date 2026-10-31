@@ -51,6 +51,23 @@ async function chatExistingGateway(messages: ChatMessage[]): Promise<ChatResult>
   return { text, provider: "existing-gateway", model };
 }
 
+async function chatGroq(messages: ChatMessage[]): Promise<ChatResult> {
+  const key = process.env["GROQ_API_KEY"]?.trim();
+  if (!key) throw new Error("Groq not configured");
+  const model = process.env["GROQ_MODEL"]?.trim() || "openai/gpt-oss-120b";
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + key, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages, temperature: 0, max_completion_tokens: 900, stream: false }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!res.ok) throw new Error("Groq error " + res.status);
+  const body = await res.json();
+  const text = body?.choices?.[0]?.message?.content;
+  if (typeof text !== "string" || !text.trim()) throw new Error("Groq returned no content");
+  return { text, provider: "groq", model };
+}
+
 export async function zeroUiChat(
   messages: ChatMessage[],
   opts: { hiKey?: string | null } = {},
@@ -62,6 +79,11 @@ export async function zeroUiChat(
     } catch {
       // fall through to the built-in providers
     }
+  }
+  try {
+    return await chatGroq(messages);
+  } catch {
+    // fall through
   }
   try {
     return await chatNahaLLM(messages);

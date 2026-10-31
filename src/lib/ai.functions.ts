@@ -4,9 +4,75 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/responses";
 const MODEL = "openai/gpt-6-astra";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_DEFAULT_MODEL = "openai/gpt-oss-120b";
+const GEMINI_GENERATE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+
+/** Non-streaming chat through Groq's OpenAI-compatible API (free tier). Returns the reply text. */
+async function chatGroq(messages: Array<{ role: string; content: string }>, maxTokens: number): Promise<string> {
+  const key = process.env["GROQ_API_KEY"]?.trim();
+  if (!key) throw new Error("Groq is not configured.");
+  const model = process.env["GROQ_MODEL"]?.trim() || GROQ_DEFAULT_MODEL;
+  const res = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages, temperature: 0.2, max_completion_tokens: maxTokens, stream: false }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Groq error ${res.status}: ${detail.slice(0, 200)}`);
+  }
+  const body = await res.json();
+  const text = body?.choices?.[0]?.message?.content;
+  if (typeof text !== "string" || !text.trim()) throw new Error("Groq returned no content");
+  return text;
+}
+
+/** Non-streaming chat through Gemini's generateContent API (free tier). Returns the reply text. */
+async function chatGemini(messages: Array<{ role: string; content: string }>, maxTokens: number): Promise<string> {
+  const key = process.env["GEMINI_API_KEY"]?.trim();
+  if (!key) throw new Error("Gemini is not configured.");
+  const model = process.env["GEMINI_AGENT_MODEL"]?.trim() || "gemini-3.8-flash";
+  const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n");
+  const turns = messages.filter((m) => m.role !== "system");
+  const res = await fetch(`${GEMINI_GENERATE_URL}/${model}:generateContent`, {
+    method: "POST",
+    headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: turns.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+      ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+      generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens },
+    }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Gemini error ${res.status}: ${detail.slice(0, 200)}`);
+  }
+  const body = await res.json();
+  const text = (body?.candidates?.[0]?.content?.parts ?? []).map((p: any) => p?.text ?? "").join("");
+  if (typeof text !== "string" || !text.trim()) throw new Error("Gemini returned no content");
+  return text;
+}
+
+/** Provider chain for customer-facing AI: Groq (free tier) first, Gemini (free tier) as fallback, then the Lovable gateway. */
+async function chat(messages: Array<{ role: string; content: string }>, maxTokens = 900): Promise<string> {
+  try {
+    return await chatGroq(messages, maxTokens);
+  } catch (e) {
+    console.error("Groq chat failed, falling back to Gemini:", e instanceof Error ? e.message : e);
+  }
+  try {
+    return await chatGemini(messages, maxTokens);
+  } catch (e) {
+    console.error("Gemini chat failed, falling back to Lovable gateway:", e instanceof Error ? e.message : e);
+  }
+  return chatLovableGateway(messages, maxTokens);
+}
 
 /** Streams a Responses call through the Lovable AI Gateway and returns the final text. */
-async function chat(messages: Array<{ role: string; content: string }>, _maxTokens = 900): Promise<string> {
+async function chatLovableGateway(messages: Array<{ role: string; content: string }>, _maxTokens = 900): Promise<string> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI is not configured yet.");
   const res = await fetch(GATEWAY, {

@@ -85,9 +85,9 @@ export function buildPlan(opts: { tenantId: string; industry: string; businessNa
   const q = opts.signals.questions[0];
   plans.push({
     topic: "Answering a question customers keep asking", source: "enquiries",
-    note: q ? `Customers asked: "${q.slice(0, 90)}"` : `Common ${label.toLowerCase()} questions`,
+    note: q ? "A real customer question this week" : `Common ${label.toLowerCase()} questions`,
     copy: q
-      ? `Customers often ask: "${q.slice(0, 120)}"\n\nShort answer: send us a message and we reply within minutes with a clear answer and the next step.\n\n${biz}, serving ${area}.`
+      ? `Customers often ask us about ${label.toLowerCase()} problems and how fast we can help.\n\nShort answer: send us a message and we reply within minutes with a clear answer and the next step.\n\n${biz}, serving ${area}.`
       : `The question we hear most: "${exp?.customerMessage ?? "Can you help me this week?"}"\n\nYes. Message us and you get a reply fast, plus the next available time.\n\n${biz}, serving ${area}.`,
   });
   const r = opts.signals.radar[0];
