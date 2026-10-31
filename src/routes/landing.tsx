@@ -94,7 +94,7 @@ export function Landing() {
                 : "Built for South African service businesses"}
             </div>
             <h1 className="mt-6 max-w-2xl text-5xl font-semibold leading-[0.98] tracking-[-0.04em] md:text-7xl">
-              {experience?.headline ?? "The AI Revenue Desk for service businesses."}
+              Never miss a paying customer again.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
               {experience?.subheadline ??
@@ -275,7 +275,7 @@ export function Landing() {
               <LeakCard
                 icon={PhoneCall}
                 title="Missed calls"
-                text="Turn a missed call into a live conversation instead of a lost job."
+                text="A ringing phone nobody gets to is a job someone else wins."
               />
               <LeakCard
                 icon={Clock3}
