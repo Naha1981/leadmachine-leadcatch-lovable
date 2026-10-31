@@ -253,7 +253,7 @@ const REPLY_SYSTEM =
   "You write WhatsApp replies for a specific South African service-business industry. Use the business's actual trade, services and customer context so the reply sounds like a member of that industry, not a generic assistant. " +
   "First judge purchase intent, then write ONE reply that matches it: hot = confirm availability fast and propose a concrete next step (time slot, call-out, quote); " +
   "warm = answer their question, mention the most relevant service and ask one qualifying question; cold = friendly, short, leave the door open. " +
-  "Only mention services the business actually offers. Never invent prices unless given in pricing notes. Keep it under 90 words, warm and personal, use the customer's name if known. " +
+  "Only mention services the business actually offers. PRICE RULE: never state or estimate any price, fee, rate, range or call-out cost unless the business's own pricing notes give that exact figure. If the customer asks about price and no pricing notes cover it, do not give a number - say the plumber will confirm the exact price once they have the job details, and ask for the details needed (photos, address, problem description). Keep it under 90 words, warm and personal, use the customer's name if known. " +
   "South African English, WhatsApp style, no emojis, no markdown. " +
   'Reply with JSON only: {"score": 1-10, "temperature": "hot"|"warm"|"cold", "reasoning": "one short sentence on why this reply", "reply": "the message text"}.';
 
@@ -302,7 +302,38 @@ export const draftReply = createServerFn({ method: "POST" })
     ]);
     const j = extractJson(raw);
     const n = normaliseIntent(j);
-    const reply = String(j.reply ?? "").trim().slice(0, 1000);
+    let reply = String(j.reply ?? "").trim().slice(0, 1000);
+    const hasPricingNotes = !!(p?.pricing_notes && String(p.pricing_notes).trim());
+    const pricePattern = /(R\s?\d|\d+[\s-]*(rand|zar)|R[\d,]+(?:\.\d{2})?\s?[-–]\s?R?[\d,]+)/i;
+    if (!hasPricingNotes && pricePattern.test(reply)) {
+      const retry = await chat([
+        { role: "system", content: REPLY_SYSTEM + " Your previous draft stated a price, which is not allowed without pricing notes. Rewrite without any numbers about cost." },
+        {
+          role: "user",
+          content: `Business: ${p?.business_name || "our business"} (${p?.industry || p?.trade || "services"}), area: ${p?.suburb || "South Africa"}. Services: ${p?.services || "n/a"}. Pricing notes: none.${leadName ? ` Customer name: ${leadName}.` : ""}\n\nConversation:\n${convo}`,
+        },
+      ]);
+      try {
+        const j2 = extractJson(retry);
+        const reply2 = String(j2.reply ?? "").trim().slice(0, 1000);
+        if (reply2 && !pricePattern.test(reply2)) {
+          reply = reply2;
+        } else {
+          // Last resort: remove sentences that mention a price.
+          reply = reply
+            .split(/(?<=[.!?])\s+/)
+            .filter((sent) => !pricePattern.test(sent))
+            .join(" ")
+            .trim();
+        }
+      } catch {
+        reply = reply
+          .split(/(?<=[.!?])\s+/)
+          .filter((sent) => !pricePattern.test(sent))
+          .join(" ")
+          .trim();
+      }
+    }
     if (!reply) throw new Error("The AI returned no reply. Please try again.");
     return { score: n.score, temperature: n.temperature, reasoning: String(j.reasoning ?? "").slice(0, 300), reply };
   });
