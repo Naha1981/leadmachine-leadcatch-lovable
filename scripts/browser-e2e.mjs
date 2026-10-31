@@ -197,7 +197,7 @@ try {
   }
 
   await desktop.goto(base + "/landing", { waitUntil: "domcontentloaded" });
-  await desktop.getByRole("heading", { name: "The AI Revenue Desk for service businesses." }).waitFor();
+  await desktop.getByRole("heading", { name: "Never miss a paying customer again." }).waitFor();
   await desktop.goto(base + "/landing?industry=plumber", { waitUntil: "domcontentloaded" });
   await desktop.getByRole("heading", { name: "Turn plumbing enquiries into booked jobs." }).waitFor();
   await desktop.goto(base + "/landing", { waitUntil: "domcontentloaded" });
