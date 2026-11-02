@@ -304,13 +304,15 @@ export const runSalesWorker = createServerFn({ method: "POST" })
   .inputValidator((data) => Input.parse(data))
   .handler(async ({ context, data }): Promise<SalesWorkerResult> => {
     const runId = crypto.randomUUID();
-    const { data: tenant, error: tenantError } = await context.supabase
-      .from("tenants")
-      .select("id")
-      .eq("owner_id", context.userId)
+    // Resolve the workspace by membership (profile), so teammates who are not the owner can run it too.
+    const { data: profile, error: tenantError } = await context.supabase
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", context.userId)
       .maybeSingle();
     if (tenantError) throw tenantError;
-    if (!tenant?.id) throw new Error("Workspace not found");
+    if (!profile?.tenant_id) throw new Error("Workspace not found");
+    const tenant = { id: profile.tenant_id as string };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const database = supabaseAdmin as any;
